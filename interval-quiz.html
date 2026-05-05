@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interval Quiz</title>
-</head>
-<body>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -66,7 +64,8 @@
     .bottom-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
     .score { font-size: 0.85rem; color: #888; }
   </style>
-
+</head>
+<body>
   <h1>Interval Identification</h1>
   <p class="subtitle">Name the harmonic interval shown on the staff.</p>
   <div class="toggle-row">
@@ -75,7 +74,7 @@
   </div>
   <p class="mode-label" id="mode-label">Notes drawn from a single major key</p>
   <div class="card">
-    <div id="notation"><span style="color:#aaa;font-style:italic;font-size:0.9rem;">Loading...</span></div>
+    <div id="notation"><span style="color:#aaa;font-style:italic;font-size:0.9rem;">Loading notation library...</span></div>
     <div class="input-row">
       <input type="text" id="answer" placeholder="e.g. major 3rd, minor 6th, perfect 5th" autocomplete="off" />
       <button class="check-btn" onclick="checkAnswer()">Check</button>
@@ -92,7 +91,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
   <script>
   // ── Music theory ──────────────────────────────────────────────
   const NOTE_SEMI = {
@@ -253,7 +251,6 @@
     do { idx=Math.floor(Math.random()*pool.length); tries++; }
     while (idx===lastIdx && tries<20);
     lastIdx=idx;
-
     const item=pool[idx];
     const {loOct,hiOct}=getOctaves(item.lo,item.hi);
     current={
@@ -261,7 +258,6 @@
       label: makeLabel(item.quality,item.number),
       answers: makeAnswers(item.quality,item.number),
     };
-
     renderInterval();
     document.getElementById('answer').value='';
     document.getElementById('feedback').className='feedback';
@@ -273,8 +269,9 @@
     const container=document.getElementById('notation');
     container.innerHTML='';
     try {
-      // *** In browser, VexFlow 4.2.2 CJS sets window.VexFlow (not window.Vex) ***
-      const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter } = VexFlow;
+      const VF = window.VexFlow;
+      if (!VF) throw new Error('VexFlow not loaded');
+      const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter } = VF;
 
       const lo=toVexKey(current.lo, current.loOct);
       const hi=toVexKey(current.hi, current.hiOct);
@@ -289,7 +286,6 @@
       stave.setContext(ctx).draw();
 
       const chord=new StaveNote({keys:[lo.key,hi.key], duration:'w', clef:'treble'});
-      // addModifier(modifier, index) is correct for VexFlow 4.2.2
       if (lo.acc) chord.addModifier(new Accidental(lo.acc), 0);
       if (hi.acc) chord.addModifier(new Accidental(hi.acc), 1);
 
@@ -323,15 +319,34 @@
     if (e.key==='Enter') checkAnswer();
   });
 
-  // Wait for VexFlow to be ready
-  function init() {
-    if (typeof VexFlow !== 'undefined' && typeof VexFlow.Renderer !== 'undefined') {
-      nextQuestion();
-    } else {
-      setTimeout(init, 100);
-    }
+  // Load VexFlow dynamically with onload callback - most reliable approach
+  function loadVexFlow() {
+    const script = document.createElement('script');
+    // Try unpkg first, fall back to jsdelivr
+    script.src = 'https://unpkg.com/vexflow/build/cjs/vexflow.js';
+    script.onload = function() {
+      if (typeof VexFlow !== 'undefined') {
+        nextQuestion();
+      } else {
+        document.getElementById('notation').innerHTML =
+          '<span style="color:#c00">Failed to load notation library. Check internet connection.</span>';
+      }
+    };
+    script.onerror = function() {
+      // Try jsdelivr as fallback
+      const script2 = document.createElement('script');
+      script2.src = 'https://cdn.jsdelivr.net/npm/vexflow/build/cjs/vexflow.js';
+      script2.onload = function() { nextQuestion(); };
+      script2.onerror = function() {
+        document.getElementById('notation').innerHTML =
+          '<span style="color:#c00">Could not load notation library. Check internet connection.</span>';
+      };
+      document.head.appendChild(script2);
+    };
+    document.head.appendChild(script);
   }
-  init();
+
+  loadVexFlow();
   </script>
 </body>
 </html>
