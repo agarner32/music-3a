@@ -37,7 +37,6 @@
     }
     #notation { width: 100%; display: flex; justify-content: center; min-height: 160px; align-items: center; }
     #notation svg { max-width: 100%; }
-    .loading { color: #aaa; font-size: 0.9rem; font-style: italic; }
     .input-row { display: flex; gap: 0.5rem; width: 100%; }
     input[type="text"] {
       flex: 1; padding: 0.55rem 0.75rem; font-size: 1rem;
@@ -47,12 +46,14 @@
     input[type="text"]:focus { border-color: #666; }
     .check-btn {
       padding: 0.55rem 1.1rem; font-size: 0.95rem; font-family: Georgia, serif;
-      background: #3a3a3a; color: #fff; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;
+      background: #3a3a3a; color: #fff; border: none; border-radius: 6px;
+      cursor: pointer; white-space: nowrap;
     }
     .check-btn:hover { background: #555; }
     .next-btn {
       padding: 0.5rem 1.1rem; font-size: 0.9rem; font-family: Georgia, serif;
-      background: transparent; color: #555; border: 1px solid #ccc; border-radius: 6px; cursor: pointer;
+      background: transparent; color: #555; border: 1px solid #ccc;
+      border-radius: 6px; cursor: pointer;
     }
     .next-btn:hover { background: #f0f0ec; }
     .feedback {
@@ -74,7 +75,7 @@
   </div>
   <p class="mode-label" id="mode-label">Notes drawn from a single major key</p>
   <div class="card">
-    <div id="notation"><span class="loading">Loading notation...</span></div>
+    <div id="notation"><span style="color:#aaa;font-style:italic;font-size:0.9rem;">Loading...</span></div>
     <div class="input-row">
       <input type="text" id="answer" placeholder="e.g. major 3rd, minor 6th, perfect 5th" autocomplete="off" />
       <button class="check-btn" onclick="checkAnswer()">Check</button>
@@ -111,7 +112,7 @@
     if (number === 8) sd = 12;
     const P={1:0,4:5,5:7,8:12}, MJ={2:2,3:4,6:9,7:11}, MN={2:1,3:3,6:8,7:10};
     let quality;
-    if (P[number]!==undefined) {
+    if (P[number] !== undefined) {
       if (sd===P[number]) quality='perfect';
       else if (sd===P[number]+1) quality='augmented';
       else if (sd===P[number]-1) quality='diminished';
@@ -138,17 +139,14 @@
     ['Eb','F','G','Ab','Bb','C','D'],
     ['Ab','Bb','C','Db','Eb','F','G'],
   ];
-
   const CHROMATIC_NOTES = ['C','C#','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
 
   function buildDiatonic() {
-    const seen = new Set();
-    const pool = [];
+    const seen = new Set(), pool = [];
     for (const key of KEYS) {
       for (let i=0;i<key.length;i++) {
         for (let j=i+1;j<key.length;j++) {
-          const lo=key[i], hi=key[j];
-          const k=lo+'|'+hi;
+          const lo=key[i], hi=key[j], k=lo+'|'+hi;
           if (seen.has(k)) continue;
           seen.add(k);
           const iv=calcInterval(lo,hi);
@@ -160,13 +158,12 @@
   }
 
   function buildChromatic() {
-    const seen = new Set();
-    const pool = [];
+    const seen = new Set(), pool = [];
     for (const a of CHROMATIC_NOTES) {
       for (const b of CHROMATIC_NOTES) {
         if (a===b || li(a)===li(b)) continue;
         let lo=a, hi=b;
-        let steps = li(hi)-li(lo);
+        let steps=li(hi)-li(lo);
         if (steps<0) steps+=7;
         if (steps>3) { lo=b; hi=a; }
         const k=lo+'|'+hi;
@@ -182,17 +179,11 @@
   const DIATONIC_POOL  = buildDiatonic();
   const CHROMATIC_POOL = buildChromatic();
 
-  // ── VexFlow helpers ───────────────────────────────────────────
+  // ── Octave helpers ────────────────────────────────────────────
   const OCTAVE_BASE = {
     'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
     'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
   };
-
-  function toVex(note, octave) {
-    const letter = letterOf(note).toLowerCase();
-    const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
-    return { key: letter + acc + '/' + octave, acc };
-  }
 
   function getOctaves(lo, hi) {
     const loOct = OCTAVE_BASE[lo] || 4;
@@ -200,14 +191,19 @@
     return { loOct, hiOct };
   }
 
-  // ── Answer logic ──────────────────────────────────────────────
+  function toVexKey(note, octave) {
+    const letter = letterOf(note).toLowerCase();
+    const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
+    return { key: letter + acc + '/' + octave, acc };
+  }
+
+  // ── Answer helpers ────────────────────────────────────────────
   const ORDINALS = ['','unison','second','third','fourth','fifth','sixth','seventh','octave'];
   const NTH      = ['','1st','2nd','3rd','4th','5th','6th','7th','8th'];
 
   function makeLabel(quality, number) {
     if (number===8) return 'Perfect Octave';
-    const q = quality.charAt(0).toUpperCase()+quality.slice(1);
-    return q+' '+NTH[number];
+    return quality.charAt(0).toUpperCase()+quality.slice(1)+' '+NTH[number];
   }
 
   function makeAnswers(quality, number) {
@@ -237,13 +233,9 @@
   }
 
   // ── State ─────────────────────────────────────────────────────
-  let mode = 'diatonic';
-  let current = null;
-  let correct=0, total=0;
-  let answered=false;
-  let lastIdx=-1;
+  let mode='diatonic', current=null, correct=0, total=0, answered=false, lastIdx=-1;
 
-  // ── UI functions ──────────────────────────────────────────────
+  // ── Quiz logic ────────────────────────────────────────────────
   function setMode(m) {
     mode=m;
     document.getElementById('btn-diatonic').classList.toggle('active',m==='diatonic');
@@ -265,8 +257,7 @@
     const item=pool[idx];
     const {loOct,hiOct}=getOctaves(item.lo,item.hi);
     current={
-      lo:item.lo, hi:item.hi,
-      loOct, hiOct,
+      lo:item.lo, hi:item.hi, loOct, hiOct,
       label: makeLabel(item.quality,item.number),
       answers: makeAnswers(item.quality,item.number),
     };
@@ -281,13 +272,14 @@
   function renderInterval() {
     const container=document.getElementById('notation');
     container.innerHTML='';
-
     try {
-      const {Renderer,Stave,StaveNote,Accidental,Voice,Formatter}=Vex.Flow;
-      const lo=toVex(current.lo,current.loOct);
-      const hi=toVex(current.hi,current.hiOct);
+      // *** In browser, VexFlow 4.2.2 CJS sets window.VexFlow (not window.Vex) ***
+      const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter } = VexFlow;
 
-      const renderer=new Renderer(container,Renderer.Backends.SVG);
+      const lo=toVexKey(current.lo, current.loOct);
+      const hi=toVexKey(current.hi, current.hiOct);
+
+      const renderer=new Renderer(container, Renderer.Backends.SVG);
       renderer.resize(420,160);
       const ctx=renderer.getContext();
       ctx.setFont('Arial',10);
@@ -296,9 +288,10 @@
       stave.addClef('treble');
       stave.setContext(ctx).draw();
 
-      const chord=new StaveNote({keys:[lo.key,hi.key],duration:'w',clef:'treble'});
-      if (lo.acc) chord.addAccidental(0,new Accidental(lo.acc));
-      if (hi.acc) chord.addAccidental(1,new Accidental(hi.acc));
+      const chord=new StaveNote({keys:[lo.key,hi.key], duration:'w', clef:'treble'});
+      // addModifier(modifier, index) is correct for VexFlow 4.2.2
+      if (lo.acc) chord.addModifier(new Accidental(lo.acc), 0);
+      if (hi.acc) chord.addModifier(new Accidental(hi.acc), 1);
 
       const voice=new Voice({num_beats:4,beat_value:4});
       voice.setStrict(false);
@@ -307,8 +300,7 @@
       voice.draw(ctx,stave);
 
     } catch(e) {
-      container.innerHTML='<span style="color:#c00;font-size:0.85rem;">Render error — click Next question</span>';
-      console.error('VexFlow error:',current.lo,'to',current.hi,e);
+      container.innerHTML='<span style="color:#c00;font-size:0.85rem;">Error: '+e.message+'</span>';
     }
   }
 
@@ -331,9 +323,9 @@
     if (e.key==='Enter') checkAnswer();
   });
 
-  // Wait for VexFlow to be available before starting
+  // Wait for VexFlow to be ready
   function init() {
-    if (typeof Vex !== 'undefined') {
+    if (typeof VexFlow !== 'undefined' && typeof VexFlow.Renderer !== 'undefined') {
       nextQuestion();
     } else {
       setTimeout(init, 100);
