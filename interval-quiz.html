@@ -102,11 +102,27 @@
   const li = n => LETTERS.indexOf(letterOf(n));
   const semi = n => NOTE_SEMI[n];
 
+  const OCTAVE_BASE = {
+    'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
+    'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
+  };
+
+  function getOctaves(lo, hi) {
+    const loOct = OCTAVE_BASE[lo] || 4;
+    const hiOct = li(hi) > li(lo) ? loOct : loOct + 1;
+    return { loOct, hiOct };
+  }
+
+  function pitchSemi(note, octave) {
+    return semi(note) + octave * 12;
+  }
+
   function calcInterval(lo, hi) {
     let steps = li(hi) - li(lo);
     if (steps < 0) steps += 7;
     const number = steps + 1;
-    let sd = (semi(hi) - semi(lo) + 12) % 12;
+    const {loOct, hiOct} = getOctaves(lo, hi);
+    let sd = pitchSemi(hi, hiOct) - pitchSemi(lo, loOct);
     if (number === 8) sd = 12;
     const P={1:0,4:5,5:7,8:12}, MJ={2:2,3:4,6:9,7:11}, MN={2:1,3:3,6:8,7:10};
     let quality;
@@ -160,15 +176,17 @@
     for (const a of CHROMATIC_NOTES) {
       for (const b of CHROMATIC_NOTES) {
         if (a===b || li(a)===li(b)) continue;
-        let lo=a, hi=b;
-        let steps=li(hi)-li(lo);
-        if (steps<0) steps+=7;
-        if (steps>3) { lo=b; hi=a; }
-        const k=lo+'|'+hi;
-        if (seen.has(k)) continue;
-        seen.add(k);
-        const iv=calcInterval(lo,hi);
-        if (iv && iv.number>=2 && iv.number<=7) pool.push({lo,hi,...iv});
+        // Try both orderings, keep whichever makes hi actually higher in pitch
+        for (const [lo,hi] of [[a,b],[b,a]]) {
+          const k = lo+'|'+hi;
+          if (seen.has(k)) continue;
+          const {loOct,hiOct} = getOctaves(lo,hi);
+          if (pitchSemi(hi,hiOct) <= pitchSemi(lo,loOct)) continue;
+          const iv = calcInterval(lo,hi);
+          if (!iv || iv.number<2 || iv.number>8) continue;
+          seen.add(k);
+          pool.push({lo,hi,...iv});
+        }
       }
     }
     return pool;
@@ -177,18 +195,7 @@
   const DIATONIC_POOL  = buildDiatonic();
   const CHROMATIC_POOL = buildChromatic();
 
-  // ── Octave helpers ────────────────────────────────────────────
-  const OCTAVE_BASE = {
-    'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
-    'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
-  };
-
-  function getOctaves(lo, hi) {
-    const loOct = OCTAVE_BASE[lo] || 4;
-    const hiOct = li(hi) > li(lo) ? loOct : loOct + 1;
-    return { loOct, hiOct };
-  }
-
+  // ── VexFlow helpers ───────────────────────────────────────────
   function toVexKey(note, octave) {
     const letter = letterOf(note).toLowerCase();
     const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
@@ -319,21 +326,19 @@
     if (e.key==='Enter') checkAnswer();
   });
 
-  // Load VexFlow dynamically with onload callback - most reliable approach
+  // Load VexFlow dynamically with onload callback
   function loadVexFlow() {
     const script = document.createElement('script');
-    // Try unpkg first, fall back to jsdelivr
     script.src = 'https://unpkg.com/vexflow/build/cjs/vexflow.js';
     script.onload = function() {
       if (typeof VexFlow !== 'undefined') {
         nextQuestion();
       } else {
         document.getElementById('notation').innerHTML =
-          '<span style="color:#c00">Failed to load notation library. Check internet connection.</span>';
+          '<span style="color:#c00">Failed to initialize notation library.</span>';
       }
     };
     script.onerror = function() {
-      // Try jsdelivr as fallback
       const script2 = document.createElement('script');
       script2.src = 'https://cdn.jsdelivr.net/npm/vexflow/build/cjs/vexflow.js';
       script2.onload = function() { nextQuestion(); };
