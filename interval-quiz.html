@@ -102,19 +102,14 @@
   const li = n => LETTERS.indexOf(letterOf(n));
   const semi = n => NOTE_SEMI[n];
 
-  const OCTAVE_BASE = {
-    'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
-    'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
-  };
+  function pitchSemi(note, octave) { return semi(note) + octave * 12; }
 
+  // Fixed: use pitch arithmetic, not letter index, to assign octaves
   function getOctaves(lo, hi) {
-    const loOct = OCTAVE_BASE[lo] || 4;
-    const hiOct = li(hi) > li(lo) ? loOct : loOct + 1;
+    const loOct = 4;
+    let hiOct = loOct;
+    if (pitchSemi(hi, hiOct) <= pitchSemi(lo, loOct)) hiOct = loOct + 1;
     return { loOct, hiOct };
-  }
-
-  function pitchSemi(note, octave) {
-    return semi(note) + octave * 12;
   }
 
   function calcInterval(lo, hi) {
@@ -176,7 +171,6 @@
     for (const a of CHROMATIC_NOTES) {
       for (const b of CHROMATIC_NOTES) {
         if (a===b || li(a)===li(b)) continue;
-        // Try both orderings, keep whichever makes hi actually higher in pitch
         for (const [lo,hi] of [[a,b],[b,a]]) {
           const k = lo+'|'+hi;
           if (seen.has(k)) continue;
@@ -326,7 +320,6 @@
     if (e.key==='Enter') checkAnswer();
   });
 
-  // Load VexFlow dynamically with onload callback
   function loadVexFlow() {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/vexflow/build/cjs/vexflow.js';
