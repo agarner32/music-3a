@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interval Quiz</title>
-  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+</head>
+<body>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -16,47 +17,27 @@
       padding: 2rem 1rem;
       min-height: 100vh;
     }
-    h1 {
-      font-size: 1.4rem;
-      font-weight: normal;
-      color: #333;
-      margin-bottom: 0.25rem;
-    }
+    h1 { font-size: 1.4rem; font-weight: normal; color: #333; margin-bottom: 0.25rem; }
     .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 1.25rem; }
     .toggle-row {
-      display: flex;
-      margin-bottom: 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      overflow: hidden;
+      display: flex; margin-bottom: 0.75rem;
+      border: 1px solid #ccc; border-radius: 6px; overflow: hidden;
     }
     .toggle-btn {
-      padding: 0.45rem 1.2rem;
-      font-size: 0.9rem;
-      font-family: Georgia, serif;
-      background: #fff;
-      color: #555;
-      border: none;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+      padding: 0.45rem 1.2rem; font-size: 0.9rem; font-family: Georgia, serif;
+      background: #fff; color: #555; border: none; cursor: pointer;
     }
     .toggle-btn.active { background: #3a3a3a; color: #fff; }
     .toggle-btn:first-child { border-right: 1px solid #ccc; }
-    .mode-label {
-      font-size: 0.8rem; color: #999; font-style: italic;
-      margin-bottom: 1.25rem; text-align: center;
-    }
+    .mode-label { font-size: 0.8rem; color: #999; font-style: italic; margin-bottom: 1.25rem; text-align: center; }
     .card {
-      background: #fff;
-      border: 1px solid #e0e0d8;
-      border-radius: 10px;
-      padding: 1.5rem 2rem 2rem;
-      width: 100%; max-width: 520px;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 1.25rem;
+      background: #fff; border: 1px solid #e0e0d8; border-radius: 10px;
+      padding: 1.5rem 2rem 2rem; width: 100%; max-width: 520px;
+      display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
     }
-    #notation { width: 100%; display: flex; justify-content: center; }
+    #notation { width: 100%; display: flex; justify-content: center; min-height: 160px; align-items: center; }
     #notation svg { max-width: 100%; }
+    .loading { color: #aaa; font-size: 0.9rem; font-style: italic; }
     .input-row { display: flex; gap: 0.5rem; width: 100%; }
     input[type="text"] {
       flex: 1; padding: 0.55rem 0.75rem; font-size: 1rem;
@@ -66,37 +47,25 @@
     input[type="text"]:focus { border-color: #666; }
     .check-btn {
       padding: 0.55rem 1.1rem; font-size: 0.95rem; font-family: Georgia, serif;
-      background: #3a3a3a; color: #fff; border: none; border-radius: 6px;
-      cursor: pointer; white-space: nowrap;
+      background: #3a3a3a; color: #fff; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;
     }
     .check-btn:hover { background: #555; }
     .next-btn {
       padding: 0.5rem 1.1rem; font-size: 0.9rem; font-family: Georgia, serif;
-      background: transparent; color: #555; border: 1px solid #ccc;
-      border-radius: 6px; cursor: pointer;
+      background: transparent; color: #555; border: 1px solid #ccc; border-radius: 6px; cursor: pointer;
     }
     .next-btn:hover { background: #f0f0ec; }
     .feedback {
       width: 100%; padding: 0.65rem 1rem; border-radius: 6px;
       font-size: 0.95rem; text-align: center; display: none;
     }
-    .feedback.correct {
-      display: block; background: #eaf6ec;
-      color: #2a6e35; border: 1px solid #b2ddb8;
-    }
-    .feedback.incorrect {
-      display: block; background: #fdf0f0;
-      color: #8b2020; border: 1px solid #f0b8b8;
-    }
+    .feedback.correct { display: block; background: #eaf6ec; color: #2a6e35; border: 1px solid #b2ddb8; }
+    .feedback.incorrect { display: block; background: #fdf0f0; color: #8b2020; border: 1px solid #f0b8b8; }
     .hint { font-size: 0.78rem; color: #bbb; text-align: center; line-height: 1.7; }
-    .bottom-row {
-      display: flex; justify-content: space-between;
-      align-items: center; width: 100%;
-    }
+    .bottom-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
     .score { font-size: 0.85rem; color: #888; }
   </style>
-</head>
-<body>
+
   <h1>Interval Identification</h1>
   <p class="subtitle">Name the harmonic interval shown on the staff.</p>
   <div class="toggle-row">
@@ -105,7 +74,7 @@
   </div>
   <p class="mode-label" id="mode-label">Notes drawn from a single major key</p>
   <div class="card">
-    <div id="notation"></div>
+    <div id="notation"><span class="loading">Loading notation...</span></div>
     <div class="input-row">
       <input type="text" id="answer" placeholder="e.g. major 3rd, minor 6th, perfect 5th" autocomplete="off" />
       <button class="check-btn" onclick="checkAnswer()">Check</button>
@@ -114,7 +83,7 @@
     <p class="hint">
       Write the full interval name: <em>major 3rd, minor 6th, perfect 5th,<br>
       diminished 5th, augmented 4th, perfect octave</em><br>
-      Numbers or words both work: <em>3rd or third &nbsp;|&nbsp; 5th or fifth</em>
+      Numbers or words: <em>3rd or third &nbsp;|&nbsp; 5th or fifth</em>
     </p>
     <div class="bottom-row">
       <span class="score" id="score">Score: 0 / 0</span>
@@ -122,252 +91,255 @@
     </div>
   </div>
 
-<script>
-const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter } = Vex.Flow;
+  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+  <script>
+  // ── Music theory ──────────────────────────────────────────────
+  const NOTE_SEMI = {
+    'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,
+    'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11
+  };
+  const LETTERS = ['C','D','E','F','G','A','B'];
+  const letterOf = n => n.replace(/[#b]/g,'');
+  const li = n => LETTERS.indexOf(letterOf(n));
+  const semi = n => NOTE_SEMI[n];
 
-const NOTE_SEMI = {
-  'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,
-  'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11
-};
-const LETTERS = ['C','D','E','F','G','A','B'];
-function letterOf(n) { return n.replace(/[#b]/g,''); }
-function li(n) { return LETTERS.indexOf(letterOf(n)); }
-function semi(n) { return NOTE_SEMI[n]; }
-
-function calcInterval(lo, hi) {
-  let steps = li(hi) - li(lo);
-  if (steps < 0) steps += 7;
-  const number = steps + 1;
-  let sd = (semi(hi) - semi(lo) + 12) % 12;
-  if (number === 8) sd = 12;
-  const P = {1:0,4:5,5:7,8:12};
-  const MJ = {2:2,3:4,6:9,7:11};
-  const MN = {2:1,3:3,6:8,7:10};
-  let quality;
-  if (P[number] !== undefined) {
-    if (sd === P[number]) quality = 'perfect';
-    else if (sd === P[number]+1) quality = 'augmented';
-    else if (sd === P[number]-1) quality = 'diminished';
-    else quality = null;
-  } else {
-    if (sd === MJ[number]) quality = 'major';
-    else if (sd === MN[number]) quality = 'minor';
-    else if (sd === MJ[number]+1) quality = 'augmented';
-    else if (sd === MN[number]-1) quality = 'diminished';
-    else quality = null;
+  function calcInterval(lo, hi) {
+    let steps = li(hi) - li(lo);
+    if (steps < 0) steps += 7;
+    const number = steps + 1;
+    let sd = (semi(hi) - semi(lo) + 12) % 12;
+    if (number === 8) sd = 12;
+    const P={1:0,4:5,5:7,8:12}, MJ={2:2,3:4,6:9,7:11}, MN={2:1,3:3,6:8,7:10};
+    let quality;
+    if (P[number]!==undefined) {
+      if (sd===P[number]) quality='perfect';
+      else if (sd===P[number]+1) quality='augmented';
+      else if (sd===P[number]-1) quality='diminished';
+      else quality=null;
+    } else {
+      if (sd===MJ[number]) quality='major';
+      else if (sd===MN[number]) quality='minor';
+      else if (sd===MJ[number]+1) quality='augmented';
+      else if (sd===MN[number]-1) quality='diminished';
+      else quality=null;
+    }
+    return quality ? {quality,number} : null;
   }
-  return quality ? { quality, number } : null;
-}
 
-const KEYS = [
-  ['C','D','E','F','G','A','B'],
-  ['G','A','B','C','D','E','F#'],
-  ['D','E','F#','G','A','B','C#'],
-  ['A','B','C#','D','E','F#','G#'],
-  ['E','F#','G#','A','B','C#','D#'],
-  ['F','G','A','Bb','C','D','E'],
-  ['Bb','C','D','Eb','F','G','A'],
-  ['Eb','F','G','Ab','Bb','C','D'],
-  ['Ab','Bb','C','Db','Eb','F','G'],
-];
+  // ── Build pools ───────────────────────────────────────────────
+  const KEYS = [
+    ['C','D','E','F','G','A','B'],
+    ['G','A','B','C','D','E','F#'],
+    ['D','E','F#','G','A','B','C#'],
+    ['A','B','C#','D','E','F#','G#'],
+    ['E','F#','G#','A','B','C#','D#'],
+    ['F','G','A','Bb','C','D','E'],
+    ['Bb','C','D','Eb','F','G','A'],
+    ['Eb','F','G','Ab','Bb','C','D'],
+    ['Ab','Bb','C','Db','Eb','F','G'],
+  ];
 
-const CHROMATIC = ['C','C#','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  const CHROMATIC_NOTES = ['C','C#','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
 
-function buildPool(pairs) {
-  return pairs.map(p => {
-    const iv = calcInterval(p[0], p[1]);
-    if (!iv) return null;
-    return { lo: p[0], hi: p[1], quality: iv.quality, number: iv.number };
-  }).filter(Boolean);
-}
-
-function buildDiatonic() {
-  const pairs = [];
-  for (const key of KEYS) {
-    for (let i = 0; i < key.length; i++) {
-      for (let j = i+1; j < key.length; j++) {
-        pairs.push([key[i], key[j]]);
+  function buildDiatonic() {
+    const seen = new Set();
+    const pool = [];
+    for (const key of KEYS) {
+      for (let i=0;i<key.length;i++) {
+        for (let j=i+1;j<key.length;j++) {
+          const lo=key[i], hi=key[j];
+          const k=lo+'|'+hi;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          const iv=calcInterval(lo,hi);
+          if (iv && iv.number>=2 && iv.number<=7) pool.push({lo,hi,...iv});
+        }
       }
     }
+    return pool;
   }
-  return buildPool(pairs).filter(x => x.number >= 2 && x.number <= 7);
-}
 
-function buildChromatic() {
-  const seen = new Set();
-  const pairs = [];
-  for (const a of CHROMATIC) {
-    for (const b of CHROMATIC) {
-      if (a === b || li(a) === li(b)) continue;
-      let lo = a, hi = b;
-      let steps = li(hi) - li(lo);
-      if (steps < 0) steps += 7;
-      if (steps === 0) continue;
-      if (steps > 3) { lo = b; hi = a; }
-      const key = lo+'|'+hi;
-      if (!seen.has(key)) { seen.add(key); pairs.push([lo, hi]); }
+  function buildChromatic() {
+    const seen = new Set();
+    const pool = [];
+    for (const a of CHROMATIC_NOTES) {
+      for (const b of CHROMATIC_NOTES) {
+        if (a===b || li(a)===li(b)) continue;
+        let lo=a, hi=b;
+        let steps = li(hi)-li(lo);
+        if (steps<0) steps+=7;
+        if (steps>3) { lo=b; hi=a; }
+        const k=lo+'|'+hi;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        const iv=calcInterval(lo,hi);
+        if (iv && iv.number>=2 && iv.number<=7) pool.push({lo,hi,...iv});
+      }
     }
+    return pool;
   }
-  return buildPool(pairs).filter(x => x.number >= 2 && x.number <= 7);
-}
 
-const DIATONIC_POOL = buildDiatonic();
-const CHROMATIC_POOL = buildChromatic();
+  const DIATONIC_POOL  = buildDiatonic();
+  const CHROMATIC_POOL = buildChromatic();
 
-const OCTAVE_BASE = {
-  'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
-  'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
-};
-
-function toVex(note, octave) {
-  const letter = letterOf(note).toLowerCase();
-  const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
-  return { key: letter + (acc ? acc : '') + '/' + octave, acc };
-}
-
-function octaves(lo, hi) {
-  const loOct = OCTAVE_BASE[lo] || 4;
-  const hiOct = li(hi) > li(lo) ? loOct : loOct + 1;
-  return { loOct, hiOct };
-}
-
-const ORDINALS = ['','unison','second','third','fourth','fifth','sixth','seventh','octave'];
-const NTH = ['','1st','2nd','3rd','4th','5th','6th','7th','8th'];
-
-function label(quality, number) {
-  if (number === 8) return 'Perfect Octave';
-  const q = quality.charAt(0).toUpperCase() + quality.slice(1);
-  return q + ' ' + NTH[number];
-}
-
-function answers(quality, number) {
-  const ord = ORDINALS[number];
-  const nth = NTH[number];
-  const q = quality;
-  const base = [
-    q + ' ' + ord,
-    q + ' ' + nth,
-  ];
-  if (number === 8) {
-    return [...base, 'octave', 'perfect octave', 'perfect 8th', 'perfect eighth'];
-  }
-  if (q === 'diminished' && number === 5) base.push('tritone');
-  if (q === 'augmented' && number === 4) base.push('tritone');
-  return base;
-}
-
-function normalize(s) {
-  return s.toLowerCase()
-    .replace(/\b(maj|major)\b/g,'major')
-    .replace(/\b(min|minor)\b/g,'minor')
-    .replace(/\b(perf|perfect)\b/g,'perfect')
-    .replace(/\b(dim|diminished)\b/g,'diminished')
-    .replace(/\b(aug|augmented)\b/g,'augmented')
-    .replace(/\b2nd\b|\bsecond\b/g,'second')
-    .replace(/\b3rd\b|\bthird\b/g,'third')
-    .replace(/\b4th\b|\bfourth\b/g,'fourth')
-    .replace(/\b5th\b|\bfifth\b/g,'fifth')
-    .replace(/\b6th\b|\bsixth\b/g,'sixth')
-    .replace(/\b7th\b|\bseventh\b/g,'seventh')
-    .replace(/\b8th\b|\boctave\b|\beighth\b/g,'octave')
-    .replace(/[^a-z]/g,'').trim();
-}
-
-let mode = 'diatonic';
-let current = null;
-let correct = 0, total = 0;
-let answered = false;
-let lastIndex = -1;
-
-function setMode(m) {
-  mode = m;
-  document.getElementById('btn-diatonic').classList.toggle('active', m==='diatonic');
-  document.getElementById('btn-chromatic').classList.toggle('active', m==='chromatic');
-  document.getElementById('mode-label').textContent = m==='diatonic'
-    ? 'Notes drawn from a single major key'
-    : 'Any interval — sharps, flats, all qualities';
-  lastIndex = -1;
-  nextQuestion();
-}
-
-function nextQuestion() {
-  const pool = mode === 'diatonic' ? DIATONIC_POOL : CHROMATIC_POOL;
-  let idx;
-  let tries = 0;
-  do {
-    idx = Math.floor(Math.random() * pool.length);
-    tries++;
-  } while (idx === lastIndex && tries < 20);
-  lastIndex = idx;
-
-  const item = pool[idx];
-  const { loOct, hiOct } = octaves(item.lo, item.hi);
-  current = {
-    lo: item.lo, hi: item.hi,
-    quality: item.quality, number: item.number,
-    label: label(item.quality, item.number),
-    answers: answers(item.quality, item.number),
-    loOct, hiOct
+  // ── VexFlow helpers ───────────────────────────────────────────
+  const OCTAVE_BASE = {
+    'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
+    'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
   };
 
-  renderInterval();
-  document.getElementById('answer').value = '';
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('answer').focus();
-  answered = false;
-}
+  function toVex(note, octave) {
+    const letter = letterOf(note).toLowerCase();
+    const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
+    return { key: letter + acc + '/' + octave, acc };
+  }
 
-function renderInterval() {
-  const container = document.getElementById('notation');
-  container.innerHTML = '';
+  function getOctaves(lo, hi) {
+    const loOct = OCTAVE_BASE[lo] || 4;
+    const hiOct = li(hi) > li(lo) ? loOct : loOct + 1;
+    return { loOct, hiOct };
+  }
 
-  const lo = toVex(current.lo, current.loOct);
-  const hi = toVex(current.hi, current.hiOct);
+  // ── Answer logic ──────────────────────────────────────────────
+  const ORDINALS = ['','unison','second','third','fourth','fifth','sixth','seventh','octave'];
+  const NTH      = ['','1st','2nd','3rd','4th','5th','6th','7th','8th'];
 
-  const renderer = new Renderer(container, Renderer.Backends.SVG);
-  renderer.resize(420, 160);
-  const ctx = renderer.getContext();
-  ctx.setFont('Arial', 10);
+  function makeLabel(quality, number) {
+    if (number===8) return 'Perfect Octave';
+    const q = quality.charAt(0).toUpperCase()+quality.slice(1);
+    return q+' '+NTH[number];
+  }
 
-  const stave = new Stave(20, 20, 370);
-  stave.addClef('treble');
-  stave.setContext(ctx).draw();
+  function makeAnswers(quality, number) {
+    const q=quality, ord=ORDINALS[number], nth=NTH[number];
+    const base=[q+' '+ord, q+' '+nth];
+    if (number===8) return [...base,'octave','perfect octave','perfect 8th','perfect eighth'];
+    if (q==='diminished'&&number===5) base.push('tritone');
+    if (q==='augmented'&&number===4) base.push('tritone');
+    return base;
+  }
 
-  const chord = new StaveNote({ keys: [lo.key, hi.key], duration: 'w', clef: 'treble' });
-  if (lo.acc) chord.addAccidental(0, new Accidental(lo.acc));
-  if (hi.acc) chord.addAccidental(1, new Accidental(hi.acc));
+  function normalize(s) {
+    return s.toLowerCase()
+      .replace(/\b(maj|major)\b/g,'major')
+      .replace(/\b(min|minor)\b/g,'minor')
+      .replace(/\b(perf|perfect)\b/g,'perfect')
+      .replace(/\b(dim|diminished)\b/g,'diminished')
+      .replace(/\b(aug|augmented)\b/g,'augmented')
+      .replace(/\b2nd\b|\bsecond\b/g,'second')
+      .replace(/\b3rd\b|\bthird\b/g,'third')
+      .replace(/\b4th\b|\bfourth\b/g,'fourth')
+      .replace(/\b5th\b|\bfifth\b/g,'fifth')
+      .replace(/\b6th\b|\bsixth\b/g,'sixth')
+      .replace(/\b7th\b|\bseventh\b/g,'seventh')
+      .replace(/\b8th\b|\boctave\b|\beighth\b/g,'octave')
+      .replace(/[^a-z]/g,'').trim();
+  }
 
-  const voice = new Voice({ num_beats: 4, beat_value: 4 });
-  voice.setStrict(false);
-  voice.addTickables([chord]);
-  new Formatter().joinVoices([voice]).format([voice], 280);
-  voice.draw(ctx, stave);
-}
+  // ── State ─────────────────────────────────────────────────────
+  let mode = 'diatonic';
+  let current = null;
+  let correct=0, total=0;
+  let answered=false;
+  let lastIdx=-1;
 
-function checkAnswer() {
-  if (answered) return;
-  const val = document.getElementById('answer').value;
-  if (!val.trim()) return;
+  // ── UI functions ──────────────────────────────────────────────
+  function setMode(m) {
+    mode=m;
+    document.getElementById('btn-diatonic').classList.toggle('active',m==='diatonic');
+    document.getElementById('btn-chromatic').classList.toggle('active',m==='chromatic');
+    document.getElementById('mode-label').textContent = m==='diatonic'
+      ? 'Notes drawn from a single major key'
+      : 'Any interval — sharps, flats, all qualities';
+    lastIdx=-1;
+    nextQuestion();
+  }
 
-  const normInput = normalize(val);
-  const isCorrect = current.answers.some(a => normalize(a) === normInput);
-  answered = true;
-  total++;
-  if (isCorrect) correct++;
+  function nextQuestion() {
+    const pool = mode==='diatonic' ? DIATONIC_POOL : CHROMATIC_POOL;
+    let idx, tries=0;
+    do { idx=Math.floor(Math.random()*pool.length); tries++; }
+    while (idx===lastIdx && tries<20);
+    lastIdx=idx;
 
-  const fb = document.getElementById('feedback');
-  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
-  fb.textContent = isCorrect
-    ? 'Correct! ' + current.label + '.'
-    : 'Not quite — the answer is: ' + current.label + '.';
-  document.getElementById('score').textContent = 'Score: ' + correct + ' / ' + total;
-}
+    const item=pool[idx];
+    const {loOct,hiOct}=getOctaves(item.lo,item.hi);
+    current={
+      lo:item.lo, hi:item.hi,
+      loOct, hiOct,
+      label: makeLabel(item.quality,item.number),
+      answers: makeAnswers(item.quality,item.number),
+    };
 
-document.getElementById('answer').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkAnswer();
-});
+    renderInterval();
+    document.getElementById('answer').value='';
+    document.getElementById('feedback').className='feedback';
+    answered=false;
+    document.getElementById('answer').focus();
+  }
 
-nextQuestion();
-</script>
+  function renderInterval() {
+    const container=document.getElementById('notation');
+    container.innerHTML='';
+
+    try {
+      const {Renderer,Stave,StaveNote,Accidental,Voice,Formatter}=Vex.Flow;
+      const lo=toVex(current.lo,current.loOct);
+      const hi=toVex(current.hi,current.hiOct);
+
+      const renderer=new Renderer(container,Renderer.Backends.SVG);
+      renderer.resize(420,160);
+      const ctx=renderer.getContext();
+      ctx.setFont('Arial',10);
+
+      const stave=new Stave(20,20,370);
+      stave.addClef('treble');
+      stave.setContext(ctx).draw();
+
+      const chord=new StaveNote({keys:[lo.key,hi.key],duration:'w',clef:'treble'});
+      if (lo.acc) chord.addAccidental(0,new Accidental(lo.acc));
+      if (hi.acc) chord.addAccidental(1,new Accidental(hi.acc));
+
+      const voice=new Voice({num_beats:4,beat_value:4});
+      voice.setStrict(false);
+      voice.addTickables([chord]);
+      new Formatter().joinVoices([voice]).format([voice],280);
+      voice.draw(ctx,stave);
+
+    } catch(e) {
+      container.innerHTML='<span style="color:#c00;font-size:0.85rem;">Render error — click Next question</span>';
+      console.error('VexFlow error:',current.lo,'to',current.hi,e);
+    }
+  }
+
+  function checkAnswer() {
+    if (answered) return;
+    const val=document.getElementById('answer').value;
+    if (!val.trim()) return;
+    const isCorrect=current.answers.some(a=>normalize(a)===normalize(val));
+    answered=true; total++;
+    if (isCorrect) correct++;
+    const fb=document.getElementById('feedback');
+    fb.className='feedback '+(isCorrect?'correct':'incorrect');
+    fb.textContent=isCorrect
+      ? 'Correct! '+current.label+'.'
+      : 'Not quite — the answer is: '+current.label+'.';
+    document.getElementById('score').textContent='Score: '+correct+' / '+total;
+  }
+
+  document.getElementById('answer').addEventListener('keydown',e=>{
+    if (e.key==='Enter') checkAnswer();
+  });
+
+  // Wait for VexFlow to be available before starting
+  function init() {
+    if (typeof Vex !== 'undefined') {
+      nextQuestion();
+    } else {
+      setTimeout(init, 100);
+    }
+  }
+  init();
+  </script>
 </body>
 </html>
