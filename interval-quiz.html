@@ -21,23 +21,17 @@
       font-weight: normal;
       color: #333;
       margin-bottom: 0.25rem;
-      letter-spacing: 0.02em;
     }
-    .subtitle {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 1.25rem;
-    }
+    .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 1.25rem; }
     .toggle-row {
       display: flex;
-      gap: 0;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
       border: 1px solid #ccc;
       border-radius: 6px;
       overflow: hidden;
     }
     .toggle-btn {
-      padding: 0.45rem 1.1rem;
+      padding: 0.45rem 1.2rem;
       font-size: 0.9rem;
       font-family: Georgia, serif;
       background: #fff;
@@ -46,112 +40,58 @@
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
     }
-    .toggle-btn.active {
-      background: #3a3a3a;
-      color: #fff;
-    }
+    .toggle-btn.active { background: #3a3a3a; color: #fff; }
     .toggle-btn:first-child { border-right: 1px solid #ccc; }
     .mode-label {
-      font-size: 0.8rem;
-      color: #888;
-      margin-bottom: 1.25rem;
-      font-style: italic;
-      text-align: center;
-      min-height: 1.2em;
+      font-size: 0.8rem; color: #999; font-style: italic;
+      margin-bottom: 1.25rem; text-align: center;
     }
     .card {
       background: #fff;
       border: 1px solid #e0e0d8;
       border-radius: 10px;
       padding: 1.5rem 2rem 2rem;
-      width: 100%;
-      max-width: 520px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.25rem;
+      width: 100%; max-width: 520px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1.25rem;
     }
-    #notation {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
+    #notation { width: 100%; display: flex; justify-content: center; }
     #notation svg { max-width: 100%; }
-    .input-row {
-      display: flex;
-      gap: 0.5rem;
-      width: 100%;
-    }
+    .input-row { display: flex; gap: 0.5rem; width: 100%; }
     input[type="text"] {
-      flex: 1;
-      padding: 0.55rem 0.75rem;
-      font-size: 1rem;
-      font-family: Georgia, serif;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      outline: none;
-      background: #fff;
-      color: #222;
-      transition: border-color 0.15s;
+      flex: 1; padding: 0.55rem 0.75rem; font-size: 1rem;
+      font-family: Georgia, serif; border: 1px solid #ccc;
+      border-radius: 6px; outline: none; background: #fff; color: #222;
     }
     input[type="text"]:focus { border-color: #666; }
-    button.check-btn {
-      padding: 0.55rem 1.1rem;
-      font-size: 0.95rem;
-      font-family: Georgia, serif;
-      background: #3a3a3a;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
+    .check-btn {
+      padding: 0.55rem 1.1rem; font-size: 0.95rem; font-family: Georgia, serif;
+      background: #3a3a3a; color: #fff; border: none; border-radius: 6px;
+      cursor: pointer; white-space: nowrap;
     }
-    button.check-btn:hover { background: #555; }
-    button.next-btn {
-      padding: 0.5rem 1.1rem;
-      font-size: 0.9rem;
-      font-family: Georgia, serif;
-      background: transparent;
-      color: #555;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
+    .check-btn:hover { background: #555; }
+    .next-btn {
+      padding: 0.5rem 1.1rem; font-size: 0.9rem; font-family: Georgia, serif;
+      background: transparent; color: #555; border: 1px solid #ccc;
+      border-radius: 6px; cursor: pointer;
     }
-    button.next-btn:hover { background: #f0f0ec; }
+    .next-btn:hover { background: #f0f0ec; }
     .feedback {
-      width: 100%;
-      padding: 0.65rem 1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      text-align: center;
-      display: none;
+      width: 100%; padding: 0.65rem 1rem; border-radius: 6px;
+      font-size: 0.95rem; text-align: center; display: none;
     }
     .feedback.correct {
-      display: block;
-      background: #eaf6ec;
-      color: #2a6e35;
-      border: 1px solid #b2ddb8;
+      display: block; background: #eaf6ec;
+      color: #2a6e35; border: 1px solid #b2ddb8;
     }
     .feedback.incorrect {
-      display: block;
-      background: #fdf0f0;
-      color: #8b2020;
-      border: 1px solid #f0b8b8;
+      display: block; background: #fdf0f0;
+      color: #8b2020; border: 1px solid #f0b8b8;
     }
-    .hint {
-      font-size: 0.78rem;
-      color: #bbb;
-      text-align: center;
-      line-height: 1.7;
-    }
+    .hint { font-size: 0.78rem; color: #bbb; text-align: center; line-height: 1.7; }
     .bottom-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
+      display: flex; justify-content: space-between;
+      align-items: center; width: 100%;
     }
     .score { font-size: 0.85rem; color: #888; }
   </style>
@@ -159,13 +99,11 @@
 <body>
   <h1>Interval Identification</h1>
   <p class="subtitle">Name the harmonic interval shown on the staff.</p>
-
   <div class="toggle-row">
     <button class="toggle-btn active" id="btn-diatonic" onclick="setMode('diatonic')">Diatonic</button>
     <button class="toggle-btn" id="btn-chromatic" onclick="setMode('chromatic')">Chromatic</button>
   </div>
   <p class="mode-label" id="mode-label">Notes drawn from a single major key</p>
-
   <div class="card">
     <div id="notation"></div>
     <div class="input-row">
@@ -176,7 +114,7 @@
     <p class="hint">
       Write the full interval name: <em>major 3rd, minor 6th, perfect 5th,<br>
       diminished 5th, augmented 4th, perfect octave</em><br>
-      Numbers or words both work: <em>3rd or third, 5th or fifth</em>
+      Numbers or words both work: <em>3rd or third &nbsp;|&nbsp; 5th or fifth</em>
     </p>
     <div class="bottom-row">
       <span class="score" id="score">Score: 0 / 0</span>
@@ -184,283 +122,252 @@
     </div>
   </div>
 
-  <script>
-    const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter } = Vex.Flow;
+<script>
+const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter } = Vex.Flow;
 
-    const MAJOR_KEYS = [
-      { name: 'C major',  notes: ['C','D','E','F','G','A','B'] },
-      { name: 'G major',  notes: ['G','A','B','C','D','E','F#'] },
-      { name: 'D major',  notes: ['D','E','F#','G','A','B','C#'] },
-      { name: 'A major',  notes: ['A','B','C#','D','E','F#','G#'] },
-      { name: 'E major',  notes: ['E','F#','G#','A','B','C#','D#'] },
-      { name: 'F major',  notes: ['F','G','A','Bb','C','D','E'] },
-      { name: 'Bb major', notes: ['Bb','C','D','Eb','F','G','A'] },
-      { name: 'Eb major', notes: ['Eb','F','G','Ab','Bb','C','D'] },
-      { name: 'Ab major', notes: ['Ab','Bb','C','Db','Eb','F','G'] },
-      { name: 'Db major', notes: ['Db','Eb','F','Gb','Ab','Bb','C'] },
-      { name: 'F# major', notes: ['F#','G#','A#','B','C#','D#','E#'] },
-      { name: 'B major',  notes: ['B','C#','D#','E','F#','G#','A#'] },
-    ];
+const NOTE_SEMI = {
+  'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,
+  'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11
+};
+const LETTERS = ['C','D','E','F','G','A','B'];
+function letterOf(n) { return n.replace(/[#b]/g,''); }
+function li(n) { return LETTERS.indexOf(letterOf(n)); }
+function semi(n) { return NOTE_SEMI[n]; }
 
-    const CHROMATIC_NOTES = [
-      'C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'
-    ];
+function calcInterval(lo, hi) {
+  let steps = li(hi) - li(lo);
+  if (steps < 0) steps += 7;
+  const number = steps + 1;
+  let sd = (semi(hi) - semi(lo) + 12) % 12;
+  if (number === 8) sd = 12;
+  const P = {1:0,4:5,5:7,8:12};
+  const MJ = {2:2,3:4,6:9,7:11};
+  const MN = {2:1,3:3,6:8,7:10};
+  let quality;
+  if (P[number] !== undefined) {
+    if (sd === P[number]) quality = 'perfect';
+    else if (sd === P[number]+1) quality = 'augmented';
+    else if (sd === P[number]-1) quality = 'diminished';
+    else quality = null;
+  } else {
+    if (sd === MJ[number]) quality = 'major';
+    else if (sd === MN[number]) quality = 'minor';
+    else if (sd === MJ[number]+1) quality = 'augmented';
+    else if (sd === MN[number]-1) quality = 'diminished';
+    else quality = null;
+  }
+  return quality ? { quality, number } : null;
+}
 
-    const NOTE_TO_SEMITONE = {
-      'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'Fb':4,'E#':5,
-      'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,'Cb':11,'B#':0
-    };
+const KEYS = [
+  ['C','D','E','F','G','A','B'],
+  ['G','A','B','C','D','E','F#'],
+  ['D','E','F#','G','A','B','C#'],
+  ['A','B','C#','D','E','F#','G#'],
+  ['E','F#','G#','A','B','C#','D#'],
+  ['F','G','A','Bb','C','D','E'],
+  ['Bb','C','D','Eb','F','G','A'],
+  ['Eb','F','G','Ab','Bb','C','D'],
+  ['Ab','Bb','C','Db','Eb','F','G'],
+];
 
-    const LETTER_ORDER = ['C','D','E','F','G','A','B'];
+const CHROMATIC = ['C','C#','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
 
-    function letterOf(note) { return note.replace(/[#b]/g,''); }
-    function letterIndex(note) { return LETTER_ORDER.indexOf(letterOf(note)); }
+function buildPool(pairs) {
+  return pairs.map(p => {
+    const iv = calcInterval(p[0], p[1]);
+    if (!iv) return null;
+    return { lo: p[0], hi: p[1], quality: iv.quality, number: iv.number };
+  }).filter(Boolean);
+}
 
-    function semitones(note) { return NOTE_TO_SEMITONE[note] ?? 0; }
+function buildDiatonic() {
+  const pairs = [];
+  for (const key of KEYS) {
+    for (let i = 0; i < key.length; i++) {
+      for (let j = i+1; j < key.length; j++) {
+        pairs.push([key[i], key[j]]);
+      }
+    }
+  }
+  return buildPool(pairs).filter(x => x.number >= 2 && x.number <= 7);
+}
 
-    function intervalBetween(lo, hi) {
-      const loLetter = letterIndex(lo);
-      const hiLetter = letterIndex(hi);
-      let steps = hiLetter - loLetter;
+function buildChromatic() {
+  const seen = new Set();
+  const pairs = [];
+  for (const a of CHROMATIC) {
+    for (const b of CHROMATIC) {
+      if (a === b || li(a) === li(b)) continue;
+      let lo = a, hi = b;
+      let steps = li(hi) - li(lo);
       if (steps < 0) steps += 7;
-      const number = steps + 1;
-
-      let semiDiff = (semitones(hi) - semitones(lo) + 12) % 12;
-
-      const PERFECT = { 1:0, 4:5, 5:7, 8:12 };
-      const MAJOR   = { 2:2, 3:4, 6:9, 7:11 };
-      const MINOR   = { 2:1, 3:3, 6:8, 7:10 };
-
-      if (number === 8) semiDiff = semiDiff === 0 ? 12 : semiDiff;
-
-      let quality;
-      if (PERFECT[number] !== undefined) {
-        if (semiDiff === PERFECT[number])     quality = 'perfect';
-        else if (semiDiff === PERFECT[number] + 1) quality = 'augmented';
-        else if (semiDiff === PERFECT[number] - 1) quality = 'diminished';
-        else quality = 'unknown';
-      } else {
-        if (semiDiff === MAJOR[number])       quality = 'major';
-        else if (semiDiff === MINOR[number])  quality = 'minor';
-        else if (semiDiff === MAJOR[number]+1) quality = 'augmented';
-        else if (semiDiff === MINOR[number]-1) quality = 'diminished';
-        else quality = 'unknown';
-      }
-
-      const ordinals = ['','unison','second','third','fourth','fifth','sixth','seventh','octave'];
-      return { quality, number, ordinal: ordinals[number] };
+      if (steps === 0) continue;
+      if (steps > 3) { lo = b; hi = a; }
+      const key = lo+'|'+hi;
+      if (!seen.has(key)) { seen.add(key); pairs.push([lo, hi]); }
     }
+  }
+  return buildPool(pairs).filter(x => x.number >= 2 && x.number <= 7);
+}
 
-    function toVexKey(note, octave) {
-      const letter = letterOf(note).toLowerCase();
-      const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
-      return { key: letter + acc + '/' + octave, acc };
-    }
+const DIATONIC_POOL = buildDiatonic();
+const CHROMATIC_POOL = buildChromatic();
 
-    const OCTAVE_MAP = {
-      'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,'F':4,
-      'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
-    };
+const OCTAVE_BASE = {
+  'C':4,'C#':4,'Db':4,'D':4,'D#':4,'Eb':4,'E':4,
+  'F':4,'F#':4,'Gb':4,'G':4,'G#':4,'Ab':4,'A':4,'A#':4,'Bb':4,'B':3
+};
 
-    function noteOctave(note) { return OCTAVE_MAP[note] ?? 4; }
+function toVex(note, octave) {
+  const letter = letterOf(note).toLowerCase();
+  const acc = note.includes('#') ? '#' : note.includes('b') ? 'b' : '';
+  return { key: letter + (acc ? acc : '') + '/' + octave, acc };
+}
 
-    function upperOctave(loNote, hiNote) {
-      const loIdx = letterIndex(loNote);
-      const hiIdx = letterIndex(hiNote);
-      const loOct = noteOctave(loNote);
-      if (hiIdx > loIdx) return loOct;
-      if (hiIdx === loIdx) return loOct + 1;
-      return loOct + 1;
-    }
+function octaves(lo, hi) {
+  const loOct = OCTAVE_BASE[lo] || 4;
+  const hiOct = li(hi) > li(lo) ? loOct : loOct + 1;
+  return { loOct, hiOct };
+}
 
-    let mode = 'diatonic';
-    let current = null;
-    let correct = 0;
-    let total = 0;
-    let answered = false;
-    let lastInterval = null;
+const ORDINALS = ['','unison','second','third','fourth','fifth','sixth','seventh','octave'];
+const NTH = ['','1st','2nd','3rd','4th','5th','6th','7th','8th'];
 
-    function setMode(m) {
-      mode = m;
-      document.getElementById('btn-diatonic').classList.toggle('active', m === 'diatonic');
-      document.getElementById('btn-chromatic').classList.toggle('active', m === 'chromatic');
-      document.getElementById('mode-label').textContent =
-        m === 'diatonic'
-          ? 'Notes drawn from a single major key'
-          : 'Any interval — sharps, flats, all qualities';
-      nextQuestion();
-    }
+function label(quality, number) {
+  if (number === 8) return 'Perfect Octave';
+  const q = quality.charAt(0).toUpperCase() + quality.slice(1);
+  return q + ' ' + NTH[number];
+}
 
-    function pickDiatonic() {
-      let attempts = 0;
-      while (attempts++ < 50) {
-        const key = MAJOR_KEYS[Math.floor(Math.random() * MAJOR_KEYS.length)];
-        const notes = key.notes;
-        const loIdx = Math.floor(Math.random() * notes.length);
-        let hiIdx = Math.floor(Math.random() * notes.length);
-        if (hiIdx === loIdx) hiIdx = (loIdx + 2) % 7;
-        if (hiIdx < loIdx) { const tmp = loIdx; return tryPair(notes[hiIdx], notes[tmp]); }
-        return tryPair(notes[loIdx], notes[hiIdx]);
-      }
-    }
+function answers(quality, number) {
+  const ord = ORDINALS[number];
+  const nth = NTH[number];
+  const q = quality;
+  const base = [
+    q + ' ' + ord,
+    q + ' ' + nth,
+  ];
+  if (number === 8) {
+    return [...base, 'octave', 'perfect octave', 'perfect 8th', 'perfect eighth'];
+  }
+  if (q === 'diminished' && number === 5) base.push('tritone');
+  if (q === 'augmented' && number === 4) base.push('tritone');
+  return base;
+}
 
-    function pickChromatic() {
-      const CHROMATIC_POOL = [
-        'C','C#','Db','D','Eb','E','F','F#','Gb','G','Ab','A','Bb','B'
-      ];
-      let attempts = 0;
-      while (attempts++ < 50) {
-        const loNote = CHROMATIC_POOL[Math.floor(Math.random() * CHROMATIC_POOL.length)];
-        const hiNote = CHROMATIC_POOL[Math.floor(Math.random() * CHROMATIC_POOL.length)];
-        if (loNote === hiNote) continue;
-        const loSemi = semitones(loNote);
-        const hiSemi = semitones(hiNote);
-        let diff = (hiSemi - loSemi + 12) % 12;
-        if (diff === 0) continue;
-        const result = diff < 7
-          ? tryPair(loNote, hiNote)
-          : tryPair(hiNote, loNote);
-        if (result) return result;
-      }
-    }
+function normalize(s) {
+  return s.toLowerCase()
+    .replace(/\b(maj|major)\b/g,'major')
+    .replace(/\b(min|minor)\b/g,'minor')
+    .replace(/\b(perf|perfect)\b/g,'perfect')
+    .replace(/\b(dim|diminished)\b/g,'diminished')
+    .replace(/\b(aug|augmented)\b/g,'augmented')
+    .replace(/\b2nd\b|\bsecond\b/g,'second')
+    .replace(/\b3rd\b|\bthird\b/g,'third')
+    .replace(/\b4th\b|\bfourth\b/g,'fourth')
+    .replace(/\b5th\b|\bfifth\b/g,'fifth')
+    .replace(/\b6th\b|\bsixth\b/g,'sixth')
+    .replace(/\b7th\b|\bseventh\b/g,'seventh')
+    .replace(/\b8th\b|\boctave\b|\beighth\b/g,'octave')
+    .replace(/[^a-z]/g,'').trim();
+}
 
-    function tryPair(loNote, hiNote) {
-      if (loNote === hiNote) return null;
-      const iv = intervalBetween(loNote, hiNote);
-      if (iv.quality === 'unknown') return null;
-      if (iv.number < 2 || iv.number > 8) return null;
-      if (iv.quality === lastInterval) return null;
-      return { loNote, hiNote, interval: iv };
-    }
+let mode = 'diatonic';
+let current = null;
+let correct = 0, total = 0;
+let answered = false;
+let lastIndex = -1;
 
-    function buildAnswers(iv) {
-      const q = iv.quality;
-      const n = iv.number;
-      const ordinals = ['','unison','second','third','fourth','fifth','sixth','seventh','octave'];
-      const ord = ordinals[n];
-      const nth = n === 8 ? '8th' : n + (n===2?'nd':n===3?'rd':'th');
-      const answers = [
-        q + ' ' + ord,
-        q + ' ' + nth,
-      ];
-      if (n === 8) {
-        answers.push('octave');
-        answers.push('perfect octave');
-        answers.push('perfect 8th');
-        answers.push('perfect eighth');
-      }
-      if (q === 'diminished' && n === 5) answers.push('tritone');
-      if (q === 'augmented' && n === 4) answers.push('tritone');
-      return answers;
-    }
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-diatonic').classList.toggle('active', m==='diatonic');
+  document.getElementById('btn-chromatic').classList.toggle('active', m==='chromatic');
+  document.getElementById('mode-label').textContent = m==='diatonic'
+    ? 'Notes drawn from a single major key'
+    : 'Any interval — sharps, flats, all qualities';
+  lastIndex = -1;
+  nextQuestion();
+}
 
-    function labelFor(iv) {
-      const ordinals = ['','Unison','2nd','3rd','4th','5th','6th','7th','Octave'];
-      const q = iv.quality.charAt(0).toUpperCase() + iv.quality.slice(1);
-      if (iv.number === 8) return 'Perfect Octave';
-      return q + ' ' + ordinals[iv.number];
-    }
+function nextQuestion() {
+  const pool = mode === 'diatonic' ? DIATONIC_POOL : CHROMATIC_POOL;
+  let idx;
+  let tries = 0;
+  do {
+    idx = Math.floor(Math.random() * pool.length);
+    tries++;
+  } while (idx === lastIndex && tries < 20);
+  lastIndex = idx;
 
-    function normalize(s) {
-      return s.toLowerCase()
-        .replace(/\b(maj|major)\b/g, 'major')
-        .replace(/\b(min|minor)\b/g, 'minor')
-        .replace(/\b(perf|perfect)\b/g, 'perfect')
-        .replace(/\b(dim|diminished)\b/g, 'diminished')
-        .replace(/\b(aug|augmented)\b/g, 'augmented')
-        .replace(/2nd|second/g, 'second')
-        .replace(/3rd|third/g, 'third')
-        .replace(/4th|fourth/g, 'fourth')
-        .replace(/5th|fifth/g, 'fifth')
-        .replace(/6th|sixth/g, 'sixth')
-        .replace(/7th|seventh/g, 'seventh')
-        .replace(/8th|octave|eighth/g, 'octave')
-        .replace(/[^a-z]/g, '')
-        .trim();
-    }
+  const item = pool[idx];
+  const { loOct, hiOct } = octaves(item.lo, item.hi);
+  current = {
+    lo: item.lo, hi: item.hi,
+    quality: item.quality, number: item.number,
+    label: label(item.quality, item.number),
+    answers: answers(item.quality, item.number),
+    loOct, hiOct
+  };
 
-    function checkAnswer() {
-      if (answered) return;
-      const val = document.getElementById('answer').value;
-      if (!val.trim()) return;
+  renderInterval();
+  document.getElementById('answer').value = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('answer').focus();
+  answered = false;
+}
 
-      const normInput = normalize(val);
-      const isCorrect = current.answers.some(a => normalize(a) === normInput);
-      answered = true;
-      total++;
-      if (isCorrect) correct++;
+function renderInterval() {
+  const container = document.getElementById('notation');
+  container.innerHTML = '';
 
-      const fb = document.getElementById('feedback');
-      fb.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
-      fb.textContent = isCorrect
-        ? 'Correct! ' + current.label + '.'
-        : 'Not quite — the answer is: ' + current.label + '.';
+  const lo = toVex(current.lo, current.loOct);
+  const hi = toVex(current.hi, current.hiOct);
 
-      document.getElementById('score').textContent = 'Score: ' + correct + ' / ' + total;
-    }
+  const renderer = new Renderer(container, Renderer.Backends.SVG);
+  renderer.resize(420, 160);
+  const ctx = renderer.getContext();
+  ctx.setFont('Arial', 10);
 
-    function renderInterval(loNote, hiNote) {
-      const container = document.getElementById('notation');
-      container.innerHTML = '';
+  const stave = new Stave(20, 20, 370);
+  stave.addClef('treble');
+  stave.setContext(ctx).draw();
 
-      const loOct = noteOctave(loNote);
-      const hiOct = upperOctave(loNote, hiNote);
+  const chord = new StaveNote({ keys: [lo.key, hi.key], duration: 'w', clef: 'treble' });
+  if (lo.acc) chord.addAccidental(0, new Accidental(lo.acc));
+  if (hi.acc) chord.addAccidental(1, new Accidental(hi.acc));
 
-      const lo = toVexKey(loNote, loOct);
-      const hi = toVexKey(hiNote, hiOct);
+  const voice = new Voice({ num_beats: 4, beat_value: 4 });
+  voice.setStrict(false);
+  voice.addTickables([chord]);
+  new Formatter().joinVoices([voice]).format([voice], 280);
+  voice.draw(ctx, stave);
+}
 
-      const renderer = new Renderer(container, Renderer.Backends.SVG);
-      renderer.resize(420, 160);
-      const context = renderer.getContext();
-      context.setFont('Arial', 10);
+function checkAnswer() {
+  if (answered) return;
+  const val = document.getElementById('answer').value;
+  if (!val.trim()) return;
 
-      const stave = new Stave(20, 20, 370);
-      stave.addClef('treble');
-      stave.setContext(context).draw();
+  const normInput = normalize(val);
+  const isCorrect = current.answers.some(a => normalize(a) === normInput);
+  answered = true;
+  total++;
+  if (isCorrect) correct++;
 
-      const chord = new StaveNote({
-        keys: [lo.key, hi.key],
-        duration: 'w',
-        clef: 'treble',
-      });
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+  fb.textContent = isCorrect
+    ? 'Correct! ' + current.label + '.'
+    : 'Not quite — the answer is: ' + current.label + '.';
+  document.getElementById('score').textContent = 'Score: ' + correct + ' / ' + total;
+}
 
-      if (lo.acc) chord.addAccidental(0, new Accidental(lo.acc));
-      if (hi.acc) chord.addAccidental(1, new Accidental(hi.acc));
+document.getElementById('answer').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAnswer();
+});
 
-      const voice = new Voice({ num_beats: 4, beat_value: 4 });
-      voice.setStrict(false);
-      voice.addTickables([chord]);
-
-      new Formatter().joinVoices([voice]).format([voice], 280);
-      voice.draw(context, stave);
-    }
-
-    function nextQuestion() {
-      const result = mode === 'diatonic' ? pickDiatonic() : pickChromatic();
-      if (!result) { nextQuestion(); return; }
-
-      const { loNote, hiNote, interval } = result;
-      lastInterval = interval.quality;
-
-      current = {
-        loNote, hiNote,
-        interval,
-        answers: buildAnswers(interval),
-        label: labelFor(interval),
-      };
-
-      renderInterval(loNote, hiNote);
-      document.getElementById('answer').value = '';
-      document.getElementById('feedback').className = 'feedback';
-      document.getElementById('answer').focus();
-      answered = false;
-    }
-
-    document.getElementById('answer').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') checkAnswer();
-    });
-
-    nextQuestion();
-  </script>
+nextQuestion();
+</script>
 </body>
 </html>
