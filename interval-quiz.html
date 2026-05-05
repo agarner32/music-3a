@@ -107,8 +107,8 @@
   // Fixed: use pitch arithmetic, not letter index, to assign octaves
   function getOctaves(lo, hi) {
     const loOct = 4;
-    let hiOct = loOct;
-    if (pitchSemi(hi, hiOct) <= pitchSemi(lo, loOct)) hiOct = loOct + 1;
+    let hiOct = li(hi) >= li(lo) ? loOct : loOct + 1;
+    if (pitchSemi(hi, hiOct) <= pitchSemi(lo, loOct)) hiOct++;
     return { loOct, hiOct };
   }
 
