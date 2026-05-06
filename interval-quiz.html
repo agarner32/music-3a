@@ -196,8 +196,8 @@
   <h1>Interval Identification</h1>
   <p class="subtitle">Name the harmonic interval shown on the staff.</p>
   <div class="toggle-row">
-    <button class="toggle-btn active" id="btn-diatonic" onclick="setMode('diatonic')">Diatonic</button>
-    <button class="toggle-btn" id="btn-chromatic" onclick="setMode('chromatic')">Chromatic</button>
+    <button class="toggle-btn active" id="btn-diatonic" onclick="setMode('diatonic')">Level 1</button>
+<button class="toggle-btn" id="btn-chromatic" onclick="setMode('chromatic')">Level 2</button>
   </div>
   <p class="mode-label" id="mode-label">Notes drawn from a single major key</p>
   <div class="card">
@@ -368,7 +368,7 @@
       document.getElementById('btn-diatonic').classList.toggle('active', m === 'diatonic');
       document.getElementById('btn-chromatic').classList.toggle('active', m === 'chromatic');
       document.getElementById('mode-label').textContent = m === 'diatonic'
-        ? 'Notes drawn from a single major key'
+      ? 'Bottom note is the tonic — top note is in that scale'
         : 'Any interval — sharps, flats, all qualities';
       lastIdx = -1;
       nextQuestion();
