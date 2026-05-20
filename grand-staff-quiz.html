@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Staff Note ID Quiz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background: #fff; padding: 1rem 0; }
+#quiz-wrap { max-width: 600px; margin: 0 auto; padding: 0 1rem; }
+#staff-area { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: center; align-items: center; min-height: 320px; }
+#staff-area canvas { display: block; }
+#input-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+#note-input { flex: 1; padding: 8px 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; color: #000; outline: none; }
+#note-input:focus { border-color: #999; }
+#submit-btn, #next-btn, #restart-btn { padding: 8px 20px; font-size: 15px; font-weight: 500; border: 1px solid #ccc; border-radius: 8px; background: transparent; color: #000; cursor: pointer; }
+#submit-btn:hover, #next-btn:hover, #restart-btn:hover { background: #f5f5f5; }
+#feedback { min-height: 28px; font-size: 15px; font-weight: 500; margin-bottom: 0.75rem; }
+.correct { color: #2e7d32; }
+.wrong { color: #c62828; }
+#scoreboard { display: flex; gap: 12px; margin-bottom: 1rem; }
+.score-card { flex: 1; background: #f5f5f5; border-radius: 8px; padding: 0.75rem; text-align: center; }
+.score-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+.score-val { font-size: 22px; font-weight: 500; color: #000; }
+#hint { font-size: 13px; color: #888; margin-bottom: 0.5rem; }
+#next-btn { display: none; margin-bottom: 1rem; }
+#end-screen { display: none; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 2rem 1.5rem; text-align: center; margin-bottom: 1rem; }
+#end-top { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.25rem; }
+.end-stat { text-align: center; }
+.end-stat-val { font-size: 42px; font-weight: 500; color: #000; }
+.end-stat-label { font-size: 13px; color: #888; margin-top: 2px; }
+#end-message { font-size: 16px; color: #000; margin-bottom: 0.6rem; line-height: 1.5; }
+#end-time-message { font-size: 15px; color: #555; margin-bottom: 1.5rem; line-height: 1.5; font-style: italic; }
+</style>
+</head>
+<body>
+<div id="quiz-wrap">
+  <div id="scoreboard">
+    <div class="score-card"><div class="score-label">Correct</div><div class="score-val" id="sc-correct">—</div></div>
+    <div class="score-card"><div class="score-label">Wrong</div><div class="score-val" id="sc-wrong">—</div></div>
+    <div class="score-card"><div class="score-label">Question</div><div class="score-val" id="sc-question">1 / 25</div></div>
+    <div class="score-card"><div class="score-label">Time</div><div class="score-val" id="sc-timer">0:00</div></div>
+  </div>
+  <div id="quiz-section">
+    <div id="staff-area"><canvas id="output"></canvas></div>
+    <div id="hint">Type the note name and octave, e.g. <strong>F#4</strong> or <strong>Bb3</strong>. Capital letter required.</div>
+    <div id="feedback"></div>
+    <div id="input-row">
+      <input id="note-input" type="text" placeholder="e.g. G4 or Bb3" maxlength="4" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button id="submit-btn">Check</button>
+    </div>
+    <button id="next-btn">Next note →</button>
+  </div>
+  <div id="end-screen">
+    <div id="end-top">
+      <div class="end-stat">
+        <div class="end-stat-val" id="end-score"></div>
+        <div class="end-stat-label">out of 25</div>
+      </div>
+      <div class="end-stat">
+        <div class="end-stat-val" id="end-time"></div>
+        <div class="end-stat-label">total time</div>
+      </div>
+    </div>
+    <div id="end-message"></div>
+    <div id="end-time-message"></div>
+    <button id="restart-btn">Try again</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<script>
+const VF = Vex.Flow;
+const TOTAL = 25;
+
+let timerInterval = null;
+let elapsedSeconds = 0;
+let timerStarted = false;
+
+function startTimer() {
+  if (timerStarted) return;
+  timerStarted = true;
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    document.getElementById('sc-timer').textContent = formatTime(elapsedSeconds);
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function resetTimer() {
+  stopTimer();
+  elapsedSeconds = 0;
+  timerStarted = false;
+  document.getElementById('sc-timer').textContent = '0:00';
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+const BASS_NOTES = [
+  {note:'B', octave:1, vexKey:'b/1', acc:''},
+  {note:'Bb', octave:1, vexKey:'bb/1', acc:'b'},
+  {note:'A#', octave:1, vexKey:'a#/1', acc:'#'},
+  {note:'A', octave:1, vexKey:'a/1', acc:''},
+  {note:'Ab', octave:1, vexKey:'ab/1', acc:'b'},
+  {note:'G#', octave:2, vexKey:'g#/2', acc:'#'},
+  {note:'G', octave:2, vexKey:'g/2', acc:''},
+  {note:'Gb', octave:2, vexKey:'gb/2', acc:'b'},
+  {note:'F#', octave:2, vexKey:'f#/2', acc:'#'},
+  {note:'F', octave:2, vexKey:'f/2', acc:''},
+  {note:'E', octave:2, vexKey:'e/2', acc:''},
+  {note:'Eb', octave:2, vexKey:'eb/2', acc:'b'},
+  {note:'D#', octave:2, vexKey:'d#/2', acc:'#'},
+  {note:'D', octave:2, vexKey:'d/2', acc:''},
+  {note:'Db', octave:2, vexKey:'db/2', acc:'b'},
+  {note:'C#', octave:2, vexKey:'c#/2', acc:'#'},
+  {note:'C', octave:2, vexKey:'c/2', acc:''},
+  {note:'B', octave:2, vexKey:'b/2', acc:''},
+  {note:'Bb', octave:2, vexKey:'bb/2', acc:'b'},
+  {note:'A#', octave:2, vexKey:'a#/2', acc:'#'},
+  {note:'A', octave:2, vexKey:'a/2', acc:''},
+  {note:'Ab', octave:2, vexKey:'ab/2', acc:'b'},
+  {note:'G#', octave:3, vexKey:'g#/3', acc:'#'},
+  {note:'G', octave:3, vexKey:'g/3', acc:''},
+  {note:'Gb', octave:3, vexKey:'gb/3', acc:'b'},
+  {note:'F#', octave:3, vexKey:'f#/3', acc:'#'},
+  {note:'F', octave:3, vexKey:'f/3', acc:''},
+  {note:'E', octave:3, vexKey:'e/3', acc:''},
+  {note:'Eb', octave:3, vexKey:'eb/3', acc:'b'},
+  {note:'D#', octave:3, vexKey:'d#/3', acc:'#'},
+  {note:'D', octave:3, vexKey:'d/3', acc:''},
+  {note:'Db', octave:3, vexKey:'db/3', acc:'b'},
+  {note:'C#', octave:3, vexKey:'c#/3', acc:'#'},
+  {note:'C', octave:3, vexKey:'c/3', acc:''},
+  {note:'B', octave:3, vexKey:'b/3', acc:''},
+  {note:'Bb', octave:3, vexKey:'bb/3', acc:'b'},
+];
+
+const TREBLE_NOTES = [
+  {note:'D', octave:4, vexKey:'d/4', acc:''},
+  {note:'Db', octave:4, vexKey:'db/4', acc:'b'},
+  {note:'D#', octave:4, vexKey:'d#/4', acc:'#'},
+  {note:'E', octave:4, vexKey:'e/4', acc:''},
+  {note:'Eb', octave:4, vexKey:'eb/4', acc:'b'},
+  {note:'F', octave:4, vexKey:'f/4', acc:''},
+  {note:'F#', octave:4, vexKey:'f#/4', acc:'#'},
+  {note:'G', octave:4, vexKey:'g/4', acc:''},
+  {note:'Gb', octave:4, vexKey:'gb/4', acc:'b'},
+  {note:'G#', octave:4, vexKey:'g#/4', acc:'#'},
+  {note:'A', octave:4, vexKey:'a/4', acc:''},
+  {note:'Ab', octave:4, vexKey:'ab/4', acc:'b'},
+  {note:'A#', octave:4, vexKey:'a#/4', acc:'#'},
+  {note:'B', octave:4, vexKey:'b/4', acc:''},
+  {note:'Bb', octave:4, vexKey:'bb/4', acc:'b'},
+  {note:'C', octave:5, vexKey:'c/5', acc:''},
+  {note:'C#', octave:5, vexKey:'c#/5', acc:'#'},
+  {note:'D', octave:5, vexKey:'d/5', acc:''},
+  {note:'Db', octave:5, vexKey:'db/5', acc:'b'},
+  {note:'D#', octave:5, vexKey:'d#/5', acc:'#'},
+  {note:'E', octave:5, vexKey:'e/5', acc:''},
+  {note:'Eb', octave:5, vexKey:'eb/5', acc:'b'},
+  {note:'F', octave:5, vexKey:'f/5', acc:''},
+  {note:'F#', octave:5, vexKey:'f#/5', acc:'#'},
+  {note:'G', octave:5, vexKey:'g/5', acc:''},
+  {note:'Gb', octave:5, vexKey:'gb/5', acc:'b'},
+  {note:'G#', octave:5, vexKey:'g#/5', acc:'#'},
+  {note:'A', octave:5, vexKey:'a/5', acc:''},
+  {note:'Ab', octave:5, vexKey:'ab/5', acc:'b'},
+  {note:'A#', octave:5, vexKey:'a#/5', acc:'#'},
+  {note:'B', octave:5, vexKey:'b/5', acc:''},
+  {note:'Bb', octave:5, vexKey:'bb/5', acc:'b'},
+  {note:'C', octave:6, vexKey:'c/6', acc:''},
+  {note:'C#', octave:6, vexKey:'c#/6', acc:'#'},
+  {note:'D', octave:6, vexKey:'d/6', acc:''},
+  {note:'Db', octave:6, vexKey:'db/6', acc:'b'},
+  {note:'D#', octave:6, vexKey:'d#/6', acc:'#'},
+  {note:'E', octave:6, vexKey:'e/6', acc:''},
+  {note:'Eb', octave:6, vexKey:'eb/6', acc:'b'},
+  {note:'F', octave:6, vexKey:'f/6', acc:''},
+  {note:'F#', octave:6, vexKey:'f#/6', acc:'#'},
+  {note:'G', octave:6, vexKey:'g/6', acc:''},
+];
+
+let currentNote = null, currentClef = null;
+let answered = false, correct = 0, wrong = 0;
+let questionsAnswered = 0, currentQuestion = 1, drawing = false;
+
+function scoreMessage(score) {
+  const pct = score / TOTAL;
+  if (pct >= 0.95) return 'Excellent! You really know your way around the grand staff.';
+  if (pct >= 0.80) return 'Solid work — keep at it and you\'ll have this down cold.';
+  if (pct >= 0.65) return 'Good start! Regular practice will get you there.';
+  return 'Keep working at it — note reading takes time and repetition!';
+}
+
+function timeMessage(secs) {
+  if (secs < 180) return 'And at that pace, you\'re really fluent!';
+  if (secs <= 300) return 'With practice, that time will keep dropping.';
+  return 'Speed comes with repetition — keep at it!';
+}
+
+function pickNote() {
+  const useTreble = Math.random() < 0.5;
+  currentClef = useTreble ? 'treble' : 'bass';
+  const pool = useTreble ? TREBLE_NOTES : BASS_NOTES;
+  currentNote = pool[Math.floor(Math.random() * pool.length)];
+}
+
+function drawStaff() {
+  if (drawing) return;
+  drawing = true;
+  const canvas = document.getElementById('output');
+  const W = 340, H = 310;
+  const trebleY = 50;
+  const bassY = 175;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx2d = canvas.getContext('2d');
+  ctx2d.clearRect(0, 0, W, H);
+  try {
+    const renderer = new VF.Renderer(canvas, VF.Renderer.Backends.CANVAS);
+    renderer.resize(W, H);
+    const ctx = renderer.getContext();
+    const staveW = W - 60;
+    const staveX = 40;
+    const trebleStave = new VF.Stave(staveX, trebleY, staveW);
+    trebleStave.addClef('treble');
+    trebleStave.setContext(ctx).draw();
+    const bassStave = new VF.Stave(staveX, bassY, staveW);
+    bassStave.addClef('bass');
+    bassStave.setContext(ctx).draw();
+    const leftLine = new VF.StaveConnector(trebleStave, bassStave);
+    leftLine.setType(VF.StaveConnector.type.SINGLE_LEFT);
+    leftLine.setContext(ctx).draw();
+    const brace = new VF.StaveConnector(trebleStave, bassStave);
+    brace.setType(VF.StaveConnector.type.BRACE);
+    brace.setContext(ctx).draw();
+    const rightLine = new VF.StaveConnector(trebleStave, bassStave);
+    rightLine.setType(VF.StaveConnector.type.SINGLE_RIGHT);
+    rightLine.setContext(ctx).draw();
+    const targetStave = currentClef === 'treble' ? trebleStave : bassStave;
+    const sn = new VF.StaveNote({ clef: currentClef, keys: [currentNote.vexKey], duration: 'w' });
+    if (currentNote.acc) sn.addModifier(new VF.Accidental(currentNote.acc), 0);
+    const voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
+    voice.setStrict(false);
+    voice.addTickables([sn]);
+    new VF.Formatter().joinVoices([voice]).format([voice], staveW - 80);
+    voice.draw(ctx, targetStave);
+  } catch(e) { console.error('VexFlow error:', e); }
+  drawing = false;
+}
+
+function updateScoreboard() {
+  document.getElementById('sc-correct').textContent = questionsAnswered > 0 ? correct : '—';
+  document.getElementById('sc-wrong').textContent = questionsAnswered > 0 ? wrong : '—';
+  document.getElementById('sc-question').textContent = currentQuestion + ' / ' + TOTAL;
+}
+
+function parseInput(val) {
+  val = val.trim();
+  const m = val.match(/^([A-G])(#|b)?(\d)$/);
+  if (!m) return null;
+  return { note: m[1] + (m[2] || ''), octave: parseInt(m[3]) };
+}
+
+function showEndScreen() {
+  stopTimer();
+  document.getElementById('quiz-section').style.display = 'none';
+  document.getElementById('end-screen').style.display = 'block';
+  document.getElementById('end-score').textContent = correct + ' / ' + TOTAL;
+  document.getElementById('end-time').textContent = formatTime(elapsedSeconds);
+  document.getElementById('end-message').textContent = scoreMessage(correct);
+  document.getElementById('end-time-message').textContent = timeMessage(elapsedSeconds);
+}
+
+function checkAnswer() {
+  if (answered) return;
+  const val = document.getElementById('note-input').value;
+  const parsed = parseInput(val);
+  const fb = document.getElementById('feedback');
+  if (!parsed) {
+    fb.textContent = 'Format: capital letter + optional # or b + octave number (e.g. F#4)';
+    fb.className = 'wrong';
+    return;
+  }
+  startTimer();
+  answered = true;
+  questionsAnswered++;
+  const correctStr = currentNote.note + currentNote.octave;
+  if (parsed.note === currentNote.note && parsed.octave === currentNote.octave) {
+    correct++;
+    fb.textContent = '✓ Correct! ' + correctStr;
+    fb.className = 'correct';
+  } else {
+    wrong++;
+    fb.textContent = '✗ The answer was ' + correctStr;
+    fb.className = 'wrong';
+  }
+  updateScoreboard();
+  document.getElementById('note-input').disabled = true;
+  if (questionsAnswered === TOTAL) {
+    setTimeout(showEndScreen, 1200);
+  } else {
+    document.getElementById('next-btn').style.display = 'inline-block';
+  }
+}
+
+function nextNote() {
+  answered = false;
+  currentQuestion++;
+  document.getElementById('note-input').value = '';
+  document.getElementById('note-input').disabled = false;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+  pickNote();
+  updateScoreboard();
+  requestAnimationFrame(() => { drawStaff(); document.getElementById('note-input').focus(); });
+}
+
+function restartQuiz() {
+  correct = 0; wrong = 0; questionsAnswered = 0; currentQuestion = 1; answered = false;
+  resetTimer();
+  document.getElementById('end-screen').style.display = 'none';
+  document.getElementById('quiz-section').style.display = 'block';
+  document.getElementById('note-input').value = '';
+  document.getElementById('note-input').disabled = false;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+  pickNote();
+  updateScoreboard();
+  requestAnimationFrame(() => { drawStaff(); document.getElementById('note-input').focus(); });
+}
+
+document.getElementById('submit-btn').addEventListener('click', checkAnswer);
+document.getElementById('next-btn').addEventListener('click', nextNote);
+document.getElementById('restart-btn').addEventListener('click', restartQuiz);
+document.getElementById('note-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (answered) { if (questionsAnswered < TOTAL) nextNote(); }
+    else checkAnswer();
+  }
+});
+
+pickNote();
+updateScoreboard();
+requestAnimationFrame(drawStaff);
+</script>
+</body>
+</html>
