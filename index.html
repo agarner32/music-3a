@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music 3A — Interactive Resources</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background-color: #f5f3ee;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  header {
+    background-color: #1e3a5f;
+    color: #fff;
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    border-bottom: 4px solid #c8a84b;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin-bottom: 0.5rem;
+  }
+
+  header p {
+    font-size: 1rem;
+    color: #a8bfd4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  main {
+    max-width: 860px;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #d1cdc4;
+  }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+
+  .resource-card {
+    background: #ffffff;
+    border: 1px solid #ddd9d0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resource-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: #1e3a5f;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .resource-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    transform: translateY(-2px);
+    border-color: #b0aaa0;
+  }
+
+  .resource-card:hover::before {
+    opacity: 1;
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background-color: #e8f0f8;
+    color: #1e3a5f;
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-tag.tag-reference {
+    background-color: #f0ece0;
+    color: #7a5c1e;
+  }
+
+  .resource-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.4rem;
+  }
+
+  .resource-card p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  .card-arrow {
+    display: block;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e3a5f;
+    letter-spacing: 0.02em;
+  }
+
+  .coming-soon {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .coming-soon .card-tag {
+    background-color: #ece9e3;
+    color: #9a9590;
+  }
+
+  .coming-soon-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background-color: #f0ece0;
+    color: #a07830;
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.8rem;
+    color: #9a9590;
+    border-top: 1px solid #d1cdc4;
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Music 3A — Interactive Resources</h1>
+  <p>Ear Training &amp; Music Fundamentals</p>
+</header>
+
+<main>
+
+  <p class="section-label">Quizzes</p>
+  <div class="resources-grid">
+
+    <a href="interval-quiz.html" class="resource-card">
+      <span class="card-tag">Quiz</span>
+      <h2>Interval Identification</h2>
+      <p>Practice identifying melodic and harmonic intervals by ear and by sight.</p>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
+    <div class="resource-card coming-soon">
+      <span class="card-tag">Quiz</span>
+      <h2>Scale Identification <span class="coming-soon-badge">Coming soon</span></h2>
+      <p>Identify major, minor, and modal scales by ear.</p>
+    </div>
+
+    <div class="resource-card coming-soon">
+      <span class="card-tag">Quiz</span>
+      <h2>Triad Construction <span class="coming-soon-badge">Coming soon</span></h2>
+      <p>Build and identify major, minor, augmented, and diminished triads.</p>
+    </div>
+
+  </div>
+
+  <p class="section-label">Listening &amp; Reference</p>
+  <div class="resources-grid">
+
+    <div class="resource-card coming-soon">
+      <span class="card-tag tag-reference">Listening Guide</span>
+      <h2>Interactive Listening Guide <span class="coming-soon-badge">Coming soon</span></h2>
+      <p>Guided listening examples with annotated musical excerpts.</p>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  Music 3A &mdash; Interactive Resources
+</footer>
+
+</body>
+</html>
