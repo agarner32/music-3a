@@ -8,24 +8,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:           #faf9f6;
-      --bg2:          #f0ede8;
-      --bg3:          #e8e4de;
-      --border:       #d3d1c7;
-      --border2:      #c4c1b8;
-      --text:         #2c2c2a;
-      --text2:        #5f5e5a;
-      --text3:        #8a8880;
-      --green:        #1d9e75;
-      --green-light:  #e1f5ee;
-      --green-text:   #e1f5ee;
-      --green-sub:    #9fe1cb;
-      --green-dark:   #0f6e56;
-      --red:          #d85a30;
-      --blue:         #378add;
-      --seg-default:  #fafaf8;
-      --seg-hover:    #f0ede8;
-      --seg-neighbor: #e1f5ee;
+      --bg:          #faf9f6;
+      --bg2:         #f0ede8;
+      --bg3:         #e8e4de;
+      --border:      #d3d1c7;
+      --border2:     #c4c1b8;
+      --text:        #2c2c2a;
+      --text2:       #5f5e5a;
+      --text3:       #8a8880;
+      --green:       #1d9e75;
+      --green-light: #e1f5ee;
+      --green-text:  #e1f5ee;
+      --green-sub:   #9fe1cb;
+      --green-dark:  #0f6e56;
+      --red:         #d85a30;
     }
 
     body {
@@ -147,7 +143,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 12px;
-      margin-bottom: 0;
     }
 
     .stat { display: flex; flex-direction: column; gap: 3px; }
@@ -165,10 +160,7 @@
       color: var(--text);
     }
 
-    .stat-sub {
-      font-size: 0.8rem;
-      color: var(--text2);
-    }
+    .stat-sub  { font-size: 0.8rem; color: var(--text2); }
 
     .stat-sub2 {
       font-size: 0.75rem;
@@ -287,22 +279,22 @@
 
 <script>
 const keys = [
-  { name:'C',   enh:null,  sharps:0, flats:0, rel:'a',  enhRel:null,  majorChords:['C','F','G'],    minorChords:['Am','Dm','Em'] },
-  { name:'G',   enh:null,  sharps:1, flats:0, rel:'e',  enhRel:null,  majorChords:['G','C','D'],    minorChords:['Em','Am','Bm'] },
-  { name:'D',   enh:null,  sharps:2, flats:0, rel:'b',  enhRel:null,  majorChords:['D','G','A'],    minorChords:['Bm','Em','F♯m'] },
-  { name:'A',   enh:null,  sharps:3, flats:0, rel:'f♯', enhRel:null,  majorChords:['A','D','E'],    minorChords:['F♯m','Bm','C♯m'] },
-  { name:'E',   enh:null,  sharps:4, flats:0, rel:'c♯', enhRel:null,  majorChords:['E','A','B'],    minorChords:['C♯m','F♯m','G♯m'] },
-  { name:'B',   enh:'C♭', sharps:5, flats:7, rel:'g♯', enhRel:'a♭', majorChords:['B','E','F♯'],   minorChords:['G♯m','C♯m','D♯m'], enhMajorChords:['C♭','F♭','G♭'], enhMinorChords:['A♭m','D♭m','E♭m'] },
-  { name:'F♯',  enh:'G♭', sharps:6, flats:6, rel:'d♯', enhRel:'e♭', majorChords:['F♯','B','C♯'],  minorChords:['D♯m','G♯m','A♯m'], enhMajorChords:['G♭','C♭','D♭'], enhMinorChords:['E♭m','A♭m','B♭m'] },
-  { name:'D♭',  enh:'C♯', sharps:7, flats:5, rel:'b♭', enhRel:'a♯', majorChords:['D♭','G♭','A♭'], minorChords:['B♭m','E♭m','Fm'],  enhMajorChords:['C♯','F♯','G♯'], enhMinorChords:['A♯m','D♯m','E♯m'] },
-  { name:'A♭',  enh:null,  sharps:0, flats:4, rel:'f',  enhRel:null,  majorChords:['A♭','D♭','E♭'], minorChords:['Fm','B♭m','Cm'] },
-  { name:'E♭',  enh:null,  sharps:0, flats:3, rel:'c',  enhRel:null,  majorChords:['E♭','A♭','B♭'], minorChords:['Cm','Fm','Gm'] },
-  { name:'B♭',  enh:null,  sharps:0, flats:2, rel:'g',  enhRel:null,  majorChords:['B♭','E♭','F'],  minorChords:['Gm','Cm','Dm'] },
-  { name:'F',   enh:null,  sharps:0, flats:1, rel:'d',  enhRel:null,  majorChords:['F','B♭','C'],   minorChords:['Dm','Gm','Am'] },
+  { name:'C',   enh:null,  sharps:0, flats:0, rel:'a',     majorChords:['C','F','G'],    minorChords:['Am','Dm','Em'] },
+  { name:'G',   enh:null,  sharps:1, flats:0, rel:'e',     majorChords:['G','C','D'],    minorChords:['Em','Am','Bm'] },
+  { name:'D',   enh:null,  sharps:2, flats:0, rel:'b',     majorChords:['D','G','A'],    minorChords:['Bm','Em','F♯m'] },
+  { name:'A',   enh:null,  sharps:3, flats:0, rel:'f♯',    majorChords:['A','D','E'],    minorChords:['F♯m','Bm','C♯m'] },
+  { name:'E',   enh:null,  sharps:4, flats:0, rel:'c♯',    majorChords:['E','A','B'],    minorChords:['C♯m','F♯m','G♯m'] },
+  { name:'B',   enh:'C♭', sharps:5, flats:7, rel:'g♯/a♭', majorChords:['B','E','F♯'],   minorChords:['G♯m','C♯m','D♯m'], enhMajorChords:['C♭','F♭','G♭'], enhMinorChords:['A♭m','D♭m','E♭m'] },
+  { name:'F♯',  enh:'G♭', sharps:6, flats:6, rel:'d♯/e♭', majorChords:['F♯','B','C♯'],  minorChords:['D♯m','G♯m','A♯m'], enhMajorChords:['G♭','C♭','D♭'], enhMinorChords:['E♭m','A♭m','B♭m'] },
+  { name:'D♭',  enh:'C♯', sharps:7, flats:5, rel:'b♭/a♯', majorChords:['D♭','G♭','A♭'], minorChords:['B♭m','E♭m','Fm'],  enhMajorChords:['C♯','F♯','G♯'], enhMinorChords:['A♯m','D♯m','E♯m'] },
+  { name:'A♭',  enh:null,  sharps:0, flats:4, rel:'f',     majorChords:['A♭','D♭','E♭'], minorChords:['Fm','B♭m','Cm'] },
+  { name:'E♭',  enh:null,  sharps:0, flats:3, rel:'c',     majorChords:['E♭','A♭','B♭'], minorChords:['Cm','Fm','Gm'] },
+  { name:'B♭',  enh:null,  sharps:0, flats:2, rel:'g',     majorChords:['B♭','E♭','F'],  minorChords:['Gm','Cm','Dm'] },
+  { name:'F',   enh:null,  sharps:0, flats:1, rel:'d',     majorChords:['F','B♭','C'],   minorChords:['Dm','Gm','Am'] },
 ];
 
-const majorRN   = ['I','IV','V'];
-const minorRN   = ['i','iv','V'];
+const majorRN    = ['I','IV','V'];
+const minorRN    = ['i','iv','V'];
 const sharpNames = ['F♯','C♯','G♯','D♯','A♯','E♯','B♯'];
 const flatNames  = ['B♭','E♭','A♭','D♭','G♭','C♭','F♭'];
 
@@ -322,10 +314,10 @@ let quizKey      = null;
 let quizAnswered = false;
 let quizWrongIdx = null;
 
-// ── colours ────────────────────────────────────────────────
 const C = {
   textPrimary:   '#2c2c2a',
   textSecondary: '#5f5e5a',
+  text3:         '#8a8880',
   border:        '#d3d1c7',
   segDefault:    '#fafaf8',
   segHover:      '#f0ede8',
@@ -353,10 +345,10 @@ function draw(hovIdx) {
 
     let fill;
     if (mode === 'quiz') {
-      if (quizAnswered && i === quizKey)      fill = C.segCorrect;
+      if (quizAnswered && i === quizKey)           fill = C.segCorrect;
       else if (quizAnswered && i === quizWrongIdx) fill = C.segWrong;
-      else if (!quizAnswered && isHovered)    fill = C.segHover;
-      else                                    fill = C.segDefault;
+      else if (!quizAnswered && isHovered)         fill = C.segHover;
+      else                                         fill = C.segDefault;
     } else if (isSelected)  fill = C.segSelected;
     else if (isNeighbor)    fill = C.segNeighbor;
     else if (isHovered)     fill = C.segHover;
@@ -372,31 +364,38 @@ function draw(hovIdx) {
     ctx.lineWidth   = 1;
     ctx.stroke();
 
-    const outerMid  = R_MID + 35;
+    const isGreen    = isSelected || (quizAnswered && i === quizKey);
+    const labelColor = isGreen ? C.labelSel : C.textPrimary;
+    const subColor   = isGreen ? C.subSel   : C.textSecondary;
+
+    const outerMid = R_MID + 35;
     const lx = CX + outerMid * Math.cos(midAngle);
     const ly = CY + outerMid * Math.sin(midAngle);
-
-    const isGreen      = isSelected || (quizAnswered && i === quizKey);
-    const labelColor   = isGreen ? C.labelSel : C.textPrimary;
-    const subColor     = isGreen ? C.subSel   : C.textSecondary;
 
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
 
     if (k.enh) {
-      ctx.font      = `bold 14px Georgia, serif`;
+      const oneLine = `${k.name}/${k.enh}`;
+      ctx.font = `bold 14px Georgia, serif`;
+      const oneLineWidth  = ctx.measureText(oneLine).width;
+      const segHalfWidth  = outerMid * Math.sin(Math.PI / 12) * 0.85;
+
       ctx.fillStyle = labelColor;
-      ctx.fillText(k.name, lx, ly - 9);
-      ctx.font      = `13px Georgia, serif`;
-      ctx.fillStyle = subColor;
-      ctx.fillText(k.enh, lx, ly + 7);
+      if (oneLineWidth <= segHalfWidth * 2) {
+        ctx.fillText(oneLine, lx, ly);
+      } else {
+        ctx.font = `bold 13px Georgia, serif`;
+        ctx.fillText(k.name, lx, ly - 8);
+        ctx.fillText(k.enh,  lx, ly + 8);
+      }
     } else {
       ctx.font      = `bold 17px Georgia, serif`;
       ctx.fillStyle = labelColor;
       ctx.fillText(k.name, lx, ly);
     }
 
-    // inner ring — relative minor
+    // Inner ring — relative minor
     const innerMid = R_IN + 25;
     const ex = CX + innerMid * Math.cos(midAngle);
     const ey = CY + innerMid * Math.sin(midAngle);
@@ -405,7 +404,7 @@ function draw(hovIdx) {
     ctx.fillText(k.rel, ex, ey);
   });
 
-  // inner circle
+  // Inner circle
   ctx.beginPath();
   ctx.arc(CX, CY, R_IN, 0, Math.PI * 2);
   ctx.fillStyle   = C.innerBg;
@@ -414,29 +413,37 @@ function draw(hovIdx) {
   ctx.lineWidth   = 1;
   ctx.stroke();
 
-  // mid ring divider
+  // Mid ring divider
   ctx.beginPath();
   ctx.arc(CX, CY, R_MID, 0, Math.PI * 2);
   ctx.strokeStyle = C.border;
   ctx.lineWidth   = 0.5;
   ctx.stroke();
 
-  // centre label
-  ctx.font         = `13px Georgia, serif`;
-  ctx.fillStyle    = C.textSecondary;
+  // Centre label
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
 
-  if (mode === 'explore') {
-    const label = selected !== null
-      ? (keys[selected].enh ? keys[selected].name + ' / ' + keys[selected].enh : keys[selected].name)
-      : 'circle of fifths';
+  if (mode === 'explore' && selected === null) {
+    ctx.font      = `15px Georgia, serif`;
+    ctx.fillStyle = C.textPrimary;
+    ctx.fillText('Circle of Fifths', CX, CY - 10);
+    ctx.font      = `12px Georgia, serif`;
+    ctx.fillStyle = C.textSecondary;
+    ctx.fillText('click a key to explore', CX, CY + 10);
+  } else if (mode === 'explore' && selected !== null) {
+    const label = keys[selected].enh
+      ? `${keys[selected].name}/${keys[selected].enh}`
+      : keys[selected].name;
+    ctx.font      = `15px Georgia, serif`;
+    ctx.fillStyle = C.textSecondary;
     ctx.fillText(label, CX, CY - 9);
-    ctx.fillText(selected !== null
-      ? keys[selected].rel + (keys[selected].enhRel ? ' / ' + keys[selected].enhRel : '')
-      : '', CX, CY + 9);
+    ctx.font      = `12px Georgia, serif`;
+    ctx.fillText(keys[selected].rel, CX, CY + 9);
   } else {
-    ctx.fillText('quiz mode', CX, CY);
+    ctx.font      = `13px Georgia, serif`;
+    ctx.fillStyle = C.textSecondary;
+    ctx.fillText('Quiz Mode', CX, CY);
   }
 }
 
@@ -458,8 +465,7 @@ function chordCols(chords, rns, minor) {
 }
 
 function sigBlock(name, isSharp, count) {
-  const desc = count === 0
-    ? 'no sharps or flats'
+  const desc = count === 0 ? 'no sharps or flats'
     : `${count} ${isSharp ? 'sharp' : 'flat'}${count > 1 ? 's' : ''}`;
   return `<div class="stat-value" style="font-size:0.9rem;">${name}</div>
           <div class="stat-sub">${desc}</div>
@@ -476,8 +482,7 @@ function showPanel(idx) {
   const prev = keys[(idx + 11) % 12];
   const next = keys[(idx + 1)  % 12];
 
-  const keyLabel = k.enh ? `${k.name} / ${k.enh}` : k.name;
-  const relLabel = k.enhRel ? `${k.rel} / ${k.enhRel}` : `${k.rel} minor`;
+  const keyLabel = k.enh ? `${k.name}/${k.enh}` : k.name;
 
   let sigHTML;
   if (k.enh) {
@@ -490,15 +495,13 @@ function showPanel(idx) {
 
   const prevLabel = prev.enh ? `${prev.name}/${prev.enh}` : prev.name;
   const nextLabel = next.enh ? `${next.name}/${next.enh}` : next.name;
-  const prevRel   = prev.enhRel ? `${prev.rel}/${prev.enhRel}` : prev.rel;
-  const nextRel   = next.enhRel ? `${next.rel}/${next.enhRel}` : next.rel;
 
   panel.innerHTML = `
     <div class="top-grid">
       <div class="stat">
         <div class="stat-label">Key</div>
         <div class="stat-value">${keyLabel}</div>
-        <div class="stat-sub">${relLabel}</div>
+        <div class="stat-sub">${k.rel} minor</div>
       </div>
       <div class="stat">
         <div class="stat-label">Key Signature</div>
@@ -506,7 +509,7 @@ function showPanel(idx) {
       </div>
       <div class="stat">
         <div class="stat-label">Relative Minor</div>
-        <div class="stat-value">${k.rel}${k.enhRel ? ' / ' + k.enhRel : ''}</div>
+        <div class="stat-value">${k.rel}</div>
       </div>
     </div>
     <div class="bottom-row">
@@ -520,27 +523,24 @@ function showPanel(idx) {
       <div class="chord-block">
         <div class="chord-block-label">Relative Minor Primary Chords</div>
         <div class="chord-cols">${chordCols(k.minorChords, minorRN, true)}</div>
-        ${k.enh ? `<div class="chord-block-label" style="margin-top:6px;">${k.enhRel} Minor</div>
+        ${k.enh ? `<div class="chord-block-label" style="margin-top:6px;">${k.rel} Minor</div>
                    <div class="chord-cols">${chordCols(k.enhMinorChords, minorRN, true)}</div>` : ''}
       </div>
       <div class="neighbors-block">
         <div class="stat-label">Neighboring Keys</div>
-        <span class="neighbor-tag">← ${prevLabel} / ${prevRel}</span>
-        <span class="neighbor-tag">${nextLabel} / ${nextRel} →</span>
+        <span class="neighbor-tag">← ${prevLabel} / ${prev.rel}</span>
+        <span class="neighbor-tag">${nextLabel} / ${next.rel} →</span>
       </div>
     </div>`;
 }
 
-// ── Events ──────────────────────────────────────────────────
 cv.addEventListener('mousemove', e => {
   const r   = cv.getBoundingClientRect();
   const idx = getHitIndex(e.clientX - r.left, e.clientY - r.top);
   cv.style.cursor = idx >= 0 ? 'pointer' : 'default';
   draw(idx >= 0 ? idx : null);
 });
-
 cv.addEventListener('mouseleave', () => draw(null));
-
 cv.addEventListener('click', e => {
   const r   = cv.getBoundingClientRect();
   const idx = getHitIndex(e.clientX - r.left, e.clientY - r.top);
@@ -565,7 +565,6 @@ function setMode(m) {
   draw(null);
 }
 
-// ── Quiz ────────────────────────────────────────────────────
 const quizTypes = [
   k => ({ q: `Which key has ${k.sharps > 0 ? k.sharps + ' sharp' + (k.sharps > 1 ? 's' : '') : k.flats > 0 ? k.flats + ' flat' + (k.flats > 1 ? 's' : '') : 'no sharps or flats'}?`, ans: keys.indexOf(k) }),
   k => ({ q: `Which key has ${k.rel} as its relative minor?`, ans: keys.indexOf(k) }),
