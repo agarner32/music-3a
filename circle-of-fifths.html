@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circle of Fifths Explorer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #faf9f6;
+      --bg2:          #f0ede8;
+      --bg3:          #e8e4de;
+      --border:       #d3d1c7;
+      --border2:      #c4c1b8;
+      --text:         #2c2c2a;
+      --text2:        #5f5e5a;
+      --text3:        #8a8880;
+      --green:        #1d9e75;
+      --green-light:  #e1f5ee;
+      --green-text:   #e1f5ee;
+      --green-sub:    #9fe1cb;
+      --green-dark:   #0f6e56;
+      --red:          #d85a30;
+      --blue:         #378add;
+      --seg-default:  #fafaf8;
+      --seg-hover:    #f0ede8;
+      --seg-neighbor: #e1f5ee;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: normal;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: var(--text3);
+      font-style: italic;
+    }
+
+    #mode-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .toggle-btn {
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 5px 18px;
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text2);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: all 0.15s;
+    }
+
+    .toggle-btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    #canvas-wrap {
+      position: relative;
+      width: 520px;
+      height: 520px;
+      margin-bottom: 1.25rem;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      cursor: pointer;
+    }
+
+    #quiz-bar {
+      width: 100%;
+      max-width: 620px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    #quiz-question {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    #quiz-feedback {
+      font-size: 0.875rem;
+      min-height: 20px;
+      font-style: italic;
+    }
+
+    .correct { color: var(--green); }
+    .wrong   { color: var(--red); }
+
+    #info-panel {
+      width: 100%;
+      max-width: 620px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      min-height: 110px;
+    }
+
+    .panel-idle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 70px;
+      color: var(--text3);
+      font-size: 0.875rem;
+      font-style: italic;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 0;
+    }
+
+    .stat { display: flex; flex-direction: column; gap: 3px; }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .stat-sub {
+      font-size: 0.8rem;
+      color: var(--text2);
+    }
+
+    .stat-sub2 {
+      font-size: 0.75rem;
+      color: var(--text2);
+      margin-top: 5px;
+      padding-top: 5px;
+      border-top: 1px solid var(--border);
+    }
+
+    .bottom-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .chord-block { display: flex; flex-direction: column; gap: 5px; }
+
+    .chord-block-label {
+      font-size: 0.7rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .chord-cols { display: flex; gap: 8px; }
+
+    .chord-pair {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .chord-rn {
+      font-size: 0.7rem;
+      color: var(--text3);
+      min-width: 14px;
+      text-align: center;
+    }
+
+    .chord-pill {
+      font-size: 0.75rem;
+      padding: 2px 9px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text);
+    }
+
+    .chord-pill.minor {
+      background: transparent;
+      color: var(--text2);
+    }
+
+    .divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    .neighbors-block {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-left: auto;
+    }
+
+    .neighbor-tag {
+      font-size: 0.8rem;
+      padding: 3px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+      background: var(--bg2);
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.75rem;
+      color: var(--text3);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Circle of Fifths</h1>
+  <p>Click any key to explore — or switch to Quiz mode</p>
+</header>
+
+<div id="mode-toggle">
+  <button class="toggle-btn active" onclick="setMode('explore')" id="btn-explore">Explore</button>
+  <button class="toggle-btn" onclick="setMode('quiz')" id="btn-quiz">Quiz mode</button>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="c" width="520" height="520"></canvas>
+</div>
+
+<div id="quiz-bar">
+  <div id="quiz-question"></div>
+  <div id="quiz-feedback"></div>
+</div>
+
+<div id="info-panel">
+  <div class="panel-idle">Click any key on the circle to explore it</div>
+</div>
+
+<footer>Music Theory — Interactive Reference Tool</footer>
+
+<script>
+const keys = [
+  { name:'C',   enh:null,  sharps:0, flats:0, rel:'a',  enhRel:null,  majorChords:['C','F','G'],    minorChords:['Am','Dm','Em'] },
+  { name:'G',   enh:null,  sharps:1, flats:0, rel:'e',  enhRel:null,  majorChords:['G','C','D'],    minorChords:['Em','Am','Bm'] },
+  { name:'D',   enh:null,  sharps:2, flats:0, rel:'b',  enhRel:null,  majorChords:['D','G','A'],    minorChords:['Bm','Em','F♯m'] },
+  { name:'A',   enh:null,  sharps:3, flats:0, rel:'f♯', enhRel:null,  majorChords:['A','D','E'],    minorChords:['F♯m','Bm','C♯m'] },
+  { name:'E',   enh:null,  sharps:4, flats:0, rel:'c♯', enhRel:null,  majorChords:['E','A','B'],    minorChords:['C♯m','F♯m','G♯m'] },
+  { name:'B',   enh:'C♭', sharps:5, flats:7, rel:'g♯', enhRel:'a♭', majorChords:['B','E','F♯'],   minorChords:['G♯m','C♯m','D♯m'], enhMajorChords:['C♭','F♭','G♭'], enhMinorChords:['A♭m','D♭m','E♭m'] },
+  { name:'F♯',  enh:'G♭', sharps:6, flats:6, rel:'d♯', enhRel:'e♭', majorChords:['F♯','B','C♯'],  minorChords:['D♯m','G♯m','A♯m'], enhMajorChords:['G♭','C♭','D♭'], enhMinorChords:['E♭m','A♭m','B♭m'] },
+  { name:'D♭',  enh:'C♯', sharps:7, flats:5, rel:'b♭', enhRel:'a♯', majorChords:['D♭','G♭','A♭'], minorChords:['B♭m','E♭m','Fm'],  enhMajorChords:['C♯','F♯','G♯'], enhMinorChords:['A♯m','D♯m','E♯m'] },
+  { name:'A♭',  enh:null,  sharps:0, flats:4, rel:'f',  enhRel:null,  majorChords:['A♭','D♭','E♭'], minorChords:['Fm','B♭m','Cm'] },
+  { name:'E♭',  enh:null,  sharps:0, flats:3, rel:'c',  enhRel:null,  majorChords:['E♭','A♭','B♭'], minorChords:['Cm','Fm','Gm'] },
+  { name:'B♭',  enh:null,  sharps:0, flats:2, rel:'g',  enhRel:null,  majorChords:['B♭','E♭','F'],  minorChords:['Gm','Cm','Dm'] },
+  { name:'F',   enh:null,  sharps:0, flats:1, rel:'d',  enhRel:null,  majorChords:['F','B♭','C'],   minorChords:['Dm','Gm','Am'] },
+];
+
+const majorRN   = ['I','IV','V'];
+const minorRN   = ['i','iv','V'];
+const sharpNames = ['F♯','C♯','G♯','D♯','A♯','E♯','B♯'];
+const flatNames  = ['B♭','E♭','A♭','D♭','G♭','C♭','F♭'];
+
+function getAccidentals(isSharp, count) {
+  if (count === 0) return 'none';
+  return (isSharp ? sharpNames : flatNames).slice(0, count).join('  ');
+}
+
+const cv  = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const CX = 260, CY = 260;
+const R_OUT = 230, R_MID = 163, R_IN = 100;
+
+let selected     = null;
+let mode         = 'explore';
+let quizKey      = null;
+let quizAnswered = false;
+let quizWrongIdx = null;
+
+// ── colours ────────────────────────────────────────────────
+const C = {
+  textPrimary:   '#2c2c2a',
+  textSecondary: '#5f5e5a',
+  border:        '#d3d1c7',
+  segDefault:    '#fafaf8',
+  segHover:      '#f0ede8',
+  segNeighbor:   '#e1f5ee',
+  segSelected:   '#1d9e75',
+  segCorrect:    '#1d9e75',
+  segWrong:      '#d85a30',
+  innerBg:       '#ffffff',
+  labelSel:      '#e1f5ee',
+  subSel:        '#9fe1cb',
+};
+
+function draw(hovIdx) {
+  ctx.clearRect(0, 0, 520, 520);
+
+  keys.forEach((k, i) => {
+    const startAngle = (i / 12) * Math.PI * 2 - Math.PI / 2 - Math.PI / 12;
+    const endAngle   = startAngle + (Math.PI * 2) / 12;
+    const midAngle   = (startAngle + endAngle) / 2;
+
+    const isSelected = selected === i;
+    const isHovered  = hovIdx === i;
+    const isNeighbor = selected !== null &&
+      ((i === (selected + 1) % 12) || (i === (selected + 11) % 12));
+
+    let fill;
+    if (mode === 'quiz') {
+      if (quizAnswered && i === quizKey)      fill = C.segCorrect;
+      else if (quizAnswered && i === quizWrongIdx) fill = C.segWrong;
+      else if (!quizAnswered && isHovered)    fill = C.segHover;
+      else                                    fill = C.segDefault;
+    } else if (isSelected)  fill = C.segSelected;
+    else if (isNeighbor)    fill = C.segNeighbor;
+    else if (isHovered)     fill = C.segHover;
+    else                    fill = C.segDefault;
+
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R_OUT, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle   = fill;
+    ctx.fill();
+    ctx.strokeStyle = C.border;
+    ctx.lineWidth   = 1;
+    ctx.stroke();
+
+    const outerMid  = R_MID + 35;
+    const lx = CX + outerMid * Math.cos(midAngle);
+    const ly = CY + outerMid * Math.sin(midAngle);
+
+    const isGreen      = isSelected || (quizAnswered && i === quizKey);
+    const labelColor   = isGreen ? C.labelSel : C.textPrimary;
+    const subColor     = isGreen ? C.subSel   : C.textSecondary;
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (k.enh) {
+      ctx.font      = `bold 14px Georgia, serif`;
+      ctx.fillStyle = labelColor;
+      ctx.fillText(k.name, lx, ly - 9);
+      ctx.font      = `13px Georgia, serif`;
+      ctx.fillStyle = subColor;
+      ctx.fillText(k.enh, lx, ly + 7);
+    } else {
+      ctx.font      = `bold 17px Georgia, serif`;
+      ctx.fillStyle = labelColor;
+      ctx.fillText(k.name, lx, ly);
+    }
+
+    // inner ring — relative minor
+    const innerMid = R_IN + 25;
+    const ex = CX + innerMid * Math.cos(midAngle);
+    const ey = CY + innerMid * Math.sin(midAngle);
+    ctx.font      = `13px Georgia, serif`;
+    ctx.fillStyle = subColor;
+    ctx.fillText(k.rel, ex, ey);
+  });
+
+  // inner circle
+  ctx.beginPath();
+  ctx.arc(CX, CY, R_IN, 0, Math.PI * 2);
+  ctx.fillStyle   = C.innerBg;
+  ctx.fill();
+  ctx.strokeStyle = C.border;
+  ctx.lineWidth   = 1;
+  ctx.stroke();
+
+  // mid ring divider
+  ctx.beginPath();
+  ctx.arc(CX, CY, R_MID, 0, Math.PI * 2);
+  ctx.strokeStyle = C.border;
+  ctx.lineWidth   = 0.5;
+  ctx.stroke();
+
+  // centre label
+  ctx.font         = `13px Georgia, serif`;
+  ctx.fillStyle    = C.textSecondary;
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+
+  if (mode === 'explore') {
+    const label = selected !== null
+      ? (keys[selected].enh ? keys[selected].name + ' / ' + keys[selected].enh : keys[selected].name)
+      : 'circle of fifths';
+    ctx.fillText(label, CX, CY - 9);
+    ctx.fillText(selected !== null
+      ? keys[selected].rel + (keys[selected].enhRel ? ' / ' + keys[selected].enhRel : '')
+      : '', CX, CY + 9);
+  } else {
+    ctx.fillText('quiz mode', CX, CY);
+  }
+}
+
+function getHitIndex(x, y) {
+  const dx = x - CX, dy = y - CY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < R_IN || dist > R_OUT) return -1;
+  let angle = Math.atan2(dy, dx) + Math.PI / 2 + Math.PI / 12;
+  angle = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  return Math.floor(angle / (Math.PI * 2 / 12)) % 12;
+}
+
+function chordCols(chords, rns, minor) {
+  return rns.map((rn, i) => `
+    <div class="chord-pair">
+      <span class="chord-rn">${rn}</span>
+      <span class="chord-pill${minor ? ' minor' : ''}">${chords[i]}</span>
+    </div>`).join('');
+}
+
+function sigBlock(name, isSharp, count) {
+  const desc = count === 0
+    ? 'no sharps or flats'
+    : `${count} ${isSharp ? 'sharp' : 'flat'}${count > 1 ? 's' : ''}`;
+  return `<div class="stat-value" style="font-size:0.9rem;">${name}</div>
+          <div class="stat-sub">${desc}</div>
+          <div class="stat-sub">${getAccidentals(isSharp, count)}</div>`;
+}
+
+function showPanel(idx) {
+  const panel = document.getElementById('info-panel');
+  if (idx === null) {
+    panel.innerHTML = '<div class="panel-idle">Click any key on the circle to explore it</div>';
+    return;
+  }
+  const k    = keys[idx];
+  const prev = keys[(idx + 11) % 12];
+  const next = keys[(idx + 1)  % 12];
+
+  const keyLabel = k.enh ? `${k.name} / ${k.enh}` : k.name;
+  const relLabel = k.enhRel ? `${k.rel} / ${k.enhRel}` : `${k.rel} minor`;
+
+  let sigHTML;
+  if (k.enh) {
+    sigHTML = `${sigBlock(k.name + ' major', true, k.sharps)}
+               <div class="stat-sub2">${sigBlock(k.enh + ' major', false, k.flats)}</div>`;
+  } else {
+    const isSharp = k.sharps > 0;
+    sigHTML = sigBlock(k.name + ' major', isSharp, isSharp ? k.sharps : k.flats);
+  }
+
+  const prevLabel = prev.enh ? `${prev.name}/${prev.enh}` : prev.name;
+  const nextLabel = next.enh ? `${next.name}/${next.enh}` : next.name;
+  const prevRel   = prev.enhRel ? `${prev.rel}/${prev.enhRel}` : prev.rel;
+  const nextRel   = next.enhRel ? `${next.rel}/${next.enhRel}` : next.rel;
+
+  panel.innerHTML = `
+    <div class="top-grid">
+      <div class="stat">
+        <div class="stat-label">Key</div>
+        <div class="stat-value">${keyLabel}</div>
+        <div class="stat-sub">${relLabel}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Key Signature</div>
+        ${sigHTML}
+      </div>
+      <div class="stat">
+        <div class="stat-label">Relative Minor</div>
+        <div class="stat-value">${k.rel}${k.enhRel ? ' / ' + k.enhRel : ''}</div>
+      </div>
+    </div>
+    <div class="bottom-row">
+      <div class="chord-block">
+        <div class="chord-block-label">Major Primary Chords</div>
+        <div class="chord-cols">${chordCols(k.majorChords, majorRN, false)}</div>
+        ${k.enh ? `<div class="chord-block-label" style="margin-top:6px;">${k.enh} Major</div>
+                   <div class="chord-cols">${chordCols(k.enhMajorChords, majorRN, false)}</div>` : ''}
+      </div>
+      <div class="divider"></div>
+      <div class="chord-block">
+        <div class="chord-block-label">Relative Minor Primary Chords</div>
+        <div class="chord-cols">${chordCols(k.minorChords, minorRN, true)}</div>
+        ${k.enh ? `<div class="chord-block-label" style="margin-top:6px;">${k.enhRel} Minor</div>
+                   <div class="chord-cols">${chordCols(k.enhMinorChords, minorRN, true)}</div>` : ''}
+      </div>
+      <div class="neighbors-block">
+        <div class="stat-label">Neighboring Keys</div>
+        <span class="neighbor-tag">← ${prevLabel} / ${prevRel}</span>
+        <span class="neighbor-tag">${nextLabel} / ${nextRel} →</span>
+      </div>
+    </div>`;
+}
+
+// ── Events ──────────────────────────────────────────────────
+cv.addEventListener('mousemove', e => {
+  const r   = cv.getBoundingClientRect();
+  const idx = getHitIndex(e.clientX - r.left, e.clientY - r.top);
+  cv.style.cursor = idx >= 0 ? 'pointer' : 'default';
+  draw(idx >= 0 ? idx : null);
+});
+
+cv.addEventListener('mouseleave', () => draw(null));
+
+cv.addEventListener('click', e => {
+  const r   = cv.getBoundingClientRect();
+  const idx = getHitIndex(e.clientX - r.left, e.clientY - r.top);
+  if (idx < 0) return;
+  if (mode === 'explore') {
+    selected = (selected === idx) ? null : idx;
+    showPanel(selected);
+    draw(null);
+  } else {
+    handleQuizClick(idx);
+  }
+});
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-explore').classList.toggle('active', m === 'explore');
+  document.getElementById('btn-quiz').classList.toggle('active', m === 'quiz');
+  document.getElementById('quiz-bar').style.display = m === 'quiz' ? 'flex' : 'none';
+  selected = null;
+  if (m === 'quiz') startQuiz();
+  else showPanel(null);
+  draw(null);
+}
+
+// ── Quiz ────────────────────────────────────────────────────
+const quizTypes = [
+  k => ({ q: `Which key has ${k.sharps > 0 ? k.sharps + ' sharp' + (k.sharps > 1 ? 's' : '') : k.flats > 0 ? k.flats + ' flat' + (k.flats > 1 ? 's' : '') : 'no sharps or flats'}?`, ans: keys.indexOf(k) }),
+  k => ({ q: `Which key has ${k.rel} as its relative minor?`, ans: keys.indexOf(k) }),
+  k => ({ q: `Which key is a perfect fifth above ${keys[(keys.indexOf(k) + 11) % 12].name}?`, ans: keys.indexOf(k) }),
+  k => ({ q: `In which major key are ${k.majorChords[0]}, ${k.majorChords[1]}, and ${k.majorChords[2]} the I, IV, and V chords?`, ans: keys.indexOf(k) }),
+];
+
+function startQuiz() {
+  quizAnswered = false;
+  quizWrongIdx = null;
+  const k    = keys[Math.floor(Math.random() * 12)];
+  const type = quizTypes[Math.floor(Math.random() * quizTypes.length)](k);
+  quizKey = type.ans;
+  document.getElementById('quiz-question').textContent = type.q;
+  document.getElementById('quiz-feedback').textContent = 'Click the correct key on the circle above.';
+  document.getElementById('quiz-feedback').className   = '';
+  draw(null);
+}
+
+function handleQuizClick(idx) {
+  if (quizAnswered) { startQuiz(); return; }
+  const fb = document.getElementById('quiz-feedback');
+  if (idx === quizKey) {
+    fb.textContent = '✓ Correct! Click anywhere on the circle for the next question.';
+    fb.className   = 'correct';
+    quizAnswered   = true;
+    quizWrongIdx   = null;
+    draw(null);
+  } else {
+    quizWrongIdx   = idx;
+    fb.textContent = `✗ Not quite — that's ${keys[idx].name}. Try again!`;
+    fb.className   = 'wrong';
+    draw(null);
+  }
+}
+
+draw(null);
+showPanel(null);
+</script>
+</body>
+</html>
