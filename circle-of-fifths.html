@@ -35,219 +35,78 @@
       padding: 2rem 1rem 3rem;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
+    header { text-align: center; margin-bottom: 2rem; }
     header h1 {
-      font-size: 1.6rem;
-      font-weight: normal;
-      letter-spacing: 0.04em;
-      color: var(--text);
-      margin-bottom: 0.25rem;
+      font-size: 1.6rem; font-weight: normal;
+      letter-spacing: 0.04em; color: var(--text); margin-bottom: 0.25rem;
     }
+    header p { font-size: 0.85rem; color: var(--text3); font-style: italic; }
 
-    header p {
-      font-size: 0.85rem;
-      color: var(--text3);
-      font-style: italic;
-    }
-
-    #mode-toggle {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 1.5rem;
-    }
-
+    #mode-toggle { display: flex; gap: 8px; margin-bottom: 1.5rem; }
     .toggle-btn {
-      font-family: inherit;
-      font-size: 0.85rem;
-      padding: 5px 18px;
-      border: 1px solid var(--border2);
-      border-radius: 999px;
-      background: transparent;
-      color: var(--text2);
-      cursor: pointer;
-      letter-spacing: 0.03em;
-      transition: all 0.15s;
+      font-family: inherit; font-size: 0.85rem; padding: 5px 18px;
+      border: 1px solid var(--border2); border-radius: 999px;
+      background: transparent; color: var(--text2); cursor: pointer;
+      letter-spacing: 0.03em; transition: all 0.15s;
     }
+    .toggle-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
-    .toggle-btn.active {
-      background: var(--text);
-      color: var(--bg);
-      border-color: var(--text);
-    }
-
-    #canvas-wrap {
-      position: relative;
-      width: 520px;
-      height: 520px;
-      margin-bottom: 1.25rem;
-    }
-
-    canvas {
-      position: absolute;
-      top: 0; left: 0;
-      cursor: pointer;
-    }
+    #canvas-wrap { position: relative; width: 520px; height: 520px; margin-bottom: 1.25rem; }
+    canvas { position: absolute; top: 0; left: 0; cursor: pointer; }
 
     #quiz-bar {
-      width: 100%;
-      max-width: 620px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 1rem;
+      width: 100%; max-width: 620px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem 1.25rem;
+      display: none; flex-direction: column; gap: 8px; margin-bottom: 1rem;
     }
-
-    #quiz-question {
-      font-size: 1rem;
-      color: var(--text);
-    }
-
-    #quiz-feedback {
-      font-size: 0.875rem;
-      min-height: 20px;
-      font-style: italic;
-    }
-
+    #quiz-question { font-size: 1rem; color: var(--text); }
+    #quiz-feedback { font-size: 0.875rem; min-height: 20px; font-style: italic; }
     .correct { color: var(--green); }
     .wrong   { color: var(--red); }
 
     #info-panel {
-      width: 100%;
-      max-width: 620px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      min-height: 110px;
+      width: 100%; max-width: 620px; background: white;
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.25rem; min-height: 110px;
     }
-
     .panel-idle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 70px;
-      color: var(--text3);
-      font-size: 0.875rem;
-      font-style: italic;
+      display: flex; align-items: center; justify-content: center;
+      height: 70px; color: var(--text3); font-size: 0.875rem; font-style: italic;
     }
 
-    .top-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-    }
-
+    .top-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     .stat { display: flex; flex-direction: column; gap: 3px; }
-
-    .stat-label {
-      font-size: 0.7rem;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .stat-value {
-      font-size: 1rem;
-      font-weight: bold;
-      color: var(--text);
-    }
-
+    .stat-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-value { font-size: 1rem; font-weight: bold; color: var(--text); }
     .stat-sub  { font-size: 0.8rem; color: var(--text2); }
-
-    .stat-sub2 {
-      font-size: 0.75rem;
-      color: var(--text2);
-      margin-top: 5px;
-      padding-top: 5px;
-      border-top: 1px solid var(--border);
-    }
+    .stat-sub2 { font-size: 0.75rem; color: var(--text2); margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border); }
 
     .bottom-row {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      border-top: 1px solid var(--border);
-      padding-top: 12px;
-      margin-top: 12px;
+      display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;
+      border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;
     }
-
     .chord-block { display: flex; flex-direction: column; gap: 5px; }
-
-    .chord-block-label {
-      font-size: 0.7rem;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
+    .chord-block-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
     .chord-cols { display: flex; gap: 8px; }
-
-    .chord-pair {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .chord-rn {
-      font-size: 0.7rem;
-      color: var(--text3);
-      min-width: 14px;
-      text-align: center;
-    }
-
+    .chord-pair { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .chord-rn { font-size: 0.7rem; color: var(--text3); min-width: 14px; text-align: center; }
     .chord-pill {
-      font-size: 0.75rem;
-      padding: 2px 9px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--text);
+      font-size: 0.75rem; padding: 2px 9px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 999px; color: var(--text);
     }
+    .chord-pill.minor { background: transparent; color: var(--text2); }
+    .divider { width: 1px; background: var(--border); align-self: stretch; }
 
-    .chord-pill.minor {
-      background: transparent;
-      color: var(--text2);
-    }
-
-    .divider {
-      width: 1px;
-      background: var(--border);
-      align-self: stretch;
-    }
-
-    .neighbors-block {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin-left: auto;
-    }
-
+    .neighbors-block { display: flex; flex-direction: column; gap: 5px; margin-left: auto; }
     .neighbor-tag {
-      font-size: 0.8rem;
-      padding: 3px 11px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--text);
-      white-space: nowrap;
-      background: var(--bg2);
+      font-size: 0.8rem; padding: 3px 11px; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--text);
+      white-space: nowrap; background: var(--bg2);
     }
 
-    footer {
-      margin-top: 2.5rem;
-      font-size: 0.75rem;
-      color: var(--text3);
-      font-style: italic;
-    }
+    footer { margin-top: 2.5rem; font-size: 0.75rem; color: var(--text3); font-style: italic; }
   </style>
 </head>
 <body>
@@ -295,8 +154,11 @@ const keys = [
 
 const majorRN    = ['I','IV','V'];
 const minorRN    = ['i','iv','V'];
+const rnNames    = ['I','IV','V'];
 const sharpNames = ['F♯','C♯','G♯','D♯','A♯','E♯','B♯'];
 const flatNames  = ['B♭','E♭','A♭','D♭','G♭','C♭','F♭'];
+
+let quizHide = 'none';
 
 function getAccidentals(isSharp, count) {
   if (count === 0) return 'none';
@@ -375,36 +237,39 @@ function draw(hovIdx) {
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
 
-    if (k.enh) {
-      const oneLine = `${k.name}/${k.enh}`;
-      ctx.font = `bold 14px Georgia, serif`;
-      const oneLineWidth  = ctx.measureText(oneLine).width;
-      const segHalfWidth  = outerMid * Math.sin(Math.PI / 12) * 0.85;
-
-      ctx.fillStyle = labelColor;
-      if (oneLineWidth <= segHalfWidth * 2) {
-        ctx.fillText(oneLine, lx, ly);
+    const showOuter = !(mode === 'quiz' && quizHide === 'major' && !quizAnswered);
+    if (showOuter) {
+      if (k.enh) {
+        const oneLine = `${k.name}/${k.enh}`;
+        ctx.font = `bold 14px Georgia, serif`;
+        const oneLineWidth = ctx.measureText(oneLine).width;
+        const segHalfWidth = outerMid * Math.sin(Math.PI / 12) * 0.85;
+        ctx.fillStyle = labelColor;
+        if (oneLineWidth <= segHalfWidth * 2) {
+          ctx.fillText(oneLine, lx, ly);
+        } else {
+          ctx.font = `bold 13px Georgia, serif`;
+          ctx.fillText(k.name, lx, ly - 8);
+          ctx.fillText(k.enh,  lx, ly + 8);
+        }
       } else {
-        ctx.font = `bold 13px Georgia, serif`;
-        ctx.fillText(k.name, lx, ly - 8);
-        ctx.fillText(k.enh,  lx, ly + 8);
+        ctx.font      = `bold 17px Georgia, serif`;
+        ctx.fillStyle = labelColor;
+        ctx.fillText(k.name, lx, ly);
       }
-    } else {
-      ctx.font      = `bold 17px Georgia, serif`;
-      ctx.fillStyle = labelColor;
-      ctx.fillText(k.name, lx, ly);
     }
 
-    // Inner ring — relative minor
-    const innerMid = R_IN + 25;
-    const ex = CX + innerMid * Math.cos(midAngle);
-    const ey = CY + innerMid * Math.sin(midAngle);
-    ctx.font      = `13px Georgia, serif`;
-    ctx.fillStyle = subColor;
-    ctx.fillText(k.rel, ex, ey);
+    const showInner = !(mode === 'quiz' && quizHide === 'minor' && !quizAnswered);
+    if (showInner) {
+      const innerMid = R_IN + 25;
+      const ex = CX + innerMid * Math.cos(midAngle);
+      const ey = CY + innerMid * Math.sin(midAngle);
+      ctx.font      = `13px Georgia, serif`;
+      ctx.fillStyle = subColor;
+      ctx.fillText(k.rel, ex, ey);
+    }
   });
 
-  // Inner circle
   ctx.beginPath();
   ctx.arc(CX, CY, R_IN, 0, Math.PI * 2);
   ctx.fillStyle   = C.innerBg;
@@ -413,14 +278,12 @@ function draw(hovIdx) {
   ctx.lineWidth   = 1;
   ctx.stroke();
 
-  // Mid ring divider
   ctx.beginPath();
   ctx.arc(CX, CY, R_MID, 0, Math.PI * 2);
   ctx.strokeStyle = C.border;
   ctx.lineWidth   = 0.5;
   ctx.stroke();
 
-  // Centre label
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
 
@@ -481,7 +344,6 @@ function showPanel(idx) {
   const k    = keys[idx];
   const prev = keys[(idx + 11) % 12];
   const next = keys[(idx + 1)  % 12];
-
   const keyLabel = k.enh ? `${k.name}/${k.enh}` : k.name;
 
   let sigHTML;
@@ -565,19 +427,37 @@ function setMode(m) {
   draw(null);
 }
 
+function buildChordQuestions() {
+  const qs = [];
+  keys.forEach(k => {
+    k.majorChords.forEach((chord, idx) => {
+      qs.push({ q: `In which major key is ${chord} the ${rnNames[idx]} chord?`, ans: keys.indexOf(k), hide: 'none' });
+    });
+  });
+  return qs;
+}
+
+const chordQuestions = buildChordQuestions();
+
 const quizTypes = [
-  k => ({ q: `Which key has ${k.sharps > 0 ? k.sharps + ' sharp' + (k.sharps > 1 ? 's' : '') : k.flats > 0 ? k.flats + ' flat' + (k.flats > 1 ? 's' : '') : 'no sharps or flats'}?`, ans: keys.indexOf(k) }),
-  k => ({ q: `Which key has ${k.rel} as its relative minor?`, ans: keys.indexOf(k) }),
-  k => ({ q: `Which key is a perfect fifth above ${keys[(keys.indexOf(k) + 11) % 12].name}?`, ans: keys.indexOf(k) }),
-  k => ({ q: `In which major key are ${k.majorChords[0]}, ${k.majorChords[1]}, and ${k.majorChords[2]} the I, IV, and V chords?`, ans: keys.indexOf(k) }),
+  k => ({ q: `Which key has ${k.rel} as its relative minor?`,                                                                                                        ans: keys.indexOf(k), hide: 'minor' }),
+  k => ({ q: `Which key is a perfect fifth above ${keys[(keys.indexOf(k) + 11) % 12].name}?`,                                                                        ans: keys.indexOf(k), hide: 'none'  }),
+  k => ({ q: `Which key has ${k.sharps > 0 ? k.sharps + ' sharp' + (k.sharps > 1 ? 's' : '') : k.flats > 0 ? k.flats + ' flat' + (k.flats > 1 ? 's' : '') : 'no sharps or flats'}?`, ans: keys.indexOf(k), hide: 'none'  }),
 ];
 
 function startQuiz() {
   quizAnswered = false;
   quizWrongIdx = null;
-  const k    = keys[Math.floor(Math.random() * 12)];
-  const type = quizTypes[Math.floor(Math.random() * quizTypes.length)](k);
-  quizKey = type.ans;
+  let type;
+  if (Math.random() < 0.4) {
+    type = chordQuestions[Math.floor(Math.random() * chordQuestions.length)];
+  } else {
+    const k  = keys[Math.floor(Math.random() * 12)];
+    const qt = quizTypes[Math.floor(Math.random() * quizTypes.length)];
+    type = qt(k);
+  }
+  quizKey  = type.ans;
+  quizHide = type.hide;
   document.getElementById('quiz-question').textContent = type.q;
   document.getElementById('quiz-feedback').textContent = 'Click the correct key on the circle above.';
   document.getElementById('quiz-feedback').className   = '';
@@ -588,7 +468,7 @@ function handleQuizClick(idx) {
   if (quizAnswered) { startQuiz(); return; }
   const fb = document.getElementById('quiz-feedback');
   if (idx === quizKey) {
-    fb.textContent = '✓ Correct! Click anywhere on the circle for the next question.';
+    fb.textContent = `✓ Correct! ${keys[idx].name} major. Click anywhere for the next question.`;
     fb.className   = 'correct';
     quizAnswered   = true;
     quizWrongIdx   = null;
