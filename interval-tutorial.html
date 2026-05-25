@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interval Tutorial — Music 3A</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f5f5f0; display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; font-family: Georgia, 'Times New Roman', serif; }
+    .tut { width: 100%; max-width: 480px; }
+    .header-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+    .tut-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #888; font-family: monospace; }
+    .step-counter { font-size: 11px; font-family: monospace; color: #888; }
+    .example-toggle { display: flex; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
+    .ex-btn { flex: 1; padding: 9px 8px; font-family: monospace; font-size: 11px; font-weight: bold; letter-spacing: 0.03em; text-align: center; cursor: pointer; border: none; background: transparent; color: #666; border-right: 1px solid #ccc; transition: background 0.15s, color 0.15s; line-height: 1.4; }
+    .ex-btn:last-child { border-right: none; }
+    .ex-btn.active { background: #7F77DD; color: #fff; }
+    .ex-btn:hover:not(.active) { background: #eee; }
+    .card-outer { background: #fff; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; min-height: 400px; display: flex; flex-direction: column; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    .progress-bar { height: 3px; background: #eee; }
+    .progress-fill { height: 100%; background: #7F77DD; transition: width 0.35s ease; }
+    .card-body { flex: 1; padding: 22px 20px 16px; display: flex; flex-direction: column; align-items: center; }
+    .card-question { font-size: 16px; font-weight: bold; color: #222; text-align: center; margin-bottom: 14px; line-height: 1.4; }
+    .card-sub { font-style: italic; font-size: 13px; color: #666; font-weight: normal; display: block; margin-top: 5px; }
+    .notation-wrap { width: 100%; display: flex; justify-content: center; align-items: center; min-height: 120px; margin-bottom: 10px; background: #fff; border-radius: 8px; border: 1px solid #e8e8e8; }
+    .info-box { width: 100%; background: #f7f7f7; border: 1px solid #e5e5e5; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #555; line-height: 1.6; text-align: center; margin-top: 8px; }
+    .info-box strong { color: #222; }
+    .rule-box { width: 100%; border: 1px solid #ccc; border-left: 3px solid #7F77DD; border-radius: 0 8px 8px 0; background: #f7f7f7; padding: 10px 14px; margin-top: 8px; }
+    .rule-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #7F77DD; font-family: monospace; margin-bottom: 4px; font-weight: bold; }
+    .rule-text { font-size: 13px; color: #222; line-height: 1.5; }
+    .strategy-box { width: 100%; border: 1px solid #ccc; border-left: 3px solid #1D9E75; border-radius: 0 8px 8px 0; background: #f7f7f7; padding: 10px 14px; margin-top: 8px; }
+    .strategy-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #1D9E75; font-family: monospace; margin-bottom: 4px; font-weight: bold; }
+    .strategy-text { font-size: 13px; color: #222; line-height: 1.5; }
+    .answer-badge { margin-top: 14px; background: #1D9E75; border-radius: 999px; padding: 10px 32px; font-size: 22px; font-weight: bold; color: #fff; }
+    .letter-row { display: flex; gap: 5px; align-items: center; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+    .pill { font-family: monospace; font-size: 13px; font-weight: bold; padding: 4px 10px; border-radius: 999px; background: #f0f0f0; border: 1px solid #ddd; color: #333; }
+    .pill.lo { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
+    .pill.hi { background: #EEEDFE; color: #3C3489; border-color: #AFA9EC; }
+    .sep { color: #aaa; font-size: 12px; }
+    .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid #eee; }
+    .dots-row { display: flex; gap: 6px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; transition: all 0.2s; }
+    .dot.active { background: #7F77DD; width: 18px; border-radius: 3px; }
+    .nav-btn { font-family: monospace; font-size: 12px; font-weight: bold; padding: 7px 16px; border-radius: 8px; border: 1px solid #ccc; background: transparent; color: #333; cursor: pointer; letter-spacing: 0.05em; transition: background 0.15s; }
+    .nav-btn:hover { background: #f0f0f0; }
+    .nav-btn:disabled { opacity: 0.25; cursor: default; }
+    .nav-btn.primary { background: #7F77DD; border-color: #7F77DD; color: #fff; }
+    .nav-btn.primary:hover { background: #534AB7; }
+    .err { color: #c00; font-size: 12px; font-family: monospace; padding: 8px; }
+  </style>
+</head>
+<body>
+<div class="tut">
+  <div class="header-row">
+    <span class="tut-label">Interval Tutorial &mdash; Music 3A</span>
+    <span class="step-counter" id="step-counter">Step 1 of 5</span>
+  </div>
+
+  <div class="example-toggle">
+    <div class="ex-btn active" id="ex-btn-0" onclick="switchExample(0)">Example 1<br>D to B&#x266D;</div>
+    <div class="ex-btn" id="ex-btn-1" onclick="switchExample(1)">Example 2<br>When the bottom note isn&rsquo;t a major scale root</div>
+  </div>
+
+  <div class="card-outer">
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:20%"></div></div>
+    <div class="card-body" id="card-body"><p style="color:#888;font-size:13px;">Loading notation&hellip;</p></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="btn-prev" onclick="go(-1)" disabled>&larr; Back</button>
+      <div class="dots-row" id="dots"></div>
+      <button class="nav-btn primary" id="btn-next" onclick="go(1)">Next &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/vexflow@4.2.2/build/cjs/vexflow.js';
+  s.onload = init;
+  s.onerror = function() {
+    var s2 = document.createElement('script');
+    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/vexflow/4.2.2/vexflow.min.js';
+    s2.onload = init;
+    s2.onerror = function() { document.getElementById('card-body').innerHTML = '<p class="err">Could not load notation library. Please check your internet connection.</p>'; };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+})();
+
+var examples = [
+  [
+    {
+      question: 'What interval is this?',
+      sub: null,
+      notes: [{key:'d/4',acc:null},{key:'bb/4',acc:'b'}],
+      extra: '<div class="info-box">Notes: <strong>D</strong> and <strong>B&#x266D;</strong><br><span style="font-size:12px">Identify the interval between these two notes.</span></div>'
+    },
+    {
+      question: 'Step 1: Count the letter names',
+      sub: 'How many letters from D up to B?',
+      notes: [{key:'d/4',acc:null},{key:'bb/4',acc:'b'}],
+      extra: '<div class="letter-row"><span class="pill lo">D</span><span class="sep">&middot;</span><span class="pill">E</span><span class="sep">&middot;</span><span class="pill">F</span><span class="sep">&middot;</span><span class="pill">G</span><span class="sep">&middot;</span><span class="pill">A</span><span class="sep">&middot;</span><span class="pill hi">B</span></div><div class="info-box" style="margin-top:10px">D &middot; E &middot; F &middot; G &middot; A &middot; B = <strong>6 letters</strong><br>So this is some kind of <strong>6th</strong></div>'
+    },
+    {
+      question: 'Step 2: Find the default quality',
+      sub: 'What is the Major 6th above D?',
+      notes: [{key:'d/4',acc:null},{key:'b/4',acc:'n'}],
+      extra: '<div class="info-box">D is a natural major scale root &mdash; use the D major scale.<br>The 6th degree above D is <strong>B&#x266E;</strong><br>So D &rarr; B&#x266E; = <strong>Major 6th</strong></div>'
+    },
+    {
+      question: 'Step 3: Compare to our note',
+      sub: 'We have B&#x266D;, but the Major 6th needs B&#x266E;',
+      notes: [{key:'d/4',acc:null},{key:'bb/4',acc:'b'}],
+      extra: '<div class="info-box">B&#x266D; is <strong>one half step smaller</strong> than B&#x266E;</div><div class="rule-box"><div class="rule-label">Rule 1</div><div class="rule-text">A <strong>Major</strong> interval made smaller by <strong>one half step</strong> becomes <strong>minor</strong></div></div>'
+    },
+    {
+      question: 'Answer',
+      sub: null,
+      notes: [{key:'d/4',acc:null},{key:'bb/4',acc:'b'}],
+      extra: '<div class="answer-badge">minor 6th</div><div class="info-box" style="margin-top:12px">D &rarr; B&#x266E; = Major 6th<br>B&#x266D; is &frac12; step lower than B&#x266E;<br>Major &minus; &frac12; step = <strong>minor 6th</strong></div>'
+    }
+  ],
+  [
+    {
+      question: 'What interval is this?',
+      sub: null,
+      notes: [{key:'d#/4',acc:'#'},{key:'a/4',acc:null}],
+      extra: '<div class="info-box">Notes: <strong>D&#x266F;</strong> and <strong>A</strong><br><span style="font-size:12px">D&#x266F; is not a major scale root &mdash; we need a strategy.</span></div>'
+    },
+    {
+      question: 'Step 1: Count the letter names',
+      sub: 'How many letters from D up to A?',
+      notes: [{key:'d#/4',acc:'#'},{key:'a/4',acc:null}],
+      extra: '<div class="letter-row"><span class="pill lo">D</span><span class="sep">&middot;</span><span class="pill">E</span><span class="sep">&middot;</span><span class="pill">F</span><span class="sep">&middot;</span><span class="pill">G</span><span class="sep">&middot;</span><span class="pill hi">A</span></div><div class="info-box" style="margin-top:10px">D &middot; E &middot; F &middot; G &middot; A = <strong>5 letters</strong><br>So this is some kind of <strong>5th</strong></div>'
+    },
+    {
+      question: 'Step 2: Remove the accidental',
+      sub: 'D&#x266F; isn\'t a major scale root &mdash; temporarily use plain D',
+      notes: [{key:'d/4',acc:'n'},{key:'a/4',acc:null}],
+      extra: '<div class="strategy-box"><div class="strategy-label">Strategy</div><div class="strategy-text">When the bottom note isn\'t a major scale root, <strong>remove its accidental</strong> and solve the interval using the natural note. Then add the accidental back.</div></div>'
+    },
+    {
+      question: 'Step 3: Solve with plain D',
+      sub: 'What is D to A?',
+      notes: [{key:'d/4',acc:'n'},{key:'a/4',acc:null}],
+      extra: '<div class="info-box">D to A = <strong>5 letters</strong> &rarr; some kind of 5th<br>In the D major scale, the 5th degree is <strong>A&#x266E;</strong><br>So D &rarr; A = <strong>Perfect 5th</strong></div>'
+    },
+    {
+      question: 'Step 4: Restore the sharp',
+      sub: 'What happens when the bottom note becomes D&#x266F; again?',
+      notes: [{key:'d#/4',acc:'#'},{key:'a/4',acc:null}],
+      extra: '<div class="info-box">Raising the <strong>bottom</strong> note by a half step makes the interval <strong>smaller</strong> by a half step.</div><div class="rule-box"><div class="rule-label">Rule 3</div><div class="rule-text">A <strong>Perfect</strong> interval made smaller by <strong>one half step</strong> becomes <strong>diminished</strong></div></div>'
+    },
+    {
+      question: 'Answer',
+      sub: null,
+      notes: [{key:'d#/4',acc:'#'},{key:'a/4',acc:null}],
+      extra: '<div class="answer-badge">diminished 5th</div><div class="info-box" style="margin-top:12px">D &rarr; A = Perfect 5th<br>D&#x266F; raises the bottom note by &frac12; step &rarr; interval shrinks<br>Perfect &minus; &frac12; step = <strong>diminished 5th</strong></div>'
+    }
+  ]
+];
+
+var currentEx = 0;
+var currentCard = 0;
+
+function drawStaff(notes, containerId) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  try {
+    var VF = Vex.Flow;
+    var renderer = new VF.Renderer(el, VF.Renderer.Backends.SVG);
+    renderer.resize(220, 120);
+    var ctx = renderer.getContext();
+    var stave = new VF.Stave(10, 15, 195);
+    stave.addClef('treble').setContext(ctx).draw();
+    var vNotes = notes.map(function(n) {
+      var sn = new VF.StaveNote({ clef: 'treble', keys: [n.key], duration: 'w' });
+      if (n.acc) sn.addModifier(new VF.Accidental(n.acc), 0);
+      return sn;
+    });
+    var voice = new VF.Voice({ num_beats: 4, beat_value: 4 }).setStrict(false);
+    voice.addTickables(vNotes);
+    new VF.Formatter().joinVoices([voice]).format([voice], 130);
+    voice.draw(ctx, stave);
+  } catch(e) {
+    el.innerHTML = '<span class="err">Notation error: ' + e.message + '</span>';
+  }
+}
+
+function renderCard(exIdx, cardIdx) {
+  var cards = examples[exIdx];
+  var def = cards[cardIdx];
+  var uid = 'staff_' + exIdx + '_' + cardIdx;
+  var html = '<p class="card-question">' + def.question;
+  if (def.sub) html += '<span class="card-sub">' + def.sub + '</span>';
+  html += '</p>';
+  html += '<div class="notation-wrap"><div id="' + uid + '"></div></div>';
+  html += def.extra;
+
+  document.getElementById('card-body').innerHTML = html;
+  document.getElementById('step-counter').textContent = 'Step ' + (cardIdx+1) + ' of ' + cards.length;
+  document.getElementById('prog').style.width = (((cardIdx+1)/cards.length)*100) + '%';
+
+  document.getElementById('btn-prev').disabled = cardIdx === 0;
+  var nb = document.getElementById('btn-next');
+  nb.textContent = cardIdx === cards.length - 1 ? '\u2713 Done' : 'Next \u2192';
+  nb.disabled = cardIdx === cards.length - 1;
+
+  var dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = cards.map(function(_, j) {
+    return '<div class="dot' + (j===cardIdx?' active':'') + '"></div>';
+  }).join('');
+
+  setTimeout(function() { drawStaff(def.notes, uid); }, 80);
+}
+
+function go(dir) {
+  var cards = examples[currentEx];
+  currentCard = Math.max(0, Math.min(cards.length - 1, currentCard + dir));
+  renderCard(currentEx, currentCard);
+}
+
+function switchExample(idx) {
+  currentEx = idx;
+  currentCard = 0;
+  document.getElementById('ex-btn-0').classList.toggle('active', idx === 0);
+  document.getElementById('ex-btn-1').classList.toggle('active', idx === 1);
+  renderCard(currentEx, currentCard);
+}
+
+function init() {
+  renderCard(0, 0);
+}
+</script>
+</body>
+</html>
