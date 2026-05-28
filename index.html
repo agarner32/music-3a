@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music 3A — Interactive Resources</title>
+  <title>Garner Music Resources</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:       #f7f5f0;
-      --bg2:      #edeae2;
-      --text:     #1a1a1a;
-      --text2:    #4b4b4b;
-      --text3:    #9a9590;
-      --navy:     #1e3a5f;
-      --navy-lt:  #e8f0f8;
-      --gold:     #7a5c1e;
-      --gold-lt:  #f0ece0;
-      --border:   #ddd9d0;
-      --border2:  #c8c4bb;
-      --green:    #1d9e75;
-      --green-lt: #e1f5ee;
-      --purple:   #5b52b5;
-      --purple-lt:#eeedfe;
+      --bg:        #f7f5f0;
+      --bg2:       #edeae2;
+      --text:      #1a1a1a;
+      --text2:     #4b4b4b;
+      --text3:     #9a9590;
+      --navy:      #1e3a5f;
+      --navy-lt:   #e8f0f8;
+      --gold:      #7a5c1e;
+      --gold-lt:   #f0ece0;
+      --border:    #ddd9d0;
+      --border2:   #c8c4bb;
+      --green:     #1d9e75;
+      --green-lt:  #e1f5ee;
+      --purple:    #5b52b5;
+      --purple-lt: #eeedfe;
     }
     body {
       font-family: 'Inter', sans-serif;
@@ -53,6 +53,24 @@
       margin: 0 auto;
       padding: 2.5rem 1.5rem 4rem;
     }
+
+    /* ── Category heading ── */
+    .category-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.25rem;
+    }
+    .category-desc {
+      font-size: 0.82rem;
+      color: var(--text3);
+      margin-bottom: 1.25rem;
+    }
+    .category-block {
+      margin-bottom: 3rem;
+    }
+
     .section-label {
       font-size: 0.7rem;
       font-weight: 600;
@@ -67,7 +85,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 1.25rem;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
     }
     a.resource-card {
       text-decoration: none;
@@ -122,6 +140,10 @@
       background-color: var(--purple-lt);
       color: var(--purple);
     }
+    .card-tag.tag-canvas {
+      background-color: var(--gold-lt);
+      color: var(--gold);
+    }
     .resource-card h2 {
       font-family: 'Playfair Display', serif;
       font-size: 1.1rem;
@@ -143,8 +165,9 @@
       color: var(--navy);
       letter-spacing: 0.02em;
     }
-    .card-arrow.arrow-green { color: var(--green); }
+    .card-arrow.arrow-green  { color: var(--green); }
     .card-arrow.arrow-purple { color: var(--purple); }
+    .card-arrow.arrow-gold   { color: var(--gold); }
     .coming-soon {
       opacity: 0.5;
       cursor: default;
@@ -167,6 +190,14 @@
       margin-left: 0.4rem;
       vertical-align: middle;
     }
+
+    /* ── Divider between categories ── */
+    .category-divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 0.5rem 0 3rem;
+    }
+
     footer {
       text-align: center;
       padding: 2rem;
@@ -178,60 +209,102 @@
   </style>
 </head>
 <body>
+
 <header>
-  <h1>Music 3A — Interactive Resources</h1>
-  <p>Ear Training &amp; Music Fundamentals</p>
+  <h1>Garner Music Resources</h1>
+  <p>Interactive tools, quizzes, and tutorials &mdash; San Joaquin Delta College</p>
 </header>
+
 <main>
-  <p class="section-label">Quizzes</p>
-  <div class="resources-grid">
-    <a href="interval-quiz.html" class="resource-card">
-      <span class="card-tag">Quiz</span>
-      <h2>Interval Identification</h2>
-      <p>Practice identifying melodic and harmonic intervals by ear and by sight.</p>
-      <span class="card-arrow">Open &rarr;</span>
-    </a>
-    <a href="grand-staff-quiz.html" class="resource-card">
-      <span class="card-tag">Quiz</span>
-      <h2>Grand Staff Note ID</h2>
-      <p>Identify notes on the grand staff with octave numbers — treble and bass clef combined.</p>
-      <span class="card-arrow">Open &rarr;</span>
-    </a>
-    <a href="circle-of-fifths.html" class="resource-card">
-      <span class="card-tag">Quiz</span>
-      <h2>Circle of Fifths</h2>
-      <p>Explore key signatures, relative minors, and primary chords — with a built-in quiz mode.</p>
-      <span class="card-arrow">Open &rarr;</span>
-    </a>
-    <a href="https://agarner32.github.io/music-theory-placement/" class="resource-card" target="_blank">
-      <span class="card-tag tag-placement">Placement</span>
-      <h2>Music Theory Placement Exam</h2>
-      <p>Assess your current music theory knowledge before the course begins.</p>
-      <span class="card-arrow arrow-green">Open &rarr;</span>
-    </a>
-  </div>
 
-  <p class="section-label">Tutorials</p>
-  <div class="resources-grid">
-    <a href="interval-tutorial.html" class="resource-card">
-      <span class="card-tag tag-tutorial">Tutorial</span>
-      <h2>How to Identify Intervals</h2>
-      <p>A step-by-step walkthrough of the procedure for determining interval quality, including tricky cases where the bottom note isn&rsquo;t a major scale root.</p>
-      <span class="card-arrow arrow-purple">Open &rarr;</span>
-    </a>
-  </div>
+  <!-- ══════════════════════════════════════════
+       MUSIC 3A
+  ══════════════════════════════════════════ -->
+  <div class="category-block">
+    <h2 class="category-heading">Music 3A</h2>
+    <p class="category-desc">Ear Training &amp; Music Fundamentals</p>
 
-  <p class="section-label">Listening &amp; Reference</p>
-  <div class="resources-grid">
-    <div class="resource-card coming-soon">
-      <span class="card-tag tag-reference">Listening Guide</span>
-      <h2>Interactive Listening Guide <span class="coming-soon-badge">Coming soon</span></h2>
-      <p>Guided listening examples with annotated musical excerpts.</p>
+    <p class="section-label">Quizzes</p>
+    <div class="resources-grid">
+      <a href="https://agarner32.github.io/music-3a/interval-quiz.html" class="resource-card" target="_blank">
+        <span class="card-tag">Quiz</span>
+        <h2>Interval Identification</h2>
+        <p>Practice identifying melodic and harmonic intervals by ear and by sight.</p>
+        <span class="card-arrow">Open &rarr;</span>
+      </a>
+      <a href="https://agarner32.github.io/music-3a/grand-staff-quiz.html" class="resource-card" target="_blank">
+        <span class="card-tag">Quiz</span>
+        <h2>Grand Staff Note ID</h2>
+        <p>Identify notes on the grand staff with octave numbers — treble and bass clef combined.</p>
+        <span class="card-arrow">Open &rarr;</span>
+      </a>
+      <a href="https://agarner32.github.io/music-3a/circle-of-fifths.html" class="resource-card" target="_blank">
+        <span class="card-tag">Quiz</span>
+        <h2>Circle of Fifths</h2>
+        <p>Explore key signatures, relative minors, and primary chords — with a built-in quiz mode.</p>
+        <span class="card-arrow">Open &rarr;</span>
+      </a>
+      <a href="https://agarner32.github.io/music-theory-placement/" class="resource-card" target="_blank">
+        <span class="card-tag tag-placement">Placement</span>
+        <h2>Music Theory Placement Exam</h2>
+        <p>Assess your current music theory knowledge before the course begins.</p>
+        <span class="card-arrow arrow-green">Open &rarr;</span>
+      </a>
     </div>
-  </div>
+
+    <p class="section-label">Tutorials</p>
+    <div class="resources-grid">
+      <a href="https://agarner32.github.io/music-3a/interval-tutorial.html" class="resource-card" target="_blank">
+        <span class="card-tag tag-tutorial">Tutorial</span>
+        <h2>How to Identify Intervals</h2>
+        <p>A step-by-step walkthrough of the procedure for determining interval quality, including tricky cases where the bottom note isn&rsquo;t a major scale root.</p>
+        <span class="card-arrow arrow-purple">Open &rarr;</span>
+      </a>
+    </div>
+
+    <p class="section-label">Listening &amp; Reference</p>
+    <div class="resources-grid">
+      <div class="resource-card coming-soon">
+        <span class="card-tag tag-reference">Listening Guide</span>
+        <h2>Interactive Listening Guide <span class="coming-soon-badge">Coming soon</span></h2>
+        <p>Guided listening examples with annotated musical excerpts.</p>
+      </div>
+    </div>
+
+  </div><!-- /category-block Music 3A -->
+
+  <hr class="category-divider">
+
+  <!-- ══════════════════════════════════════════
+       INSTRUCTOR CANVAS TOOLS
+  ══════════════════════════════════════════ -->
+  <div class="category-block">
+    <h2 class="category-heading">Instructor Canvas Tools</h2>
+    <p class="category-desc">Web-based utilities for managing Canvas LMS courses</p>
+
+    <p class="section-label">Tools</p>
+    <div class="resources-grid">
+      <a href="https://agarner32.github.io/canvas-tools/canvas-announcement-generator.html" class="resource-card" target="_blank">
+        <span class="card-tag tag-canvas">Canvas</span>
+        <h2>Announcement Generator</h2>
+        <p>Build and schedule an entire semester of Canvas announcements in one click.</p>
+        <span class="card-arrow arrow-gold">Open &rarr;</span>
+      </a>
+      <a href="https://agarner32.github.io/canvas-tools/canvas-date-adjuster.html" class="resource-card" target="_blank">
+        <span class="card-tag tag-canvas">Canvas</span>
+        <h2>Date Adjuster</h2>
+        <p>Edit all course due dates, available dates, and close dates in one place — with bulk-shift support.</p>
+        <span class="card-arrow arrow-gold">Open &rarr;</span>
+      </a>
+    </div>
+
+  </div><!-- /category-block Canvas Tools -->
+
 </main>
+
 <footer>
-  Music 3A &mdash; Interactive Resources
+  Garner Music Resources &mdash; San Joaquin Delta College
 </footer>
+
 </body>
 </html>
