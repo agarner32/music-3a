@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meter Identification Quiz — Music 3A</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --plum:       #8b6f8a;
+    --plum-dark:  #5c4b5c;
+    --plum-light: #c4a8c3;
+    --cream:      #fdfaf7;
+    --cream-dark: #f0e8d8;
+    --gold:       #c4a35a;
+    --text:       #2e2028;
+    --text-mid:   #5a4a55;
+    --correct:    #4a7c59;
+    --correct-bg: #e8f4ec;
+    --wrong:      #8c3a2e;
+    --wrong-bg:   #faeae8;
+    --radius:     10px;
+  }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 48px;
+  }
+
+  .quiz-header {
+    width: 100%;
+    max-width: 640px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .quiz-pill {
+    display: inline-block;
+    background: var(--plum-dark);
+    color: var(--cream);
+    font-size: 0.75em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .quiz-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2em;
+    font-weight: 600;
+    color: var(--plum-dark);
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .quiz-subtitle {
+    font-size: 0.88em;
+    color: var(--text-mid);
+  }
+
+  .mode-bar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 9px 12px;
+    border: 2px solid var(--plum);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--plum-dark);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 0.85em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: center;
+  }
+  .mode-btn.active {
+    background: var(--plum-dark);
+    color: var(--cream);
+    border-color: var(--plum-dark);
+  }
+  .mode-btn:hover:not(.active) { background: var(--cream-dark); }
+
+  .score-bar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--plum-dark);
+    color: var(--cream);
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    margin-bottom: 18px;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  .score-bar span { opacity: 0.85; }
+  .score-bar strong { opacity: 1; font-size: 1.1em; }
+
+  .progress-wrap {
+    width: 100%;
+    max-width: 640px;
+    height: 5px;
+    background: var(--cream-dark);
+    border-radius: 3px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 640px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(92,75,92,0.10);
+    padding: 32px 28px 28px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .time-sig-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0 28px;
+  }
+  .time-sig {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--cream-dark);
+    border: 2px solid var(--plum-light);
+    border-radius: 10px;
+    padding: 18px 32px;
+    gap: 2px;
+  }
+  .time-sig .num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4.5em;
+    font-weight: 600;
+    color: var(--plum-dark);
+    line-height: 0.9;
+  }
+  .time-sig .divider {
+    width: 56px;
+    height: 3px;
+    background: var(--plum);
+    border-radius: 2px;
+    margin: 6px 0;
+  }
+
+  .question-prompt {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25em;
+    color: var(--plum-dark);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  /* Full-name answer display shown after Mode A answer */
+  .full-name-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5em;
+    font-weight: 600;
+    color: var(--plum-dark);
+    text-align: center;
+    margin: 14px 0 4px;
+    display: none;
+  }
+
+  .sub-label {
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin: 18px 0 8px;
+  }
+  .sub-label:first-of-type { margin-top: 0; }
+
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .choice-btn {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 120px;
+    padding: 11px 14px;
+    border: 2px solid var(--plum-light);
+    border-radius: var(--radius);
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    text-align: center;
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--plum);
+    background: var(--cream-dark);
+  }
+  .choice-btn.selected-correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+  }
+  .choice-btn.selected-wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    color: var(--wrong);
+  }
+  .choice-btn.reveal-correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+    opacity: 0.75;
+  }
+  .choice-btn:disabled { cursor: default; }
+
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    font-size: 0.9em;
+    line-height: 1.5;
+    display: none;
+  }
+  .feedback.correct {
+    background: var(--correct-bg);
+    border-left: 4px solid var(--correct);
+    color: #2d5c3a;
+    display: block;
+  }
+  .feedback.wrong {
+    background: var(--wrong-bg);
+    border-left: 4px solid var(--wrong);
+    color: var(--wrong);
+    display: block;
+  }
+  .feedback strong { display: block; margin-bottom: 4px; font-size: 1.05em; }
+
+  .btn-next {
+    width: 100%;
+    max-width: 640px;
+    padding: 13px;
+    background: var(--plum-dark);
+    color: var(--cream);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: none;
+  }
+  .btn-next:hover { background: var(--plum); }
+
+  .end-screen {
+    width: 100%;
+    max-width: 640px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(92,75,92,0.10);
+    padding: 40px 28px;
+    text-align: center;
+    display: none;
+  }
+  .end-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2em;
+    color: var(--plum-dark);
+    margin-bottom: 10px;
+  }
+  .end-score {
+    font-size: 3.5em;
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    margin: 12px 0;
+  }
+  .end-msg {
+    color: var(--text-mid);
+    font-size: 0.95em;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .btn-restart {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--plum-dark);
+    color: var(--cream);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-restart:hover { background: var(--plum); }
+</style>
+</head>
+<body>
+
+<div class="quiz-header">
+  <div class="quiz-pill">Music 3A &nbsp;·&nbsp; Week 3</div>
+  <h1 class="quiz-title">Meter Identification</h1>
+  <p class="quiz-subtitle">Identify each time signature by type, beat group, beats per measure, and beat unit.</p>
+</div>
+
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode('basic')" id="btn-mode-basic">Mode A — Simple or Compound?</button>
+  <button class="mode-btn" onclick="setMode('full')" id="btn-mode-full">Mode B — Full Identification</button>
+</div>
+
+<div class="score-bar">
+  <span>Question <strong id="q-num">1</strong> of <strong id="q-total">10</strong></span>
+  <span>Score: <strong id="score-display">0 / 0</strong></span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+</div>
+
+<div class="card" id="quiz-card">
+  <div class="time-sig-wrap">
+    <div class="time-sig">
+      <span class="num" id="ts-top">6</span>
+      <div class="divider"></div>
+      <span class="num" id="ts-bot">8</span>
+    </div>
+  </div>
+
+  <!-- MODE A -->
+  <div id="section-basic">
+    <p class="question-prompt">What type of meter is this?</p>
+    <div class="choices" id="choices-basic"></div>
+    <!-- revealed after answer -->
+    <div class="full-name-display" id="full-name-display"></div>
+  </div>
+
+  <!-- MODE B -->
+  <div id="section-full" style="display:none;">
+    <div class="sub-label">1 — Simple or Compound?</div>
+    <div class="choices" id="choices-type"></div>
+
+    <div class="sub-label">2 — Beat grouping</div>
+    <div class="choices" id="choices-group"></div>
+
+    <div class="sub-label">3 — Beats per measure</div>
+    <div class="choices" id="choices-beats"></div>
+
+    <div class="sub-label">4 — Beat unit</div>
+    <div class="choices" id="choices-unit"></div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<button class="btn-next" id="btn-next" onclick="nextQuestion()">Next Question →</button>
+
+<div class="end-screen" id="end-screen">
+  <h2>Quiz Complete!</h2>
+  <div class="end-score" id="end-score">—</div>
+  <p class="end-msg" id="end-msg"></p>
+  <button class="btn-restart" onclick="restartQuiz()">Try Again</button>
+</div>
+
+<script>
+const questions = [
+  { top:  2, bot: 4, type: 'Simple',   group: 'Duple',      beats: 2, unit: 'Quarter note'        },
+  { top:  3, bot: 4, type: 'Simple',   group: 'Triple',     beats: 3, unit: 'Quarter note'        },
+  { top:  4, bot: 4, type: 'Simple',   group: 'Quadruple',  beats: 4, unit: 'Quarter note'        },
+  { top:  2, bot: 2, type: 'Simple',   group: 'Duple',      beats: 2, unit: 'Half note'           },
+  { top:  3, bot: 2, type: 'Simple',   group: 'Triple',     beats: 3, unit: 'Half note'           },
+  { top:  4, bot: 2, type: 'Simple',   group: 'Quadruple',  beats: 4, unit: 'Half note'           },
+  { top:  6, bot: 8, type: 'Compound', group: 'Duple',      beats: 2, unit: 'Dotted quarter note' },
+  { top:  9, bot: 8, type: 'Compound', group: 'Triple',     beats: 3, unit: 'Dotted quarter note' },
+  { top: 12, bot: 8, type: 'Compound', group: 'Quadruple',  beats: 4, unit: 'Dotted quarter note' },
+  { top:  6, bot: 4, type: 'Compound', group: 'Duple',      beats: 2, unit: 'Dotted half note'    },
+  { top:  9, bot: 4, type: 'Compound', group: 'Triple',     beats: 3, unit: 'Dotted half note'    },
+  { top: 12, bot: 4, type: 'Compound', group: 'Quadruple',  beats: 4, unit: 'Dotted half note'    },
+  { top:  3, bot: 8, type: 'Simple',   group: 'Triple',     beats: 3, unit: 'Eighth note'         },
+];
+
+const QUIZ_LENGTH = 10;
+
+let mode = 'basic';
+let deck = [], current = 0, correct = 0, answered = false;
+let ansType = null, ansGroup = null, ansBeats = null, ansUnit = null;
+
+function fullName(q) {
+  return q.type + ' ' + q.group;
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-mode-basic').classList.toggle('active', m === 'basic');
+  document.getElementById('btn-mode-full').classList.toggle('active', m === 'full');
+  document.getElementById('section-basic').style.display = m === 'basic' ? '' : 'none';
+  document.getElementById('section-full').style.display  = m === 'full'  ? '' : 'none';
+  restartQuiz();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildDeck() {
+  deck = shuffle([...questions]).slice(0, QUIZ_LENGTH);
+}
+
+function restartQuiz() {
+  buildDeck();
+  current = 0; correct = 0; answered = false;
+  resetPartial();
+  document.getElementById('end-screen').style.display = 'none';
+  document.getElementById('quiz-card').style.display = 'block';
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('full-name-display').style.display = 'none';
+  updateScoreBar();
+  renderQuestion();
+}
+
+function resetPartial() {
+  ansType = null; ansGroup = null; ansBeats = null; ansUnit = null;
+}
+
+function updateScoreBar() {
+  document.getElementById('q-num').textContent = Math.min(current + 1, QUIZ_LENGTH);
+  document.getElementById('q-total').textContent = QUIZ_LENGTH;
+  document.getElementById('score-display').textContent = correct + ' / ' + current;
+  document.getElementById('progress-bar').style.width = (current / QUIZ_LENGTH * 100) + '%';
+}
+
+function renderQuestion() {
+  answered = false;
+  resetPartial();
+  const q = deck[current];
+  document.getElementById('ts-top').textContent = q.top;
+  document.getElementById('ts-bot').textContent = q.bot;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('full-name-display').style.display = 'none';
+
+  if (mode === 'basic') renderBasic(q);
+  else renderFull(q);
+}
+
+// ── MODE A ──────────────────────────────────────────────
+function renderBasic(q) {
+  // Four choices: the six possible full names, pick 4 including correct
+  const allNames = [
+    'Simple Duple', 'Simple Triple', 'Simple Quadruple',
+    'Compound Duple', 'Compound Triple', 'Compound Quadruple'
+  ];
+  const correct_name = fullName(q);
+  const distractors = shuffle(allNames.filter(n => n !== correct_name)).slice(0, 3);
+  const opts = shuffle([correct_name, ...distractors]);
+
+  const container = document.getElementById('choices-basic');
+  container.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = opt;
+    btn.onclick = () => answerBasic(opt, q, container);
+    container.appendChild(btn);
+  });
+}
+
+function answerBasic(chosen, q, container) {
+  if (answered) return;
+  answered = true;
+  const correct_name = fullName(q);
+  const isCorrect = chosen === correct_name;
+  if (isCorrect) correct++;
+
+  Array.from(container.children).forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === chosen)        btn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+    if (!isCorrect && btn.textContent === correct_name) btn.classList.add('reveal-correct');
+  });
+
+  // Show the full term prominently
+  const fnd = document.getElementById('full-name-display');
+  fnd.textContent = correct_name + ' — ' + q.beats + ' beat' + (q.beats > 1 ? 's' : '') + ', beat unit = ' + q.unit.toLowerCase();
+  fnd.style.display = 'block';
+
+  showFeedbackBasic(isCorrect, q);
+  updateScoreBar();
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function showFeedbackBasic(isCorrect, q) {
+  const fb = document.getElementById('feedback');
+  const name = fullName(q);
+  if (isCorrect) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = `<strong>Correct!</strong>${q.top}/${q.bot} is <em>${name}</em>: ${q.beats} beat${q.beats > 1 ? 's' : ''} per measure, beat unit = ${q.unit.toLowerCase()}. ${q.type === 'Compound' ? 'Top number (' + q.top + ') ÷ 3 = ' + q.beats + ' beats.' : 'Top number = beats directly.'}`;
+  } else {
+    fb.className = 'feedback wrong';
+    fb.innerHTML = `<strong>Not quite.</strong>${q.top}/${q.bot} is <em>${name}</em>. ${q.type === 'Compound' ? 'Top numbers that are multiples of 3 (greater than 3) signal compound meter. ' + q.top + ' ÷ 3 = ' + q.beats + ' beat' + (q.beats > 1 ? 's' : '') + '.' : 'Top numbers of 2, 3, or 4 signal simple meter — the number equals the beat count directly.'} Beat grouping: ${q.beats} beats = ${q.group.toLowerCase()}.`;
+  }
+}
+
+// ── MODE B ──────────────────────────────────────────────
+function renderFull(q) {
+  makeChoices('choices-type',  ['Simple', 'Compound'],              q.type,  v => { ansType  = v; checkFull(q); });
+  makeChoices('choices-group', ['Duple', 'Triple', 'Quadruple'],    q.group, v => { ansGroup = v; checkFull(q); });
+  makeChoices('choices-beats', ['2 beats', '3 beats', '4 beats'],   q.beats + ' beats', v => { ansBeats = v; checkFull(q); });
+
+  const allUnits = ['Quarter note', 'Half note', 'Eighth note', 'Dotted quarter note', 'Dotted half note'];
+  const distractors = shuffle(allUnits.filter(u => u !== q.unit)).slice(0, 3);
+  const unitOpts = shuffle([q.unit, ...distractors]);
+  makeChoices('choices-unit', unitOpts, q.unit, v => { ansUnit = v; checkFull(q); });
+}
+
+function makeChoices(containerId, opts, correctVal, onPick) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = opt;
+    btn.dataset.val = opt;
+    btn.onclick = () => {
+      if (answered) return;
+      // Highlight selection within group only
+      Array.from(container.children).forEach(b => {
+        b.style.borderColor = '';
+        b.style.background = '';
+      });
+      btn.style.borderColor = 'var(--gold)';
+      btn.style.background = 'var(--cream-dark)';
+      onPick(opt);
+    };
+    container.appendChild(btn);
+  });
+}
+
+function checkFull(q) {
+  if (ansType === null || ansGroup === null || ansBeats === null || ansUnit === null) return;
+  answered = true;
+
+  const allCorrect = ansType === q.type && ansGroup === q.group &&
+                     ansBeats === q.beats + ' beats' && ansUnit === q.unit;
+  if (allCorrect) correct++;
+
+  lockGroup('choices-type',  ansType,            q.type);
+  lockGroup('choices-group', ansGroup,            q.group);
+  lockGroup('choices-beats', ansBeats,            q.beats + ' beats');
+  lockGroup('choices-unit',  ansUnit,             q.unit);
+
+  showFeedbackFull(allCorrect, q);
+  updateScoreBar();
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function lockGroup(containerId, chosen, correctVal) {
+  const container = document.getElementById(containerId);
+  Array.from(container.children).forEach(btn => {
+    btn.disabled = true;
+    btn.style.borderColor = '';
+    btn.style.background = '';
+    if (btn.textContent === chosen) {
+      btn.classList.add(chosen === correctVal ? 'selected-correct' : 'selected-wrong');
+    }
+    if (chosen !== correctVal && btn.textContent === correctVal) {
+      btn.classList.add('reveal-correct');
+    }
+  });
+}
+
+function showFeedbackFull(allCorrect, q) {
+  const fb = document.getElementById('feedback');
+  const name = fullName(q);
+  if (allCorrect) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = `<strong>All correct!</strong>${q.top}/${q.bot} = <em>${name}</em>: ${q.beats} beat${q.beats > 1 ? 's' : ''} per measure, beat unit = ${q.unit.toLowerCase()}.`;
+  } else {
+    fb.className = 'feedback wrong';
+    let hint = q.type === 'Compound'
+      ? `Top number ${q.top} ÷ 3 = ${q.beats} beats (${q.group.toLowerCase()}). Bottom ${q.bot} → ${q.bot === 8 ? 'eighth' : q.bot === 4 ? 'quarter' : 'half'} note → dotted = ${q.unit.toLowerCase()}.`
+      : `Top number ${q.top} = beats directly (${q.group.toLowerCase()}). Bottom ${q.bot} → ${q.unit.toLowerCase()} gets the beat.`;
+    fb.innerHTML = `<strong>Not quite.</strong>${q.top}/${q.bot} is <em>${name}</em>. ${hint}`;
+  }
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= QUIZ_LENGTH) showEndScreen();
+  else { updateScoreBar(); renderQuestion(); }
+}
+
+function showEndScreen() {
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+  const pct = Math.round((correct / QUIZ_LENGTH) * 100);
+  document.getElementById('end-score').textContent = correct + ' / ' + QUIZ_LENGTH;
+  let msg = pct === 100 ? 'Perfect score! You have solid command of all meter types.'
+    : pct >= 80 ? 'Great work! Review any misses, then try Mode B for the full challenge.'
+    : pct >= 60 ? 'Good effort. Focus on the compound rule: top number ÷ 3 = beats, and the beat unit is always a dotted note.'
+    : 'Keep practicing! Simple meters: top number = beats directly. Compound: top ÷ 3 = beats, beat unit = dotted note.';
+  document.getElementById('end-msg').textContent = msg;
+  document.getElementById('end-screen').style.display = 'block';
+}
+
+buildDeck();
+updateScoreBar();
+renderQuestion();
+</script>
+</body>
+</html>
