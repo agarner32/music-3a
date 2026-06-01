@@ -53,8 +53,6 @@
       margin: 0 auto;
       padding: 2.5rem 1.5rem 4rem;
     }
-
-    /* ── Category heading ── */
     .category-heading {
       font-family: 'Playfair Display', serif;
       font-size: 1.3rem;
@@ -70,7 +68,6 @@
     .category-block {
       margin-bottom: 3rem;
     }
-
     .section-label {
       font-size: 0.7rem;
       font-weight: 600;
@@ -128,22 +125,10 @@
       padding: 3px 8px;
       margin-bottom: 0.75rem;
     }
-    .card-tag.tag-reference {
-      background-color: var(--gold-lt);
-      color: var(--gold);
-    }
-    .card-tag.tag-placement {
-      background-color: var(--green-lt);
-      color: var(--green);
-    }
-    .card-tag.tag-tutorial {
-      background-color: var(--purple-lt);
-      color: var(--purple);
-    }
-    .card-tag.tag-canvas {
-      background-color: var(--gold-lt);
-      color: var(--gold);
-    }
+    .card-tag.tag-reference  { background-color: var(--gold-lt);   color: var(--gold);   }
+    .card-tag.tag-placement  { background-color: var(--green-lt);  color: var(--green);  }
+    .card-tag.tag-tutorial   { background-color: var(--purple-lt); color: var(--purple); }
+    .card-tag.tag-canvas     { background-color: var(--gold-lt);   color: var(--gold);   }
     .resource-card h2 {
       font-family: 'Playfair Display', serif;
       font-size: 1.1rem;
@@ -165,9 +150,9 @@
       color: var(--navy);
       letter-spacing: 0.02em;
     }
-    .card-arrow.arrow-green  { color: var(--green); }
+    .card-arrow.arrow-green  { color: var(--green);  }
     .card-arrow.arrow-purple { color: var(--purple); }
-    .card-arrow.arrow-gold   { color: var(--gold); }
+    .card-arrow.arrow-gold   { color: var(--gold);   }
     .coming-soon {
       opacity: 0.5;
       cursor: default;
@@ -190,14 +175,11 @@
       margin-left: 0.4rem;
       vertical-align: middle;
     }
-
-    /* ── Divider between categories ── */
     .category-divider {
       border: none;
       border-top: 2px solid var(--border);
       margin: 0.5rem 0 3rem;
     }
-
     footer {
       text-align: center;
       padding: 2rem;
@@ -217,9 +199,7 @@
 
 <main>
 
-  <!-- ══════════════════════════════════════════
-       MUSIC 3A
-  ══════════════════════════════════════════ -->
+  <!-- MUSIC 3A -->
   <div class="category-block">
     <h2 class="category-heading">Music 3A</h2>
     <p class="category-desc">Ear Training &amp; Music Fundamentals</p>
@@ -242,6 +222,12 @@
         <span class="card-tag">Quiz</span>
         <h2>Circle of Fifths</h2>
         <p>Explore key signatures, relative minors, and primary chords — with a built-in quiz mode.</p>
+        <span class="card-arrow">Open &rarr;</span>
+      </a>
+      <a href="https://agarner32.github.io/music-3a/compound-meter-quiz.html" class="resource-card" target="_blank">
+        <span class="card-tag">Quiz</span>
+        <h2>Meter Identification</h2>
+        <p>Identify time signatures as simple or compound — with full name, beat count, and beat unit.</p>
         <span class="card-arrow">Open &rarr;</span>
       </a>
       <a href="https://agarner32.github.io/music-theory-placement/" class="resource-card" target="_blank">
@@ -271,13 +257,11 @@
       </div>
     </div>
 
-  </div><!-- /category-block Music 3A -->
+  </div>
 
   <hr class="category-divider">
 
-  <!-- ══════════════════════════════════════════
-       INSTRUCTOR CANVAS TOOLS
-  ══════════════════════════════════════════ -->
+  <!-- INSTRUCTOR CANVAS TOOLS -->
   <div class="category-block">
     <h2 class="category-heading">Instructor Canvas Tools</h2>
     <p class="category-desc">Web-based utilities for managing Canvas LMS courses</p>
@@ -304,7 +288,7 @@
       </a>
     </div>
 
-  </div><!-- /category-block Canvas Tools -->
+  </div>
 
 </main>
 
