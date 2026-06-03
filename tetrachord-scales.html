@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Major Scale Tetrachords</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #fdfaf7; padding: 1.25rem 1rem 2rem; }
+h2 { text-align: center; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem; font-weight: 500; color: #5c4459; margin-bottom: 0.2rem; }
+.subtitle { text-align: center; font-size: 0.8rem; color: #887f8a; margin-bottom: 1.25rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.card { background: #fff; border: 1px solid #ddd6ce; border-radius: 10px; padding: 1rem 1.25rem 1.25rem; max-width: 560px; margin: 0 auto; }
+.key-label { text-align: center; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.25rem; font-weight: 500; color: #5c4459; margin-bottom: 0.5rem; }
+.staff-wrap { display: flex; justify-content: center; overflow: hidden; }
+canvas { display: block; }
+.legend { display: flex; justify-content: center; gap: 1.5rem; margin: 0.75rem 0 0.5rem; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #5a5060; }
+.legend-dot { width: 28px; height: 3px; border-radius: 2px; }
+.note-row { text-align: center; font-size: 0.82rem; color: #5a5060; margin-bottom: 0.75rem; font-family: 'DM Sans', sans-serif; letter-spacing: 0.03em; }
+.nav { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.75rem; }
+.nav button { font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; padding: 7px 20px; border: 1.5px solid #a688a5; border-radius: 100px; background: #fff; color: #5c4459; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.nav button:hover { background: #7a5f79; color: #fff; border-color: #7a5f79; }
+.nav button:disabled { opacity: 0.35; cursor: default; }
+.counter { font-size: 0.8rem; color: #887f8a; min-width: 50px; text-align: center; }
+.step-label { text-align: center; font-size: 0.78rem; color: #887f8a; margin-top: 0.25rem; font-style: italic; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<h2>Major Scale Tetrachords</h2>
+<p class="subtitle">Two W–W–H tetrachords joined by a whole step</p>
+
+<div class="card">
+  <div class="key-label" id="key-label">C Major</div>
+  <div class="staff-wrap"><canvas id="staff-canvas"></canvas></div>
+  <div class="note-row" id="note-row"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#7a5f79;"></div>Tetrachord 1</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c9a96e;"></div>Whole step</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4a9e82;"></div>Tetrachord 2</div>
+  </div>
+  <div class="step-label" id="step-label"></div>
+  <div class="nav">
+    <button id="prev-btn" disabled>&#8592; Previous</button>
+    <span class="counter" id="counter">1 / 5</span>
+    <button id="next-btn">Next &#8594;</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<script>
+const VF = Vex.Flow;
+
+const scales = [
+  {
+    name: 'C Major',
+    clef: 'treble',
+    notes: ['c/4','d/4','e/4','f/4','g/4','a/4','b/4','c/5'],
+    accs:  ['',   '',   '',   '',   '',   '',   '',   ''],
+    names: ['C','D','E','F','G','A','B','C'],
+    steps: ['W','W','H','W','W','W','H']
+  },
+  {
+    name: 'G Major',
+    clef: 'treble',
+    notes: ['g/4','a/4','b/4','c/5','d/5','e/5','f/5','g/5'],
+    accs:  ['',   '',   '',   '',   '',   '',   '#',  ''],
+    names: ['G','A','B','C','D','E','F♯','G'],
+    steps: ['W','W','H','W','W','W','H']
+  },
+  {
+    name: 'D Major',
+    clef: 'treble',
+    notes: ['d/4','e/4','f/4','g/4','a/4','b/4','c/5','d/5'],
+    accs:  ['',   '',   '#',  '',   '',   '',   '#',  ''],
+    names: ['D','E','F♯','G','A','B','C♯','D'],
+    steps: ['W','W','H','W','W','W','H']
+  },
+  {
+    name: 'F Major',
+    clef: 'treble',
+    notes: ['f/4','g/4','a/4','b/4','c/5','d/5','e/5','f/5'],
+    accs:  ['',   '',   '',   'b',  '',   '',   '',   ''],
+    names: ['F','G','A','B♭','C','D','E','F'],
+    steps: ['W','W','H','W','W','W','H']
+  },
+  {
+    name: 'B♭ Major',
+    clef: 'treble',
+    notes: ['b/3','c/4','d/4','e/4','f/4','g/4','a/4','b/4'],
+    accs:  ['b',  '',   '',   'b',  '',   '',   '',   'b'],
+    names: ['B♭','C','D','E♭','F','G','A','B♭'],
+    steps: ['W','W','H','W','W','W','H']
+  }
+];
+
+let current = 0;
+
+function getStepLabel(scale) {
+  const t1 = scale.names.slice(0,4).join(' – ');
+  const t2 = scale.names.slice(4).join(' – ');
+  return `Tetrachord 1: ${t1}   ·   Whole Step   ·   Tetrachord 2: ${t2}`;
+}
+
+function getNoteRow(scale) {
+  return scale.names.join('  –  ');
+}
+
+function drawScale(index) {
+  const scale = scales[index];
+  const canvas = document.getElementById('staff-canvas');
+  const W = 520, H = 160;
+  canvas.width = W;
+  canvas.height = H;
+
+  const ctx2d = canvas.getContext('2d');
+  ctx2d.clearRect(0, 0, W, H);
+
+  try {
+    const renderer = new VF.Renderer(canvas, VF.Renderer.Backends.CANVAS);
+    renderer.resize(W, H);
+    const ctx = renderer.getContext();
+
+    const stave = new VF.Stave(20, 30, W - 40);
+    stave.addClef(scale.clef);
+    stave.setContext(ctx).draw();
+
+    const staveNotes = scale.notes.map((key, i) => {
+      const sn = new VF.StaveNote({ clef: scale.clef, keys: [key], duration: 'w' });
+      if (scale.accs[i]) sn.addModifier(new VF.Accidental(scale.accs[i]), 0);
+      return sn;
+    });
+
+    const voice = new VF.Voice({ num_beats: 8, beat_value: 1 });
+    voice.setStrict(false);
+    voice.addTickables(staveNotes);
+    new VF.Formatter().joinVoices([voice]).format([voice], W - 100);
+    voice.draw(ctx, stave);
+
+    // Draw bracket annotations above staff
+    // Get note x positions approximately
+    const noteXPositions = staveNotes.map(n => {
+      try { return n.getAbsoluteX(); } catch(e) { return 0; }
+    });
+
+    const bracketY = 46;
+    const tickH = 6;
+
+    function drawBracket(x1, x2, color, label) {
+      ctx2d.save();
+      ctx2d.strokeStyle = color;
+      ctx2d.fillStyle = color;
+      ctx2d.lineWidth = 2;
+      ctx2d.font = '13px DM Sans, sans-serif';
+
+      // horizontal line
+      ctx2d.beginPath();
+      ctx2d.moveTo(x1, bracketY);
+      ctx2d.lineTo(x2, bracketY);
+      ctx2d.stroke();
+
+      // left tick
+      ctx2d.beginPath();
+      ctx2d.moveTo(x1, bracketY);
+      ctx2d.lineTo(x1, bracketY + tickH);
+      ctx2d.stroke();
+
+      // right tick
+      ctx2d.beginPath();
+      ctx2d.moveTo(x2, bracketY);
+      ctx2d.lineTo(x2, bracketY + tickH);
+      ctx2d.stroke();
+
+      // label
+      const mid = (x1 + x2) / 2;
+      ctx2d.fillText(label, mid - ctx2d.measureText(label).width / 2, bracketY - 4);
+      ctx2d.restore();
+    }
+
+    function drawWS(x1, x2) {
+      ctx2d.save();
+      ctx2d.strokeStyle = '#c9a96e';
+      ctx2d.fillStyle = '#c9a96e';
+      ctx2d.lineWidth = 1.5;
+      ctx2d.setLineDash([3,3]);
+      ctx2d.font = '13px DM Sans, sans-serif';
+      ctx2d.beginPath();
+      ctx2d.moveTo(x1, bracketY);
+      ctx2d.lineTo(x2, bracketY);
+      ctx2d.stroke();
+      ctx2d.setLineDash([]);
+      const mid = (x1 + x2) / 2;
+      ctx2d.fillText('W', mid - 4, bracketY - 4);
+      ctx2d.restore();
+    }
+
+    if (noteXPositions[0] && noteXPositions[7]) {
+      const pad = 8;
+      drawBracket(noteXPositions[0] - pad, noteXPositions[3] + pad, '#7a5f79', 'Tetrachord 1  (W–W–H)');
+      drawWS(noteXPositions[3] + pad + 2, noteXPositions[4] - pad - 2);
+      drawBracket(noteXPositions[4] - pad, noteXPositions[7] + pad, '#4a9e82', 'Tetrachord 2  (W–W–H)');
+    }
+
+  } catch(e) { console.error(e); }
+
+  document.getElementById('key-label').textContent = scale.name;
+  document.getElementById('note-row').textContent = getNoteRow(scale);
+  document.getElementById('step-label').textContent = getStepLabel(scale);
+  document.getElementById('counter').textContent = (index + 1) + ' / ' + scales.length;
+  document.getElementById('prev-btn').disabled = index === 0;
+  document.getElementById('next-btn').disabled = index === scales.length - 1;
+}
+
+document.getElementById('prev-btn').addEventListener('click', () => { if (current > 0) { current--; drawScale(current); } });
+document.getElementById('next-btn').addEventListener('click', () => { if (current < scales.length - 1) { current++; drawScale(current); } });
+
+requestAnimationFrame(() => drawScale(0));
+</script>
+</body>
+</html>
