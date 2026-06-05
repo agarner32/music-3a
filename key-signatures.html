@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Key Signatures — Reading &amp; Building</title>
+  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f3;
+      color: #1a1a1a;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      color: #1a1a1a;
+    }
+
+    :root {
+      --accent-sharp: #B07A18;
+      --accent-flat: #1A5FA8;
+      --bg: #f5f5f3;
+      --bg-card: #ffffff;
+      --bg-secondary: #efefed;
+      --border: #d8d7d3;
+      --border-light: #e8e7e3;
+      --text: #1a1a1a;
+      --text-secondary: #555550;
+      --text-tertiary: #888882;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .nav-tab {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all .15s;
+      text-align: center;
+    }
+
+    .nav-tab.active {
+      background: var(--bg-card);
+      color: var(--text);
+      border-color: #aaa;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .stepper-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .step-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .2s;
+      cursor: pointer;
+    }
+
+    .step-dot.sharp-active { background: var(--accent-sharp); }
+    .step-dot.flat-active  { background: var(--accent-flat); }
+
+    .step-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-left: auto;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .card.scrollable {
+      max-height: 520px;
+      overflow-y: auto;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .card-title .sym-s { color: var(--accent-sharp); }
+    .card-title .sym-f { color: var(--accent-flat); }
+
+    .card-body {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .pill {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .pill-sharp { background: #FAEEDA; color: #854F0B; }
+    .pill-flat  { background: #E6F1FB; color: #185FA5; }
+
+    .mnemonic {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+
+    .example-block { margin: 14px 0; }
+
+    .example-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .example-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .staff-wrap { flex-shrink: 0; }
+    .staff-wrap svg { display: block; }
+
+    .full-staff-wrap {
+      width: 100%;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .example-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .chain {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    .hl  { color: var(--accent-sharp); font-weight: 600; }
+    .hlf { color: var(--accent-flat);  font-weight: 600; }
+
+    .deg-row {
+      display: flex;
+      gap: 4px;
+      margin: 6px 0;
+      flex-wrap: wrap;
+    }
+
+    .deg {
+      display: inline-block;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 26px;
+      font-size: 11px;
+      font-weight: 500;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .deg.on {
+      background: #E6F1FB;
+      color: #185FA5;
+      border-color: #185FA5;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .nav-btn {
+      padding: 8px 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text);
+      transition: background .15s;
+    }
+
+    .nav-btn:hover { background: #e2e1de; }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    .ref-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .ref-item {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+    }
+
+    .ref-key {
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .ref-acc {
+      font-size: 12px;
+      margin-top: 2px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .ref-acc.s { color: var(--accent-sharp); }
+    .ref-acc.f { color: var(--accent-flat); }
+
+    .ref-section-heading {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 14px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .ref-section-heading:first-of-type { margin-top: 0; }
+    .ref-section-heading.sh { color: var(--accent-sharp); }
+    .ref-section-heading.fh { color: var(--accent-flat); }
+  </style>
+</head>
+<body>
+
+  <h1>Key Signatures — Reading &amp; Building</h1>
+
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('reading', this)">Reading a key signature</div>
+    <div class="nav-tab" onclick="switchTab('building', this)">Building a key signature</div>
+  </div>
+
+  <!-- READING -->
+  <div class="section active" id="sec-reading">
+    <div class="stepper-header">
+      <div class="step-dot sharp-active" id="rd0" onclick="goR(0)"></div>
+      <div class="step-dot" id="rd1" onclick="goR(1)"></div>
+      <div class="step-dot" id="rd2" onclick="goR(2)"></div>
+      <div class="step-dot" id="rd3" onclick="goR(3)"></div>
+      <div class="step-dot" id="rd4" onclick="goR(4)"></div>
+      <span class="step-label" id="rl">1 / 5</span>
+    </div>
+    <div class="card" id="read-card"></div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="rp" onclick="goR(rStep-1)" disabled>← Prev</button>
+      <button class="nav-btn" id="rn" onclick="goR(rStep+1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- BUILDING -->
+  <div class="section" id="sec-building">
+    <div class="stepper-header">
+      <div class="step-dot sharp-active" id="bd0" onclick="goB(0)"></div>
+      <div class="step-dot" id="bd1" onclick="goB(1)"></div>
+      <div class="step-dot" id="bd2" onclick="goB(2)"></div>
+      <div class="step-dot" id="bd3" onclick="goB(3)"></div>
+      <div class="step-dot" id="bd4" onclick="goB(4)"></div>
+      <span class="step-label" id="bl">1 / 5</span>
+    </div>
+    <div class="card" id="build-card"></div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="bp" onclick="goB(bStep-1)" disabled>← Prev</button>
+      <button class="nav-btn" id="bn" onclick="goB(bStep+1)">Next →</button>
+    </div>
+  </div>
+
+<script>
+const { Renderer, Stave } = Vex.Flow;
+const inkColor = '#1a1a1a';
+
+const NORM = { W: 220, H: 195, ty: 12, by: 105 };
+const COMP = { W: 190, H: 175, ty: 10, by: 95  };
+const WIDE = { W: 560, H: 195, ty: 12, by: 105 };
+
+function recolor(el) {
+  const svg = el.querySelector('svg');
+  if (!svg) return;
+  svg.querySelectorAll('path, rect, text, line').forEach(n => {
+    const f = n.getAttribute('fill');
+    const s = n.getAttribute('stroke');
+    if (f && f !== 'none' && f !== 'transparent') n.setAttribute('fill', inkColor);
+    if (s && s !== 'none' && s !== 'transparent') n.setAttribute('stroke', inkColor);
+  });
+  svg.style.background = 'transparent';
+}
+
+function drawStaff(el, keySpec, cfg) {
+  if (!el) return;
+  el.innerHTML = '';
+  const { W, H, ty, by } = cfg;
+  const renderer = new Renderer(el, Renderer.Backends.SVG);
+  renderer.resize(W, H);
+  const ctx = renderer.getContext();
+  ctx.setFillStyle(inkColor);
+  ctx.setStrokeStyle(inkColor);
+  const treble = new Stave(10, ty, W - 20);
+  treble.addClef('treble').addKeySignature(keySpec);
+  treble.setContext(ctx).draw();
+  const bass = new Stave(10, by, W - 20);
+  bass.addClef('bass').addKeySignature(keySpec);
+  bass.setContext(ctx).draw();
+  ctx.save();
+  ctx.setLineWidth(2.5);
+  ctx.beginPath();
+  ctx.moveTo(10, treble.getTopLineTopY());
+  ctx.lineTo(10, bass.getBottomLineBottomY());
+  ctx.stroke();
+  ctx.restore();
+  recolor(el);
+}
+
+function staffBlock(id, keySpec, labelHtml, noteHtml) {
+  return `<div class="example-block">
+    <div class="example-label">${labelHtml}</div>
+    <div class="example-row">
+      <div class="staff-wrap" id="${id}"></div>
+      <div class="example-text">${noteHtml}</div>
+    </div>
+  </div>`;
+}
+
+function degRow(letters, tonic, fourth) {
+  return `<div class="deg-row">${letters.map((l,i) =>
+    `<span class="deg${(l===tonic||l===fourth)?' on':''}">${l}<br><span style="font-size:9px">${i+1}</span></span>`
+  ).join('')}</div>`;
+}
+
+function refGrid(items, accClass) {
+  return `<div class="ref-grid">${items.map(([id, key, n, s]) => `
+    <div class="ref-item">
+      <div class="ref-key">${key} major <span style="font-size:11px;color:#888882">${n}</span></div>
+      <div id="${id}"></div>
+      <div class="ref-acc ${accClass}">${s}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ---- READ STEPS ----
+const readSteps = [
+  {
+    flat: false,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-s">♯</span> Sharp keys — the complete order</p>
+        <p class="card-body">This is how all 7 sharps look on a grand staff. Every sharp key uses sharps from the left of this sequence — one more sharp per key.</p>
+        <div class="full-staff-wrap" id="rs0-full"></div>
+        <div class="pill-row">
+          <span class="pill pill-sharp">F♯</span><span class="pill pill-sharp">C♯</span><span class="pill pill-sharp">G♯</span><span class="pill pill-sharp">D♯</span><span class="pill pill-sharp">A♯</span><span class="pill pill-sharp">E♯</span><span class="pill pill-sharp">B♯</span>
+        </div>
+        <div class="mnemonic"><strong>F</strong>ather <strong>C</strong>harles <strong>G</strong>oes <strong>D</strong>own <strong>A</strong>nd <strong>E</strong>nds <strong>B</strong>attle</div>`;
+      drawStaff(document.getElementById('rs0-full'), 'C#', WIDE);
+    }
+  },
+  {
+    flat: false,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-s">♯</span> Reading a sharp key signature</p>
+        <p class="card-body">Look at the <strong>last (rightmost) sharp</strong>. Go up a half step — or just the next letter name — and that's your key.</p>
+        ${staffBlock('rs1a','A','3 sharps → A major','<div class="chain">F♯ C♯ <span class="hl">G♯</span></div><div style="margin-top:4px;">Last sharp = <span class="hl">G♯</span><br>Up a half step → <strong>A major</strong></div>')}
+        ${staffBlock('rs1b','E','4 sharps → E major','<div class="chain">F♯ C♯ G♯ <span class="hl">D♯</span></div><div style="margin-top:4px;">Last sharp = <span class="hl">D♯</span><br>Up a half step → <strong>E major</strong></div>')}`;
+      drawStaff(document.getElementById('rs1a'), 'A', NORM);
+      drawStaff(document.getElementById('rs1b'), 'E', NORM);
+    }
+  },
+  {
+    flat: true,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-f">♭</span> Flat keys — the complete order</p>
+        <p class="card-body">This is how all 7 flats look on a grand staff. Every flat key uses flats from the left of this sequence — one more flat per key. Notice it's the sharp order in reverse.</p>
+        <div class="full-staff-wrap" id="rs2-full"></div>
+        <div class="pill-row">
+          <span class="pill pill-flat">B♭</span><span class="pill pill-flat">E♭</span><span class="pill pill-flat">A♭</span><span class="pill pill-flat">D♭</span><span class="pill pill-flat">G♭</span><span class="pill pill-flat">C♭</span><span class="pill pill-flat">F♭</span>
+        </div>
+        <div class="mnemonic"><strong>B</strong>attle <strong>E</strong>nds <strong>A</strong>nd <strong>D</strong>own <strong>G</strong>oes <strong>C</strong>harles <strong>F</strong>ather</div>`;
+      drawStaff(document.getElementById('rs2-full'), 'Cb', WIDE);
+    }
+  },
+  {
+    flat: true,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-f">♭</span> Reading a flat key signature</p>
+        <p class="card-body">Look at the <strong>second-to-last flat</strong> — its letter name is the key.</p>
+        ${staffBlock('rs3a','Eb','3 flats → E♭ major','<div class="chain">B♭ <span class="hlf">E♭</span> A♭</div><div style="margin-top:4px;">2nd-to-last = <span class="hlf">E♭</span><br>→ <strong>E♭ major</strong></div>')}
+        ${staffBlock('rs3b','Db','5 flats → D♭ major','<div class="chain">B♭ E♭ A♭ <span class="hlf">D♭</span> G♭</div><div style="margin-top:4px;">2nd-to-last = <span class="hlf">D♭</span><br>→ <strong>D♭ major</strong></div>')}
+        <p class="card-body" style="margin-top:8px;font-size:12px;"><strong>Special case:</strong> 1 flat = <strong>F major</strong>. All other flat keys include the word "flat."</p>`;
+      drawStaff(document.getElementById('rs3a'), 'Eb', NORM);
+      drawStaff(document.getElementById('rs3b'), 'Db', NORM);
+    }
+  },
+  {
+    flat: true,
+    render(el) {
+      el.className = 'card scrollable';
+      el.innerHTML = `
+        <p class="card-title">All keys at a glance</p>
+        <p class="ref-section-heading sh">♯ Sharp keys</p>
+        ${refGrid([
+          ['rsg-G', 'G',  '1 sharp',  'F♯'],
+          ['rsg-D', 'D',  '2 sharps', 'F♯ C♯'],
+          ['rsg-A', 'A',  '3 sharps', 'F♯ C♯ G♯'],
+          ['rsg-E', 'E',  '4 sharps', 'F♯ C♯ G♯ D♯'],
+          ['rsg-B', 'B',  '5 sharps', 'F♯ C♯ G♯ D♯ A♯'],
+          ['rsg-Fs','F♯', '6 sharps', 'F♯ C♯ G♯ D♯ A♯ E♯'],
+          ['rsg-Cs','C♯', '7 sharps', 'all 7'],
+        ], 's')}
+        <p class="ref-section-heading fh">♭ Flat keys</p>
+        ${refGrid([
+          ['fsg-F',  'F',  '1 flat',  'B♭'],
+          ['fsg-Bb', 'B♭', '2 flats', 'B♭ E♭'],
+          ['fsg-Eb', 'E♭', '3 flats', 'B♭ E♭ A♭'],
+          ['fsg-Ab', 'A♭', '4 flats', 'B♭ E♭ A♭ D♭'],
+          ['fsg-Db', 'D♭', '5 flats', 'B♭ E♭ A♭ D♭ G♭'],
+          ['fsg-Gb', 'G♭', '6 flats', 'B♭ E♭ A♭ D♭ G♭ C♭'],
+          ['fsg-Cb', 'C♭', '7 flats', 'all 7'],
+        ], 'f')}`;
+      [['rsg-G','G'],['rsg-D','D'],['rsg-A','A'],['rsg-E','E'],['rsg-B','B'],['rsg-Fs','F#'],['rsg-Cs','C#']].forEach(([id,key]) =>
+        drawStaff(document.getElementById(id), key, COMP));
+      [['fsg-F','F'],['fsg-Bb','Bb'],['fsg-Eb','Eb'],['fsg-Ab','Ab'],['fsg-Db','Db'],['fsg-Gb','Gb'],['fsg-Cb','Cb']].forEach(([id,key]) =>
+        drawStaff(document.getElementById(id), key, COMP));
+    }
+  }
+];
+
+// ---- BUILD STEPS ----
+const buildSteps = [
+  {
+    flat: false,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-s">♯</span> Sharp keys — reference</p>
+        <p class="card-body">Keep this in mind as you build sharp key signatures. The last sharp is always one letter below the key name.</p>
+        <div class="full-staff-wrap" id="bs0-full"></div>
+        <div class="pill-row">
+          <span class="pill pill-sharp">F♯</span><span class="pill pill-sharp">C♯</span><span class="pill pill-sharp">G♯</span><span class="pill pill-sharp">D♯</span><span class="pill pill-sharp">A♯</span><span class="pill pill-sharp">E♯</span><span class="pill pill-sharp">B♯</span>
+        </div>`;
+      drawStaff(document.getElementById('bs0-full'), 'C#', WIDE);
+    }
+  },
+  {
+    flat: false,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-s">♯</span> Building a sharp key signature</p>
+        <p class="card-body">Find the note <strong>one letter below the tonic</strong> — that's the last sharp. Write all sharps from the order up to and including it.</p>
+        ${staffBlock('bs1a','E','E major — letter below E is D → last sharp D♯','<div class="chain">F♯ C♯ G♯ <span class="hl">D♯</span></div><div style="margin-top:4px;"><strong>4 sharps</strong></div>')}
+        ${staffBlock('bs1b','B','B major — letter below B is A → last sharp A♯','<div class="chain">F♯ C♯ G♯ D♯ <span class="hl">A♯</span></div><div style="margin-top:4px;"><strong>5 sharps</strong></div>')}`;
+      drawStaff(document.getElementById('bs1a'), 'E', NORM);
+      drawStaff(document.getElementById('bs1b'), 'B', NORM);
+    }
+  },
+  {
+    flat: false,
+    render(el) {
+      el.className = 'card scrollable';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-s">♯</span> Sharp keys at a glance</p>
+        ${refGrid([
+          ['bsg-G', 'G',  '1 sharp',  'F♯'],
+          ['bsg-D', 'D',  '2 sharps', 'F♯ C♯'],
+          ['bsg-A', 'A',  '3 sharps', 'F♯ C♯ G♯'],
+          ['bsg-E', 'E',  '4 sharps', 'F♯ C♯ G♯ D♯'],
+          ['bsg-B', 'B',  '5 sharps', 'F♯ C♯ G♯ D♯ A♯'],
+          ['bsg-Fs','F♯', '6 sharps', 'F♯ C♯ G♯ D♯ A♯ E♯'],
+          ['bsg-Cs','C♯', '7 sharps', 'all 7'],
+        ], 's')}`;
+      [['bsg-G','G'],['bsg-D','D'],['bsg-A','A'],['bsg-E','E'],['bsg-B','B'],['bsg-Fs','F#'],['bsg-Cs','C#']].forEach(([id,key]) =>
+        drawStaff(document.getElementById(id), key, COMP));
+    }
+  },
+  {
+    flat: true,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-f">♭</span> Flat keys — reference</p>
+        <p class="card-body">Keep this in mind as you build flat key signatures. The flat order is <span style="font-family:'Courier New',monospace">B E A D G C F</span> — find the 4th scale degree in this order to get your last flat.</p>
+        <div class="full-staff-wrap" id="bs3-full"></div>
+        <div class="pill-row">
+          <span class="pill pill-flat">B♭</span><span class="pill pill-flat">E♭</span><span class="pill pill-flat">A♭</span><span class="pill pill-flat">D♭</span><span class="pill pill-flat">G♭</span><span class="pill pill-flat">C♭</span><span class="pill pill-flat">F♭</span>
+        </div>`;
+      drawStaff(document.getElementById('bs3-full'), 'Cb', WIDE);
+    }
+  },
+  {
+    flat: true,
+    render(el) {
+      el.className = 'card';
+      el.innerHTML = `
+        <p class="card-title"><span class="sym-f">♭</span> Building a flat key signature</p>
+        <p class="card-body">Write the 7 letter names of the scale from the tonic. The <strong>4th scale degree</strong> is the last flat. Find it in <span style="font-family:'Courier New',monospace">B E A D G C F</span> and write all flats up to it.</p>
+        ${staffBlock('bs4a','Eb','E♭ major — scale: E F G A B C D',
+          '<div>'+degRow(['E','F','G','A','B','C','D'],'E','A')+'</div><div style="margin-top:2px;font-size:12px;">4th = A → <span class="chain">B E <span class="hlf">A</span></span><br><strong>B♭ E♭ A♭ — 3 flats</strong></div>')}
+        ${staffBlock('bs4b','Db','D♭ major — scale: D E F G A B C',
+          '<div>'+degRow(['D','E','F','G','A','B','C'],'D','G')+'</div><div style="margin-top:2px;font-size:12px;">4th = G → <span class="chain">B E A D <span class="hlf">G</span></span><br><strong>B♭ E♭ A♭ D♭ G♭ — 5 flats</strong></div>')}
+        ${staffBlock('bs4c','Bb','B♭ major — scale: B C D E F G A',
+          '<div>'+degRow(['B','C','D','E','F','G','A'],'B','E')+'</div><div style="margin-top:2px;font-size:12px;">4th = E → <span class="chain">B <span class="hlf">E</span></span><br><strong>B♭ E♭ — 2 flats</strong></div>')}`;
+      drawStaff(document.getElementById('bs4a'), 'Eb', NORM);
+      drawStaff(document.getElementById('bs4b'), 'Db', NORM);
+      drawStaff(document.getElementById('bs4c'), 'Bb', NORM);
+    }
+  }
+];
+
+let rStep = 0, bStep = 0;
+
+function renderR() {
+  readSteps[rStep].render(document.getElementById('read-card'));
+  document.getElementById('rl').textContent = `${rStep+1} / ${readSteps.length}`;
+  document.querySelectorAll('[id^="rd"]').forEach((d,i) => {
+    d.className = 'step-dot' + (i===rStep ? (readSteps[i].flat ? ' flat-active' : ' sharp-active') : '');
+  });
+  document.getElementById('rp').disabled = rStep===0;
+  document.getElementById('rn').disabled = rStep===readSteps.length-1;
+}
+
+function renderB() {
+  buildSteps[bStep].render(document.getElementById('build-card'));
+  document.getElementById('bl').textContent = `${bStep+1} / ${buildSteps.length}`;
+  document.querySelectorAll('[id^="bd"]').forEach((d,i) => {
+    d.className = 'step-dot' + (i===bStep ? (buildSteps[i].flat ? ' flat-active' : ' sharp-active') : '');
+  });
+  document.getElementById('bp').disabled = bStep===0;
+  document.getElementById('bn').disabled = bStep===buildSteps.length-1;
+}
+
+function goR(n) { rStep = Math.max(0,Math.min(readSteps.length-1,n)); renderR(); }
+function goB(n) { bStep = Math.max(0,Math.min(buildSteps.length-1,n)); renderB(); }
+
+function switchTab(sec, tab) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  tab.classList.add('active');
+}
+
+renderR();
+renderB();
+</script>
+</body>
+</html>
