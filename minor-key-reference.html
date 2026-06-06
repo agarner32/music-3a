@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minor Keys — Circle of Fifths</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #fdfaf7; padding: 1rem 0.5rem 2rem; }
+h2 { text-align: center; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem; font-weight: 500; color: #5c4459; margin-bottom: 0.25rem; }
+.subtitle { text-align: center; font-size: 0.8rem; color: #887f8a; margin-bottom: 1.25rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.container { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+svg { display: block; max-width: 420px; width: 100%; }
+.info-panel { width: 100%; max-width: 420px; min-height: 100px; background: #fff; border: 1px solid #ddd6ce; border-radius: 10px; padding: 1rem 1.25rem; transition: all 0.2s; }
+.info-panel.empty { display: flex; align-items: center; justify-content: center; }
+.info-panel .prompt { font-size: 0.875rem; color: #887f8a; font-style: italic; }
+.info-key { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.6rem; font-weight: 500; color: #5c4459; margin-bottom: 0.25rem; }
+.info-sig { font-size: 0.9rem; color: #2e2830; margin-bottom: 0.5rem; font-weight: 500; }
+.info-rel { font-size: 0.85rem; color: #5a5060; margin-bottom: 0.5rem; }
+.info-notes { font-size: 0.8rem; color: #5a5060; line-height: 1.6; }
+.info-enharmonic { display: inline-block; margin-top: 0.4rem; font-size: 0.75rem; background: #f0eaf0; color: #7a5f79; padding: 2px 10px; border-radius: 20px; }
+.legend { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #5a5060; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<h2>Minor Keys — Circle of Fifths</h2>
+<p class="subtitle">Click any key to explore</p>
+<div class="container">
+<svg id="cof" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg"></svg>
+<div class="info-panel empty" id="panel">
+  <span class="prompt">Click a key to see its signature</span>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#a688a5;"></div>Sharp keys</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7a9cbf;"></div>Flat keys</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c9a96e;"></div>Enharmonic pairs</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e8e4de;"></div>A minor (no accidentals)</div>
+</div>
+</div>
+
+<script>
+// Minor keys — same circle-of-fifths order as major, just shifted
+// Each minor key shares a key signature with its relative major
+const keys = [
+  { name: 'a',   display: 'A',   acc: 0, type: 'none',  sharps: [],                                     flats: [],                                     enharmonic: null,  rel: 'C'  },
+  { name: 'e',   display: 'E',   acc: 1, type: 'sharp', sharps: ['F♯'],                                 flats: [],                                     enharmonic: null,  rel: 'G'  },
+  { name: 'b',   display: 'B',   acc: 2, type: 'sharp', sharps: ['F♯','C♯'],                            flats: [],                                     enharmonic: null,  rel: 'D'  },
+  { name: 'f♯',  display: 'F♯',  acc: 3, type: 'sharp', sharps: ['F♯','C♯','G♯'],                       flats: [],                                     enharmonic: null,  rel: 'A'  },
+  { name: 'c♯',  display: 'C♯',  acc: 4, type: 'sharp', sharps: ['F♯','C♯','G♯','D♯'],                  flats: [],                                     enharmonic: null,  rel: 'E'  },
+  { name: 'g♯',  display: 'G♯',  acc: 5, type: 'sharp', sharps: ['F♯','C♯','G♯','D♯','A♯'],             flats: [],                                     enharmonic: 'A♭',  rel: 'B'  },
+  { name: 'd♯',  display: 'D♯',  acc: 6, type: 'sharp', sharps: ['F♯','C♯','G♯','D♯','A♯','E♯'],        flats: [],                                     enharmonic: 'E♭',  rel: 'F♯' },
+  { name: 'a♯',  display: 'A♯',  acc: 7, type: 'sharp', sharps: ['F♯','C♯','G♯','D♯','A♯','E♯','B♯'],   flats: [],                                     enharmonic: 'B♭',  rel: 'C♯' },
+  { name: 'd',   display: 'D',   acc: 1, type: 'flat',  sharps: [],                                     flats: ['B♭'],                                 enharmonic: null,  rel: 'F'  },
+  { name: 'g',   display: 'G',   acc: 2, type: 'flat',  sharps: [],                                     flats: ['B♭','E♭'],                            enharmonic: null,  rel: 'B♭' },
+  { name: 'c',   display: 'C',   acc: 3, type: 'flat',  sharps: [],                                     flats: ['B♭','E♭','A♭'],                       enharmonic: null,  rel: 'E♭' },
+  { name: 'f',   display: 'F',   acc: 4, type: 'flat',  sharps: [],                                     flats: ['B♭','E♭','A♭','D♭'],                  enharmonic: null,  rel: 'A♭' },
+  { name: 'b♭',  display: 'B♭',  acc: 5, type: 'flat',  sharps: [],                                     flats: ['B♭','E♭','A♭','D♭','G♭'],             enharmonic: 'A♯',  rel: 'D♭' },
+  { name: 'e♭',  display: 'E♭',  acc: 6, type: 'flat',  sharps: [],                                     flats: ['B♭','E♭','A♭','D♭','G♭','C♭'],        enharmonic: 'D♯',  rel: 'G♭' },
+  { name: 'a♭',  display: 'A♭',  acc: 7, type: 'flat',  sharps: [],                                     flats: ['B♭','E♭','A♭','D♭','G♭','C♭','F♭'],   enharmonic: 'G♯',  rel: 'C♭' },
+];
+
+// Draw order: sharp keys clockwise from A, then flat keys
+const order = ['a','e','b','f♯','c♯','g♯','d♯','a♯','a♭','e♭','b♭','f','c','g','d'];
+
+const cx = 210, cy = 210, R = 170, r = 115;
+const totalSlices = 15;
+const sliceAngle  = (2 * Math.PI) / totalSlices;
+const startOffset = -Math.PI / 2;
+
+const svg   = document.getElementById('cof');
+const panel = document.getElementById('panel');
+
+function polarToXY(angle, radius) {
+  return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+}
+
+function describeArc(startAngle, endAngle, outerR, innerR) {
+  const s1 = polarToXY(startAngle, outerR);
+  const e1 = polarToXY(endAngle,   outerR);
+  const s2 = polarToXY(endAngle,   innerR);
+  const e2 = polarToXY(startAngle, innerR);
+  return `M ${s1.x} ${s1.y} A ${outerR} ${outerR} 0 0 1 ${e1.x} ${e1.y} L ${s2.x} ${s2.y} A ${innerR} ${innerR} 0 0 0 ${e2.x} ${e2.y} Z`;
+}
+
+function getColor(key) {
+  if (key.enharmonic) return '#c9a96e';
+  if (key.type === 'none')  return '#e8e4de';
+  if (key.type === 'sharp') return '#a688a5';
+  return '#7a9cbf';
+}
+
+function getTextColor(key) {
+  if (key.enharmonic) return '#5c3a00';
+  if (key.type === 'none')  return '#5c4459';
+  if (key.type === 'sharp') return '#3d1f3c';
+  return '#1a2e40';
+}
+
+function getAccLabel(key) {
+  if (key.acc === 0)         return '0';
+  if (key.type === 'sharp')  return key.acc + '♯';
+  return key.acc + '♭';
+}
+
+function lighten(hex) {
+  const rv = parseInt(hex.slice(1,3),16);
+  const gv = parseInt(hex.slice(3,5),16);
+  const bv = parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.min(255,rv+30)},${Math.min(255,gv+30)},${Math.min(255,bv+30)})`;
+}
+
+let selected = null;
+
+order.forEach((keyName, i) => {
+  const key        = keys.find(k => k.name === keyName);
+  const startAngle = startOffset + i * sliceAngle;
+  const endAngle   = startAngle + sliceAngle;
+  const midAngle   = (startAngle + endAngle) / 2;
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', describeArc(startAngle, endAngle, R, r));
+  path.setAttribute('fill', getColor(key));
+  path.setAttribute('stroke', '#fdfaf7');
+  path.setAttribute('stroke-width', '2');
+  path.style.cursor     = 'pointer';
+  path.style.transition = 'filter 0.15s';
+  path.dataset.key      = keyName;
+
+  path.addEventListener('click',      () => selectKey(keyName, path));
+  path.addEventListener('mouseenter', () => { if (selected !== keyName) path.setAttribute('fill', lighten(getColor(key))); });
+  path.addEventListener('mouseleave', () => { if (selected !== keyName) path.setAttribute('fill', getColor(key)); });
+  svg.appendChild(path);
+
+  // Key name label
+  const labelPos = polarToXY(midAngle, (R + r) / 2);
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', labelPos.x);
+  text.setAttribute('y', labelPos.y - 6);
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('dominant-baseline', 'middle');
+  text.setAttribute('font-size', '15');
+  text.setAttribute('font-weight', '500');
+  text.setAttribute('font-family', 'Cormorant Garamond, Georgia, serif');
+  text.setAttribute('fill', getTextColor(key));
+  text.setAttribute('font-style', 'normal');
+  text.style.pointerEvents = 'none';
+  text.textContent = key.display.charAt(0).toLowerCase() + key.display.slice(1);
+  svg.appendChild(text);
+
+  // Accidental count label
+  const accText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  accText.setAttribute('x', labelPos.x);
+  accText.setAttribute('y', labelPos.y + 9);
+  accText.setAttribute('text-anchor', 'middle');
+  accText.setAttribute('dominant-baseline', 'middle');
+  accText.setAttribute('font-size', '10');
+  accText.setAttribute('font-family', 'DM Sans, sans-serif');
+  accText.setAttribute('fill', getTextColor(key));
+  accText.setAttribute('opacity', '0.75');
+  accText.style.pointerEvents = 'none';
+  accText.textContent = getAccLabel(key);
+  svg.appendChild(accText);
+});
+
+// Center circle
+const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+centerCircle.setAttribute('cx', cx);
+centerCircle.setAttribute('cy', cy);
+centerCircle.setAttribute('r',  r - 2);
+centerCircle.setAttribute('fill', '#fdfaf7');
+centerCircle.setAttribute('stroke', '#ddd6ce');
+centerCircle.setAttribute('stroke-width', '1');
+svg.appendChild(centerCircle);
+
+const centerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+centerText.setAttribute('x', cx);
+centerText.setAttribute('y', cy - 8);
+centerText.setAttribute('text-anchor', 'middle');
+centerText.setAttribute('font-size', '13');
+centerText.setAttribute('font-family', 'DM Sans, sans-serif');
+centerText.setAttribute('fill', '#887f8a');
+centerText.textContent = 'Minor Keys';
+svg.appendChild(centerText);
+
+const centerText2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+centerText2.setAttribute('x', cx);
+centerText2.setAttribute('y', cy + 10);
+centerText2.setAttribute('text-anchor', 'middle');
+centerText2.setAttribute('font-size', '11');
+centerText2.setAttribute('font-family', 'DM Sans, sans-serif');
+centerText2.setAttribute('fill', '#887f8a');
+centerText2.textContent = 'click to explore';
+svg.appendChild(centerText2);
+
+// ── Scale builder ─────────────────────────────────────────────────────────────
+function buildNaturalMinor(displayName) {
+  // Natural minor = same notes as relative major, starting on the minor root
+  const sharpNotes = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  const flatNotes  = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+  const roots = {
+    'A':0,'E':4,'B':11,'F♯':6,'C♯':1,'G♯':8,'D♯':3,'A♯':10,
+    'D':2,'G':7,'C':0,'F':5,'B♭':10,'E♭':3,'A♭':8
+  };
+  const useFlats = ['D','G','C','F','B♭','E♭','A♭'].includes(displayName);
+  const names    = useFlats ? flatNotes : sharpNotes;
+  const root     = roots[displayName] ?? 0;
+  const pattern  = [0,2,3,5,7,8,10,12]; // W-H-W-W-H-W-W
+  return pattern.map(s => names[(root + s) % 12]).join(' – ');
+}
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
+function selectKey(keyName, clickedPath) {
+  document.querySelectorAll('path[data-key]').forEach(p => {
+    const k = keys.find(k => k.name === p.dataset.key);
+    p.setAttribute('fill', getColor(k));
+  });
+  selected = keyName;
+  clickedPath.setAttribute('fill', lighten(getColor(keys.find(k => k.name === keyName))));
+
+  const key = keys.find(k => k.name === keyName);
+
+  let sigText = '';
+  if (key.acc === 0) {
+    sigText = 'No sharps or flats';
+  } else if (key.type === 'sharp') {
+    sigText = key.acc + (key.acc === 1 ? ' sharp: ' : ' sharps: ') + key.sharps.join('  ');
+  } else {
+    sigText = key.acc + (key.acc === 1 ? ' flat: ' : ' flats: ') + key.flats.join('  ');
+  }
+
+  const scaleNotes = buildNaturalMinor(key.display);
+
+  panel.classList.remove('empty');
+  panel.innerHTML = `
+    <div class="info-key">${key.display} minor</div>
+    <div class="info-sig">${sigText}</div>
+    <div class="info-rel">Relative major: <strong>${key.rel}</strong></div>
+    <div class="info-notes">Natural minor scale: ${scaleNotes}</div>
+    ${key.enharmonic ? `<div><span class="info-enharmonic">Enharmonic equivalent: ${key.enharmonic} minor</span></div>` : ''}
+  `;
+}
+</script>
+</body>
+</html>
