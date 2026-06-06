@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minor Scales Explorer</title>
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: #f7f4f7;
+    color: #2e2e2e;
+    padding: 0;
+  }
+
+  .widget {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+  }
+
+  .widget-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.6rem;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .widget-subtitle {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .key-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .key-tab {
+    padding: 8px 28px;
+    border-radius: 24px;
+    border: 2px solid #5c4459;
+    background: transparent;
+    color: #5c4459;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .key-tab.active { background: #5c4459; color: #fff; }
+  .key-tab:hover:not(.active) { background: #f0eaf0; }
+
+  .panel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .panel-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #d4c4d4;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel-dot.active { background: #5c4459; }
+
+  .carousel-wrapper {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0d4e0;
+    padding: 24px 20px 20px;
+    min-height: 320px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-label {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+  }
+  .panel-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .tag-natural  { background: #e8f4e8; color: #3a6e3a; }
+  .tag-harmonic { background: #fff0e0; color: #8a5a00; }
+  .tag-melodic  { background: #e8eef8; color: #2a4a8a; }
+
+  .panel-description {
+    font-size: 0.9rem;
+    color: #4a3a4a;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .panel-description strong { color: #5c4459; }
+
+  .callout {
+    background: #f5edd8;
+    border-left: 3px solid #c9a96e;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: #6a4a1a;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .notation-area {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 8px;
+  }
+  .notation-area svg { display: block; margin: 0 auto; }
+
+  .no-keysig-note {
+    font-size: 0.78rem;
+    color: #9a7a9a;
+    text-align: center;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .nav-btn {
+    padding: 8px 22px;
+    border-radius: 6px;
+    border: 2px solid #5c4459;
+    background: transparent;
+    color: #5c4459;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: #5c4459; color: #fff; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:disabled:hover { background: transparent; color: #5c4459; }
+
+  .panel-counter {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    font-weight: 600;
+  }
+
+  .audio-section {
+    margin-top: 20px;
+    background: #3d2b3d;
+    border-radius: 10px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .audio-label {
+    color: #e8d8e8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    flex: 1;
+    min-width: 140px;
+  }
+  .audio-label span {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #b89ab8;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 2px;
+  }
+  .play-btn {
+    padding: 10px 28px;
+    border-radius: 24px;
+    border: none;
+    background: #c9a96e;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .play-btn:hover { background: #b8944a; }
+  .play-btn:disabled { background: #7a6a5a; cursor: default; }
+
+  .tempo-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #b89ab8;
+    font-size: 0.8rem;
+  }
+  .tempo-control input[type=range] {
+    width: 80px;
+    accent-color: #c9a96e;
+  }
+
+  .audio-status {
+    font-size: 0.78rem;
+    color: #b89ab8;
+    min-width: 80px;
+    text-align: right;
+  }
+
+  .loading-bar {
+    font-size: 0.75rem;
+    color: #b89ab8;
+    text-align: center;
+    padding: 4px 0;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <h1 class="widget-title">Minor Scales Explorer</h1>
+  <p class="widget-subtitle">
+    Walk through all three forms of the minor scale — natural, harmonic, and melodic.<br>
+    Accidentals are written on each note. In real music you would normally see a key signature instead.
+  </p>
+
+  <div class="key-tabs">
+    <button class="key-tab active" onclick="switchKey('g', event)">G minor</button>
+    <button class="key-tab" onclick="switchKey('e', event)">E minor</button>
+  </div>
+
+  <div class="panel-indicators" id="dots"></div>
+
+  <div class="carousel-wrapper">
+
+    <!-- G minor panels -->
+    <div class="panel active" id="panel-g-0">
+      <div class="panel-label">G Natural Minor</div>
+      <div class="panel-tag tag-natural">Natural</div>
+      <p class="panel-description">
+        To find G natural minor, count up <strong>3 half steps</strong> from G — that lands on B♭.
+        B♭ major has two flats: B♭ and E♭. G natural minor uses those same two flats,
+        starting and ending on G. The pattern is <strong>W–H–W–W–H–W–W</strong>.
+      </p>
+      <div class="notation-area" id="vex-g-0"></div>
+      <div class="no-keysig-note">Accidentals shown on each note — in real music a key signature would appear instead.</div>
+    </div>
+
+    <div class="panel" id="panel-g-1">
+      <div class="panel-label">G Harmonic Minor</div>
+      <div class="panel-tag tag-harmonic">Harmonic</div>
+      <p class="panel-description">
+        Start with G natural minor and <strong>raise the 7th degree by a half step</strong>.
+        F♮ becomes F♯ — creating a strong leading tone that pulls back to G.
+        This produces an <strong>augmented 2nd</strong> between E♭ (6th) and F♯ (7th) —
+        the exotic, distinctive sound of harmonic minor.
+      </p>
+      <div class="callout">
+        ⚠️ The 7th degree won't always gain a sharp. It depends on the key —
+        sometimes it gains a natural sign (♮) or even a double sharp (𝄪).
+        Always think "raise by one half step" rather than "add a sharp."
+      </div>
+      <div class="notation-area" id="vex-g-1"></div>
+      <div class="no-keysig-note">Accidentals shown on each note — in real music a key signature would appear instead.</div>
+    </div>
+
+    <div class="panel" id="panel-g-2">
+      <div class="panel-label">G Melodic Minor</div>
+      <div class="panel-tag tag-melodic">Melodic</div>
+      <p class="panel-description">
+        Start with G natural minor and <strong>raise both the 6th and 7th degrees ascending</strong>
+        (E♭→E♮, F♮→F♯). This smooths out the awkward augmented 2nd.
+        <strong>Descending, lower them back</strong> — returning to natural minor on the way down.
+      </p>
+      <div class="notation-area" id="vex-g-2"></div>
+      <div class="no-keysig-note">Accidentals shown on each note — in real music a key signature would appear instead.</div>
+    </div>
+
+    <!-- E minor panels -->
+    <div class="panel" id="panel-e-0">
+      <div class="panel-label">E Natural Minor</div>
+      <div class="panel-tag tag-natural">Natural</div>
+      <p class="panel-description">
+        Count up <strong>3 half steps</strong> from E — that lands on G.
+        G major has one sharp: F♯. E natural minor uses that same sharp,
+        starting and ending on E. The pattern is <strong>W–H–W–W–H–W–W</strong>.
+      </p>
+      <div class="notation-area" id="vex-e-0"></div>
+      <div class="no-keysig-note">Accidentals shown on each note — in real music a key signature would appear instead.</div>
+    </div>
+
+    <div class="panel" id="panel-e-1">
+      <div class="panel-label">E Harmonic Minor</div>
+      <div class="panel-tag tag-harmonic">Harmonic</div>
+      <p class="panel-description">
+        Start with E natural minor and <strong>raise the 7th degree by a half step</strong>.
+        D♮ becomes D♯ — creating the leading tone that pulls strongly back to E.
+        Notice the <strong>augmented 2nd</strong> between C♮ (6th) and D♯ (7th).
+      </p>
+      <div class="callout">
+        ⚠️ Here the 7th gains a sharp — but that's specific to this key.
+        Always think "raise by one half step" and let the accidental follow from there.
+      </div>
+      <div class="notation-area" id="vex-e-1"></div>
+      <div class="no-keysig-note">Accidentals shown on each note — in real music a key signature would appear instead.</div>
+    </div>
+
+    <div class="panel" id="panel-e-2">
+      <div class="panel-label">E Melodic Minor</div>
+      <div class="panel-tag tag-melodic">Melodic</div>
+      <p class="panel-description">
+        Start with E natural minor and <strong>raise both the 6th and 7th degrees ascending</strong>
+        (C♮→C♯, D♮→D♯). Descending, <strong>lower them back</strong> to natural minor.
+        The result is a smooth stepwise ascent and a natural minor descent.
+      </p>
+      <div class="notation-area" id="vex-e-2"></div>
+      <div class="no-keysig-note">Accidentals shown on each note — in real music a key signature would appear instead.</div>
+    </div>
+
+  </div><!-- /.carousel-wrapper -->
+
+  <div class="carousel-nav">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Prev</button>
+    <span class="panel-counter" id="panel-counter">1 of 3</span>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Next →</button>
+  </div>
+
+  <!-- Audio player -->
+  <div class="audio-section">
+    <div class="audio-label">
+      Hear this scale
+      <span id="audio-scale-name">G Natural Minor</span>
+    </div>
+    <div class="tempo-control">
+      <span>Tempo</span>
+      <input type="range" id="tempo-slider" min="60" max="180" value="100" />
+      <span id="tempo-display">100</span>
+    </div>
+    <button class="play-btn" id="play-btn" onclick="playScale()">▶ Play</button>
+    <div class="audio-status" id="audio-status">Loading piano…</div>
+  </div>
+
+</div><!-- /.widget -->
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentKey   = 'g';
+let currentPanel = 0;
+const PANELS_PER_KEY = 3;
+
+// ─── Scale data ───────────────────────────────────────────────────────────────
+// All scales now start on octave 4 (G4, E4) — no ledger lines needed
+// VexFlow note format: 'letter/octave'
+// Tone.js note format: 'Letter[accidental]octave' e.g. 'Bb4', 'F#4'
+
+const SCALES = {
+  g: [
+    {
+      label: 'G Natural Minor',
+      notes: [
+        {k:'g/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'b/4', acc:'b' },
+        {k:'c/5', acc:''  },
+        {k:'d/5', acc:''  },
+        {k:'e/5', acc:'b' },
+        {k:'f/5', acc:''  },
+        {k:'g/5', acc:''  },
+      ],
+      toneNotes: ['G4','A4','Bb4','C5','D5','Eb5','F5','G5']
+    },
+    {
+      label: 'G Harmonic Minor',
+      notes: [
+        {k:'g/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'b/4', acc:'b' },
+        {k:'c/5', acc:''  },
+        {k:'d/5', acc:''  },
+        {k:'e/5', acc:'b' },
+        {k:'f/5', acc:'#' },
+        {k:'g/5', acc:''  },
+      ],
+      toneNotes: ['G4','A4','Bb4','C5','D5','Eb5','F#5','G5']
+    },
+    {
+      label: 'G Melodic Minor',
+      ascending: [
+        {k:'g/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'b/4', acc:'b' },
+        {k:'c/5', acc:''  },
+        {k:'d/5', acc:''  },
+        {k:'e/5', acc:'n' },
+        {k:'f/5', acc:'#' },
+        {k:'g/5', acc:''  },
+      ],
+      descending: [
+        {k:'f/5', acc:'n' },
+        {k:'e/5', acc:'b' },
+        {k:'d/5', acc:''  },
+        {k:'c/5', acc:''  },
+        {k:'b/4', acc:'b' },
+        {k:'a/4', acc:''  },
+        {k:'g/4', acc:''  },
+      ],
+      toneNotes: ['G4','A4','Bb4','C5','D5','E5','F#5','G5','F5','Eb5','D5','C5','Bb4','A4','G4']
+    }
+  ],
+  e: [
+    {
+      label: 'E Natural Minor',
+      notes: [
+        {k:'e/4', acc:''  },
+        {k:'f/4', acc:'#' },
+        {k:'g/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'b/4', acc:''  },
+        {k:'c/5', acc:''  },
+        {k:'d/5', acc:''  },
+        {k:'e/5', acc:''  },
+      ],
+      toneNotes: ['E4','F#4','G4','A4','B4','C5','D5','E5']
+    },
+    {
+      label: 'E Harmonic Minor',
+      notes: [
+        {k:'e/4', acc:''  },
+        {k:'f/4', acc:'#' },
+        {k:'g/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'b/4', acc:''  },
+        {k:'c/5', acc:''  },
+        {k:'d/5', acc:'#' },
+        {k:'e/5', acc:''  },
+      ],
+      toneNotes: ['E4','F#4','G4','A4','B4','C5','D#5','E5']
+    },
+    {
+      label: 'E Melodic Minor',
+      ascending: [
+        {k:'e/4', acc:''  },
+        {k:'f/4', acc:'#' },
+        {k:'g/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'b/4', acc:''  },
+        {k:'c/5', acc:'#' },
+        {k:'d/5', acc:'#' },
+        {k:'e/5', acc:''  },
+      ],
+      descending: [
+        {k:'d/5', acc:'n' },
+        {k:'c/5', acc:'n' },
+        {k:'b/4', acc:''  },
+        {k:'a/4', acc:''  },
+        {k:'g/4', acc:''  },
+        {k:'f/4', acc:'#' },
+        {k:'e/4', acc:''  },
+      ],
+      toneNotes: ['E4','F#4','G4','A4','B4','C#5','D#5','E5','D5','C5','B4','A4','G4','F#4','E4']
+    }
+  ]
+};
+
+// ─── VexFlow ─────────────────────────────────────────────────────────────────
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+
+function renderScale(containerId, scaleData, isMelodic) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const width  = Math.min(container.offsetWidth || 720, 720);
+  const height = isMelodic ? 160 : 120;
+
+  const renderer = new Renderer(container, Renderer.Backends.SVG);
+  renderer.resize(width, height);
+  const ctx = renderer.getContext();
+  ctx.setFont('Arial', 10);
+
+  if (!isMelodic) {
+    const stave = new Stave(10, 10, width - 30);
+    stave.addClef('treble');
+    stave.setContext(ctx).draw();
+
+    const notes = scaleData.notes.map(n => {
+      const sn = new StaveNote({ keys: [n.k], duration: 'w' });
+      if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
+      return sn;
+    });
+
+    const voice = new Voice({ num_beats: 8, beat_value: 1 });
+    voice.addTickables(notes);
+    new Formatter().joinVoices([voice]).format([voice], width - 80);
+    voice.draw(ctx, stave);
+
+  } else {
+    const staveTop = 40;
+    const totalW   = width - 30;
+    const halfW    = Math.floor(totalW / 2) - 10;
+
+    const svg = container.querySelector('svg');
+
+    const stave1 = new Stave(10, staveTop, halfW);
+    stave1.addClef('treble');
+    stave1.setContext(ctx).draw();
+
+    const stave2 = new Stave(halfW + 24, staveTop, halfW);
+    stave2.addClef('treble');
+    stave2.setContext(ctx).draw();
+
+    // Add text labels above staves via SVG after staves are drawn
+    const svgEl = container.querySelector('svg');
+    const makeLabel = (text, x, width) => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', x + width / 2);
+      t.setAttribute('y', staveTop - 4);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'DM Sans, Segoe UI, sans-serif');
+      t.setAttribute('font-size', '14');
+      t.setAttribute('font-weight', '600');
+      t.setAttribute('fill', '#5c4459');
+      t.textContent = text;
+      svgEl.appendChild(t);
+    };
+    makeLabel('Ascending',  10,        halfW);
+    makeLabel('Descending', halfW + 24, halfW);
+
+    const ascNotes = scaleData.ascending.map(n => {
+      const sn = new StaveNote({ keys: [n.k], duration: 'w' });
+      if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
+      return sn;
+    });
+    const v1 = new Voice({ num_beats: 8, beat_value: 1 });
+    v1.addTickables(ascNotes);
+    new Formatter().joinVoices([v1]).format([v1], halfW - 50);
+    v1.draw(ctx, stave1);
+
+    const descNotes = scaleData.descending.map(n => {
+      const sn = new StaveNote({ keys: [n.k], duration: 'w' });
+      if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
+      return sn;
+    });
+    const v2 = new Voice({ num_beats: 7, beat_value: 1 });
+    v2.addTickables(descNotes);
+    new Formatter().joinVoices([v2]).format([v2], halfW - 50);
+    v2.draw(ctx, stave2);
+  }
+}
+
+function renderAll() {
+  ['g','e'].forEach(key => {
+    const scales = SCALES[key];
+    renderScale(`vex-${key}-0`, scales[0], false);
+    renderScale(`vex-${key}-1`, scales[1], false);
+    renderScale(`vex-${key}-2`, scales[2], true);
+  });
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function updateUI() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${currentKey}-${currentPanel}`).classList.add('active');
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < PANELS_PER_KEY; i++) {
+    const d = document.createElement('div');
+    d.className = 'panel-dot' + (i === currentPanel ? ' active' : '');
+    d.onclick = () => { currentPanel = i; updateUI(); };
+    dots.appendChild(d);
+  }
+
+  document.getElementById('panel-counter').textContent = `${currentPanel + 1} of ${PANELS_PER_KEY}`;
+  document.getElementById('btn-prev').disabled = currentPanel === 0;
+  document.getElementById('btn-next').disabled = currentPanel === PANELS_PER_KEY - 1;
+  document.getElementById('audio-scale-name').textContent = SCALES[currentKey][currentPanel].label;
+
+  stopScale();
+}
+
+function navigate(dir) {
+  currentPanel = Math.max(0, Math.min(PANELS_PER_KEY - 1, currentPanel + dir));
+  updateUI();
+}
+
+function switchKey(key, event) {
+  currentKey   = key;
+  currentPanel = 0;
+  document.querySelectorAll('.key-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  updateUI();
+}
+
+// ─── Audio ───────────────────────────────────────────────────────────────────
+let audioCtx  = null;
+let isPlaying = false;
+let playSeqId = null;
+let sampler   = null;
+let samplerReady = false;
+
+const BASE_URL = 'https://tonejs.github.io/audio/salamander/';
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Piano-like synth using Web Audio API — works without external files
+function playPianoNote(freq, startTime, duration, ctx) {
+  const attack  = 0.01;
+  const decay   = 0.3;
+  const sustain = 0.4;
+  const release = 0.5;
+
+  // Two oscillators slightly detuned for warmth
+  [0, 4].forEach(detune => {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, startTime);
+    osc.detune.setValueAtTime(detune, startTime);
+
+    gain.gain.setValueAtTime(0.001, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.35, startTime + attack);
+    gain.gain.exponentialRampToValueAtTime(0.35 * sustain, startTime + attack + decay);
+    gain.gain.setValueAtTime(0.35 * sustain, startTime + duration - release);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.05);
+  });
+}
+
+// Note name to frequency
+const NOTE_FREQS = {
+  'G4':392.00,'A4':440.00,'Bb4':466.16,'B4':493.88,
+  'C5':523.25,'C#5':554.37,'D5':587.33,'D#5':622.25,
+  'Eb5':622.25,'E5':659.25,'F5':698.46,'F#5':739.99,'G5':783.99,
+  'E4':329.63,'F#4':369.99,'G4':392.00,'A4':440.00,'B4':493.88,
+  'C#5':554.37,'D#5':622.25,
+};
+
+async function initSampler() {
+  // Try Tone.js Salamander — if it loads, great; if not, we fall back to synth
+  try {
+    sampler = new Tone.Sampler({
+      urls: {
+        'A3':'A3.mp3','C4':'C4.mp3','D#4':'Ds4.mp3','F#4':'Fs4.mp3',
+        'A4':'A4.mp3','C5':'C5.mp3','D#5':'Ds5.mp3','F#5':'Fs5.mp3',
+      },
+      baseUrl: BASE_URL,
+      onload: () => {
+        samplerReady = true;
+        document.getElementById('audio-status').textContent = 'Piano ready';
+        document.getElementById('play-btn').disabled = false;
+        setTimeout(() => { document.getElementById('audio-status').textContent = ''; }, 1500);
+      },
+      onerror: () => {
+        samplerReady = false;
+        document.getElementById('audio-status').textContent = '';
+        document.getElementById('play-btn').disabled = false;
+      }
+    }).toDestination();
+  } catch(e) {
+    samplerReady = false;
+    document.getElementById('audio-status').textContent = '';
+    document.getElementById('play-btn').disabled = false;
+  }
+}
+
+async function playScale() {
+  if (isPlaying) { stopScale(); return; }
+
+  const tempo   = parseInt(document.getElementById('tempo-slider').value);
+  const noteDur = 60 / tempo;
+  const data    = SCALES[currentKey][currentPanel];
+  const notes   = data.toneNotes;
+  const btn     = document.getElementById('play-btn');
+  const status  = document.getElementById('audio-status');
+
+  isPlaying = true;
+  btn.textContent = '■ Stop';
+  status.textContent = 'Playing…';
+
+  if (samplerReady && sampler) {
+    // Use Tone.js Salamander piano
+    await Tone.start();
+    const now = Tone.now() + 0.05;
+    notes.forEach((note, i) => {
+      sampler.triggerAttackRelease(note, noteDur * 0.85, now + i * noteDur);
+    });
+  } else {
+    // Fallback: Web Audio synth
+    const ctx   = getAudioCtx();
+    const start = ctx.currentTime + 0.05;
+    notes.forEach((note, i) => {
+      const freq = NOTE_FREQS[note];
+      if (freq) playPianoNote(freq, start + i * noteDur, noteDur * 0.9, ctx);
+    });
+  }
+
+  const totalMs = (notes.length * noteDur + 0.6) * 1000;
+  playSeqId = setTimeout(() => {
+    if (isPlaying) {
+      btn.textContent = '▶ Play';
+      status.textContent = '';
+      isPlaying = false;
+    }
+  }, totalMs);
+}
+
+function stopScale() {
+  if (playSeqId) { clearTimeout(playSeqId); playSeqId = null; }
+  if (samplerReady && sampler) sampler.releaseAll();
+  isPlaying = false;
+  document.getElementById('play-btn').textContent = '▶ Play';
+  document.getElementById('audio-status').textContent = '';
+}
+
+document.getElementById('tempo-slider').addEventListener('input', function() {
+  document.getElementById('tempo-display').textContent = this.value;
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  renderAll();
+  updateUI();
+  // Try to load Salamander piano — synth fallback always works immediately
+  document.getElementById('play-btn').disabled = false;
+  document.getElementById('audio-status').textContent = '';
+  initSampler();
+});
+</script>
+</body>
+</html>
