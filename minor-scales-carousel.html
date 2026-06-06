@@ -493,7 +493,7 @@ function renderScale(containerId, scaleData, isMelodic) {
   container.innerHTML = '';
 
   const width  = Math.min(container.offsetWidth || 720, 720);
-  const height = isMelodic ? 160 : 120;
+  const height = isMelodic ? 140 : 120;
 
   const renderer = new Renderer(container, Renderer.Backends.SVG);
   renderer.resize(width, height);
@@ -517,26 +517,43 @@ function renderScale(containerId, scaleData, isMelodic) {
     voice.draw(ctx, stave);
 
   } else {
+    // Melodic: one continuous stave, ascending then descending
     const staveTop = 40;
-    const totalW   = width - 30;
-    const halfW    = Math.floor(totalW / 2) - 10;
+    const staveW   = width - 30;
 
-    const svg = container.querySelector('svg');
+    const stave = new Stave(10, staveTop, staveW);
+    stave.addClef('treble');
+    stave.setContext(ctx).draw();
 
-    const stave1 = new Stave(10, staveTop, halfW);
-    stave1.addClef('treble');
-    stave1.setContext(ctx).draw();
+    // All 15 notes in one voice: 8 ascending + 7 descending
+    const allNotes = [
+      ...scaleData.ascending.map(n => {
+        const sn = new StaveNote({ keys: [n.k], duration: 'w' });
+        if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
+        return sn;
+      }),
+      ...scaleData.descending.map(n => {
+        const sn = new StaveNote({ keys: [n.k], duration: 'w' });
+        if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
+        return sn;
+      })
+    ];
 
-    const stave2 = new Stave(halfW + 24, staveTop, halfW);
-    stave2.addClef('treble');
-    stave2.setContext(ctx).draw();
+    const voice = new Voice({ num_beats: 15, beat_value: 1 });
+    voice.addTickables(allNotes);
+    new Formatter().joinVoices([voice]).format([voice], staveW - 60);
+    voice.draw(ctx, stave);
 
-    // Add text labels above staves via SVG after staves are drawn
+    // Labels above the stave — "Ascending" over first half, "Descending" over second
     const svgEl = container.querySelector('svg');
-    const makeLabel = (text, x, width) => {
+    const noteAreaW = staveW - 60; // approximate width notes occupy
+    const noteStart = 60;          // approx x where notes begin (after clef)
+    const midX = noteStart + noteAreaW * (8 / 15);
+
+    const makeLabel = (text, cx) => {
       const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      t.setAttribute('x', x + width / 2);
-      t.setAttribute('y', staveTop - 4);
+      t.setAttribute('x', cx);
+      t.setAttribute('y', staveTop + 6);
       t.setAttribute('text-anchor', 'middle');
       t.setAttribute('font-family', 'DM Sans, Segoe UI, sans-serif');
       t.setAttribute('font-size', '14');
@@ -545,28 +562,9 @@ function renderScale(containerId, scaleData, isMelodic) {
       t.textContent = text;
       svgEl.appendChild(t);
     };
-    makeLabel('Ascending',  10,        halfW);
-    makeLabel('Descending', halfW + 24, halfW);
 
-    const ascNotes = scaleData.ascending.map(n => {
-      const sn = new StaveNote({ keys: [n.k], duration: 'w' });
-      if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
-      return sn;
-    });
-    const v1 = new Voice({ num_beats: 8, beat_value: 1 });
-    v1.addTickables(ascNotes);
-    new Formatter().joinVoices([v1]).format([v1], halfW - 50);
-    v1.draw(ctx, stave1);
-
-    const descNotes = scaleData.descending.map(n => {
-      const sn = new StaveNote({ keys: [n.k], duration: 'w' });
-      if (n.acc !== '') sn.addModifier(new Accidental(n.acc), 0);
-      return sn;
-    });
-    const v2 = new Voice({ num_beats: 7, beat_value: 1 });
-    v2.addTickables(descNotes);
-    new Formatter().joinVoices([v2]).format([v2], halfW - 50);
-    v2.draw(ctx, stave2);
+    makeLabel('Ascending',  noteStart + noteAreaW * (4 / 15));
+    makeLabel('Descending', noteStart + noteAreaW * (10 / 15));
   }
 }
 
