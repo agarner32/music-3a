@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interval Method Examples</title>
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: #f7f4f7;
+    color: #2e2e2e;
+    padding: 0;
+  }
+
+  .widget {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+  }
+
+  .widget-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.6rem;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .widget-subtitle {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* Panel dots */
+  .panel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .panel-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #d4c4d4;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel-dot.active { background: #5c4459; }
+
+  /* Carousel */
+  .carousel-wrapper {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0d4e0;
+    padding: 24px 20px 20px;
+    min-height: 380px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-label {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+  }
+
+  .panel-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .tag-major     { background: #e8f4e8; color: #3a6e3a; }
+  .tag-minor     { background: #e8eef8; color: #2a4a8a; }
+  .tag-perfect   { background: #f0eaf0; color: #5c4459; }
+  .tag-augmented { background: #fff0e0; color: #8a5a00; }
+  .tag-diminished{ background: #fde8e8; color: #8a2020; }
+  .tag-difficult { background: #eaf3f7; color: #3a7fa8; }
+
+  /* Notation */
+  .notation-area {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  .notation-area svg { display: block; margin: 0 auto; }
+
+  /* Steps */
+  .steps { margin: 0 0 12px 0; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: #f9f5f9;
+  }
+  .step-num {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #5c4459;
+    min-width: 20px;
+    padding-top: 1px;
+  }
+  .step-text { flex: 1; color: #3d2b3d; }
+  .step-text em { color: #7a5f79; }
+  .step-text strong { color: #3d2b3d; }
+
+  .step.highlight {
+    background: #f0eaf0;
+    border-left: 3px solid #5c4459;
+  }
+
+  /* Answer box */
+  .answer-box {
+    background: #5c4459;
+    color: #f0eaf0;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .answer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c4a8c0;
+  }
+  .answer-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f0eaf0;
+  }
+  .answer-abbr {
+    font-size: 0.9rem;
+    color: #c9a96e;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  /* Navigation */
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .nav-btn {
+    padding: 8px 22px;
+    border-radius: 6px;
+    border: 2px solid #5c4459;
+    background: transparent;
+    color: #5c4459;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: #5c4459; color: #fff; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:disabled:hover { background: transparent; color: #5c4459; }
+
+  .panel-counter {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+  <h1 class="widget-title">Interval Method — Worked Examples</h1>
+  <p class="widget-subtitle">Six examples walking through the major scale method step by step.<br>
+  The last example shows what to do when the bottom note is not a major scale root.</p>
+
+  <div class="panel-indicators" id="dots"></div>
+
+  <div class="carousel-wrapper">
+
+    <!-- Panel 0: The Four Rules reference card -->
+    <div class="panel active" id="panel-0">
+      <div class="panel-label">The Four Rules</div>
+      <div class="panel-tag tag-perfect">Reference</div>
+      <p style="font-size: 0.9rem; color: #4a3a4a; line-height: 1.6; margin-bottom: 16px;">Use these rules any time you need to adjust an interval quality &mdash; whether you are identifying an interval or constructing one. They work in any direction: raising or lowering either note, as long as the size stays the same.</p>
+      <div class="steps">
+        <div class="step highlight">
+          <div class="step-num">1</div>
+          <div class="step-text">If you make a <strong>major</strong> interval smaller by a half step, it becomes <strong>minor</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">2</div>
+          <div class="step-text">If you make a <strong>major</strong> interval smaller by two half steps, it becomes <strong>diminished</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">If you make a <strong>perfect</strong> interval smaller by a half step, it becomes <strong>diminished</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">4</div>
+          <div class="step-text">If you make either a <strong>major</strong> or <strong>perfect</strong> interval larger by a half step, it becomes <strong>augmented</strong>.</div>
+        </div>
+      </div>
+      <div style="background: #f5edd8; border-left: 3px solid #c9a96e; padding: 10px 16px; font-size: 0.85rem; color: #6a4a1a; border-radius: 0 4px 4px 0; margin-top: 14px;">
+        The worked examples on the following panels apply these rules step by step. Click Next to begin.
+      </div>
+    </div>
+
+    <!-- Panel 1: Eb to G — Major 3rd -->
+    <div class="panel" id="panel-1">
+      <div class="panel-label">E♭ to G</div>
+      <div class="panel-tag tag-major">Major</div>
+      <div class="notation-area" id="vex-1"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Count the size: E♭(1) – F(2) – G(3) &rarr; a <strong>third</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Treat E♭ as the tonic. E♭ major has three flats: B♭, E♭, A♭. The third scale degree of E♭ major is G♮.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">G♮ <em>is</em> in E♭ major. Thirds are in the major/minor group. If the top note is in the major scale, the interval is <strong>major</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-name">Major 3rd <span class="answer-abbr">M3</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: D to F — Minor 3rd -->
+    <div class="panel" id="panel-2">
+      <div class="panel-label">D to F</div>
+      <div class="panel-tag tag-minor">Minor</div>
+      <div class="notation-area" id="vex-2"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Count the size: D(1) – E(2) – F(3) &rarr; a <strong>third</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Treat D as the tonic. D major has two sharps: F♯ and C♯. The third scale degree of D major is F♯, which means D to F♯ would be a <strong>major 3rd</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">The top note is F♮, not F♯. F♮ makes the interval a half step smaller than a major 3rd. By Rule 1, a major interval made smaller by a half step becomes <strong>minor</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-name">Minor 3rd <span class="answer-abbr">m3</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: G to D — Perfect 5th -->
+    <div class="panel" id="panel-3">
+      <div class="panel-label">G to D</div>
+      <div class="panel-tag tag-perfect">Perfect</div>
+      <div class="notation-area" id="vex-3"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Count the size: G(1) – A(2) – B(3) – C(4) – D(5) &rarr; a <strong>fifth</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Treat G as the tonic. G major has one sharp: F♯. The fifth scale degree of G major is D♮.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">D♮ <em>is</em> in G major. Fifths are in the perfect group. If the top note is in the major scale, the interval is <strong>perfect</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-name">Perfect 5th <span class="answer-abbr">P5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: F to B — Augmented 4th -->
+    <div class="panel" id="panel-4">
+      <div class="panel-label">F to B</div>
+      <div class="panel-tag tag-augmented">Augmented</div>
+      <div class="notation-area" id="vex-4"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Count the size: F(1) – G(2) – A(3) – B(4) &rarr; a <strong>fourth</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Treat F as the tonic. F major has one flat: B♭. The fourth scale degree of F major is B♭, which means F to B♭ would be a <strong>perfect 4th</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">The top note is B♮, not B♭. B♮ makes the interval a half step larger than a perfect 4th. By Rule 4, a perfect interval made larger by a half step becomes <strong>augmented</strong>. This interval is also called the <strong>tritone</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-name">Augmented 4th <span class="answer-abbr">A4</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 5: E to C — Minor 6th -->
+    <div class="panel" id="panel-5">
+      <div class="panel-label">E to C</div>
+      <div class="panel-tag tag-minor">Minor</div>
+      <div class="notation-area" id="vex-5"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Count the size: E(1) – F(2) – G(3) – A(4) – B(5) – C(6) &rarr; a <strong>sixth</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Treat E as the tonic. E major has four sharps: F♯, C♯, G♯, D♯. The sixth scale degree of E major is C♯, which means E to C♯ would be a <strong>major 6th</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">The top note is C♮, not C♯. C♮ makes the interval a half step smaller than a major 6th. By Rule 1, a major interval made smaller by a half step becomes <strong>minor</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-name">Minor 6th <span class="answer-abbr">m6</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 6: D# to B — Difficult bottom note -->
+    <div class="panel" id="panel-6">
+      <div class="panel-label">D♯ to B</div>
+      <div class="panel-tag tag-difficult">Difficult Bottom Note</div>
+      <div class="notation-area" id="vex-6"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Count the size: D(1) – E(2) – F(3) – G(4) – A(5) – B(6) &rarr; a <strong>sixth</strong>. (Accidentals never affect size.)</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Remove the accidental from the bottom note.</strong> Temporarily treat the bottom note as D♮ instead of D♯. D to B: D major has F♯ and C♯ — B♮ is in D major. D to B = <strong>major 6th</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Put the accidental back.</strong> Restoring D♯ raises the bottom note by a half step. Raising the bottom note makes the interval <em>smaller</em> by a half step.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">4</div>
+          <div class="step-text">Apply The Four Rules: making a major interval smaller by a half step = <strong>minor</strong>. D♯ to B is a <strong>minor 6th</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-name">Minor 6th <span class="answer-abbr">m6</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.carousel-wrapper -->
+
+  <div class="carousel-nav">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Prev</button>
+    <span class="panel-counter" id="panel-counter">1 of 6</span>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Next →</button>
+  </div>
+
+</div><!-- /.widget -->
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentPanel = 0;
+const TOTAL = 7;
+
+// ─── VexFlow interval data ────────────────────────────────────────────────────
+// Each entry: [bottomNote, topNote, bottomAcc, topAcc]
+// Notes in VexFlow format: 'letter/octave'
+const INTERVALS = [
+  { bottom: 'e/4', top: 'g/4', bAcc: 'b',  tAcc: ''  }, // Eb to G
+  { bottom: 'd/4', top: 'f/4', bAcc: '',   tAcc: ''  }, // D to F
+  { bottom: 'g/4', top: 'd/5', bAcc: '',   tAcc: ''  }, // G to D
+  { bottom: 'f/4', top: 'b/4', bAcc: '',   tAcc: ''  }, // F to B
+  { bottom: 'e/4', top: 'c/5', bAcc: '',   tAcc: ''  }, // E to C
+  { bottom: 'd/4', top: 'b/4', bAcc: '#',  tAcc: ''  }, // D# to B
+];
+
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+
+function renderInterval(containerId, data) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const width  = Math.min(container.offsetWidth || 500, 500);
+  const height = 115;
+
+  const renderer = new Renderer(container, Renderer.Backends.SVG);
+  renderer.resize(width, height);
+  const ctx = renderer.getContext();
+
+  const stave = new Stave(10, 18, width - 20);
+  stave.addClef('treble');
+  stave.setContext(ctx).draw();
+
+  // Build a harmonic interval — two notes as a chord (StaveNote with two keys)
+  const keys = [data.bottom, data.top];
+  const note = new StaveNote({ keys, duration: 'w' });
+
+  if (data.bAcc !== '') note.addModifier(new Accidental(data.bAcc), 0);
+  if (data.tAcc !== '') note.addModifier(new Accidental(data.tAcc), 1);
+
+  const voice = new Voice({ num_beats: 4, beat_value: 4 });
+  voice.setStrict(false);
+  voice.addTickables([note]);
+
+  new Formatter().joinVoices([voice]).format([voice], width - 80);
+  voice.draw(ctx, stave);
+}
+
+function renderAll() {
+  // Panel 0 is the rule card — no notation needed
+  INTERVALS.forEach((data, i) => {
+    renderInterval(`vex-${i + 1}`, data);
+  });
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function updateUI() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${currentPanel}`).classList.add('active');
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'panel-dot' + (i === currentPanel ? ' active' : '');
+    d.onclick = () => { currentPanel = i; updateUI(); };
+    dots.appendChild(d);
+  }
+
+  document.getElementById('panel-counter').textContent = `${currentPanel + 1} of ${TOTAL}`;
+  document.getElementById('btn-prev').disabled = currentPanel === 0;
+  document.getElementById('btn-next').disabled = currentPanel === TOTAL - 1;
+}
+
+function navigate(dir) {
+  currentPanel = Math.max(0, Math.min(TOTAL - 1, currentPanel + dir));
+  updateUI();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  renderAll();
+  updateUI();
+});
+</script>
+</body>
+</html>
