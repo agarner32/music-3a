@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interval Inversion Calculator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: #f7f4f7;
+    color: #2e2e2e;
+    padding: 0;
+  }
+
+  .widget {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+  }
+
+  .widget-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    color: #3d2b3d;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .widget-subtitle {
+    font-size: 0.82rem;
+    color: #7a5f79;
+    text-align: center;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* ── Selector card ── */
+  .selector-card {
+    background: #fff;
+    border: 1px solid #e0d4e0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .selector-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .selector-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7a5f79;
+  }
+
+  select {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    color: #3d2b3d;
+    background: #fdfaf7;
+    border: 1.5px solid #c4b0c4;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235c4459' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    transition: border-color 0.2s;
+  }
+  select:focus { outline: none; border-color: #5c4459; }
+  select:disabled { opacity: 0.4; cursor: default; }
+
+  .invalid-note {
+    font-size: 0.78rem;
+    color: #c9806e;
+    margin-top: 6px;
+    min-height: 18px;
+  }
+
+  /* ── Result card ── */
+  .result-card {
+    background: #fff;
+    border: 1px solid #e0d4e0;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  .result-card.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    color: #9a7a9a;
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+
+  .result-header {
+    background: #5c4459;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .result-header-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c4a8c0;
+  }
+  .result-input-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.2rem;
+    color: #f0eaf0;
+    font-weight: 500;
+  }
+
+  .result-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: #f9f5f9;
+  }
+  .result-row.highlight {
+    background: #f0eaf0;
+    border-left: 3px solid #5c4459;
+  }
+
+  .result-icon {
+    font-size: 1rem;
+    min-width: 22px;
+    text-align: center;
+    padding-top: 1px;
+  }
+
+  .result-content { flex: 1; }
+  .result-rule {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9a7a9a;
+    margin-bottom: 3px;
+  }
+  .result-value {
+    font-size: 0.95rem;
+    color: #3d2b3d;
+    line-height: 1.4;
+  }
+  .result-value strong { color: #5c4459; }
+  .result-value em { color: #7a5f79; font-style: normal; }
+
+  .result-answer {
+    background: #3d2b3d;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .answer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #b89ab8;
+  }
+  .answer-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    color: #f0eaf0;
+    font-weight: 600;
+  }
+  .answer-abbr {
+    font-size: 0.9rem;
+    color: #c9a96e;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  /* ── Reset button ── */
+  .reset-btn {
+    display: block;
+    margin: 16px auto 0;
+    padding: 8px 24px;
+    border-radius: 6px;
+    border: 2px solid #5c4459;
+    background: transparent;
+    color: #5c4459;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { background: #5c4459; color: #fff; }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <h1 class="widget-title">Interval Inversion Calculator</h1>
+  <p class="widget-subtitle">Select an interval below to see its inversion calculated step by step.</p>
+
+  <div class="selector-card">
+    <div class="selector-row">
+      <div class="selector-group">
+        <div class="selector-label">Quality</div>
+        <select id="sel-quality" onchange="update()">
+          <option value="">— select —</option>
+          <option value="Perfect">Perfect</option>
+          <option value="Major">Major</option>
+          <option value="Minor">Minor</option>
+          <option value="Augmented">Augmented</option>
+          <option value="Diminished">Diminished</option>
+        </select>
+      </div>
+      <div class="selector-group">
+        <div class="selector-label">Size</div>
+        <select id="sel-size" onchange="update()" disabled>
+          <option value="">— select quality first —</option>
+        </select>
+      </div>
+    </div>
+    <div class="invalid-note" id="invalid-note"></div>
+  </div>
+
+  <div class="result-card empty" id="result-card">
+    Select a quality and size above
+  </div>
+
+  <button class="reset-btn" onclick="reset()">Reset</button>
+
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+// Which sizes are valid for each quality
+const VALID_SIZES = {
+  'Perfect':    ['Unison', '4th', '5th', 'Octave'],
+  'Major':      ['2nd', '3rd', '6th', '7th'],
+  'Minor':      ['2nd', '3rd', '6th', '7th'],
+  'Augmented':  ['Unison', '2nd', '3rd', '4th', '5th', '6th', '7th', 'Octave'],
+  'Diminished': ['Unison', '2nd', '3rd', '4th', '5th', '6th', '7th', 'Octave'],
+};
+
+// Rule of 9 pairings: size → inverted size
+const SIZE_INVERSION = {
+  'Unison': 'Octave',
+  '2nd':    '7th',
+  '3rd':    '6th',
+  '4th':    '5th',
+  '5th':    '4th',
+  '6th':    '3rd',
+  '7th':    '2nd',
+  'Octave': 'Unison',
+};
+
+// Numeric values for the rule of 9 display
+const SIZE_NUM = {
+  'Unison': 1, '2nd': 2, '3rd': 3, '4th': 4,
+  '5th': 5,   '6th': 6, '7th': 7, 'Octave': 8,
+};
+
+// Quality inversion
+const QUALITY_INVERSION = {
+  'Perfect':    'Perfect',
+  'Major':      'Minor',
+  'Minor':      'Major',
+  'Augmented':  'Diminished',
+  'Diminished': 'Augmented',
+};
+
+// Quality → inverted quality rule description
+const QUALITY_RULE = {
+  'Perfect':    'Perfect intervals always invert to perfect.',
+  'Major':      'Major intervals invert to minor.',
+  'Minor':      'Minor intervals invert to major.',
+  'Augmented':  'Augmented intervals invert to diminished.',
+  'Diminished': 'Diminished intervals invert to augmented.',
+};
+
+// Abbreviations
+const ABBR = {
+  'Perfect': 'P', 'Major': 'M', 'Minor': 'm',
+  'Augmented': 'A', 'Diminished': 'd',
+};
+const SIZE_ABBR = {
+  'Unison': '1', '2nd': '2', '3rd': '3', '4th': '4',
+  '5th': '5', '6th': '6', '7th': '7', 'Octave': '8',
+};
+
+// Which qualities are "perfect group" — affects how we describe the inversion
+const PERFECT_SIZES = ['Unison', '4th', '5th', 'Octave'];
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function update() {
+  const quality = document.getElementById('sel-quality').value;
+  const sizeEl  = document.getElementById('sel-size');
+  const invalid = document.getElementById('invalid-note');
+
+  invalid.textContent = '';
+
+  if (!quality) {
+    sizeEl.disabled = true;
+    sizeEl.innerHTML = '<option value="">— select quality first —</option>';
+    showEmpty();
+    return;
+  }
+
+  // Populate size dropdown
+  const validSizes = VALID_SIZES[quality];
+  sizeEl.disabled = false;
+  sizeEl.innerHTML = '<option value="">— select size —</option>' +
+    validSizes.map(s => `<option value="${s}">${s}</option>`).join('');
+
+  const size = sizeEl.value;
+  if (!size) { showEmpty(); return; }
+
+  // Check for edge cases — diminished unison and augmented octave are theoretically
+  // valid but extremely rare; we'll allow them but note it
+  showResult(quality, size);
+}
+
+function showEmpty() {
+  const card = document.getElementById('result-card');
+  card.className = 'result-card empty';
+  card.innerHTML = 'Select a quality and size above';
+}
+
+function showResult(quality, size) {
+  const invQuality = QUALITY_INVERSION[quality];
+  const invSize    = SIZE_INVERSION[size];
+  const sizeN      = SIZE_NUM[size];
+  const invSizeN   = SIZE_NUM[invSize];
+  const qualRule   = QUALITY_RULE[quality];
+  const abbr       = ABBR[quality] + SIZE_ABBR[size];
+  const invAbbr    = ABBR[invQuality] + SIZE_ABBR[invSize];
+
+  const inputName  = `${quality} ${size}`;
+  const outputName = `${invQuality} ${invSize}`;
+
+  const card = document.getElementById('result-card');
+  card.className = 'result-card';
+  card.innerHTML = `
+    <div class="result-header">
+      <div>
+        <div class="result-header-label">Inverting</div>
+        <div class="result-input-name">${inputName} <span style="font-size:0.85rem;color:#c9a96e;">(${abbr})</span></div>
+      </div>
+    </div>
+    <div class="result-body">
+      <div class="result-row">
+        <div class="result-icon">①</div>
+        <div class="result-content">
+          <div class="result-rule">Rule of 9 — Size</div>
+          <div class="result-value">
+            ${sizeN} + <strong>${invSizeN}</strong> = 9 &nbsp;&rarr;&nbsp;
+            a <em>${size}</em> inverts to a <strong>${invSize}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="result-row">
+        <div class="result-icon">②</div>
+        <div class="result-content">
+          <div class="result-rule">Quality Inversion</div>
+          <div class="result-value">
+            ${qualRule} &nbsp;&rarr;&nbsp;
+            <em>${quality}</em> becomes <strong>${invQuality}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="result-answer">
+        <div>
+          <div class="answer-label">Inverted Interval</div>
+          <div class="answer-name">${outputName} <span class="answer-abbr">${invAbbr}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function reset() {
+  document.getElementById('sel-quality').value = '';
+  document.getElementById('sel-size').disabled = true;
+  document.getElementById('sel-size').innerHTML = '<option value="">— select quality first —</option>';
+  document.getElementById('invalid-note').textContent = '';
+  showEmpty();
+}
+
+// Init
+showEmpty();
+</script>
+</body>
+</html>
