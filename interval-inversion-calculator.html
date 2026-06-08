@@ -35,7 +35,6 @@
     line-height: 1.5;
   }
 
-  /* ── Selector card ── */
   .selector-card {
     background: #fff;
     border: 1px solid #e0d4e0;
@@ -86,23 +85,14 @@
   select:focus { outline: none; border-color: #5c4459; }
   select:disabled { opacity: 0.4; cursor: default; }
 
-  .invalid-note {
-    font-size: 0.78rem;
-    color: #c9806e;
-    margin-top: 6px;
-    min-height: 18px;
-  }
-
-  /* ── Result card ── */
   .result-card {
     background: #fff;
     border: 1px solid #e0d4e0;
     border-radius: 10px;
     overflow: hidden;
-    transition: all 0.2s;
   }
 
-  .result-card.empty {
+  .result-empty {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -115,9 +105,6 @@
   .result-header {
     background: #5c4459;
     padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
   }
   .result-header-label {
     font-size: 0.7rem;
@@ -125,12 +112,18 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #c4a8c0;
+    margin-bottom: 4px;
   }
   .result-input-name {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-size: 1.2rem;
     color: #f0eaf0;
     font-weight: 500;
+  }
+  .result-input-abbr {
+    font-size: 0.85rem;
+    color: #c9a96e;
+    margin-left: 6px;
   }
 
   .result-body {
@@ -147,10 +140,6 @@
     padding: 10px 14px;
     border-radius: 6px;
     background: #f9f5f9;
-  }
-  .result-row.highlight {
-    background: #f0eaf0;
-    border-left: 3px solid #5c4459;
   }
 
   .result-icon {
@@ -207,7 +196,6 @@
     margin-left: 6px;
   }
 
-  /* ── Reset button ── */
   .reset-btn {
     display: block;
     margin: 16px auto 0;
@@ -228,13 +216,13 @@
 <div class="widget">
 
   <h1 class="widget-title">Interval Inversion Calculator</h1>
-  <p class="widget-subtitle">Select an interval below to see its inversion calculated step by step.</p>
+  <p class="widget-subtitle">Select an interval to see its inversion calculated step by step.</p>
 
   <div class="selector-card">
     <div class="selector-row">
       <div class="selector-group">
         <div class="selector-label">Quality</div>
-        <select id="sel-quality" onchange="update()">
+        <select id="sel-quality">
           <option value="">— select —</option>
           <option value="Perfect">Perfect</option>
           <option value="Major">Major</option>
@@ -245,90 +233,73 @@
       </div>
       <div class="selector-group">
         <div class="selector-label">Size</div>
-        <select id="sel-size" onchange="update()" disabled>
+        <select id="sel-size" disabled>
           <option value="">— select quality first —</option>
         </select>
       </div>
     </div>
-    <div class="invalid-note" id="invalid-note"></div>
   </div>
 
-  <div class="result-card empty" id="result-card">
-    Select a quality and size above
+  <div class="result-card" id="result-card">
+    <div class="result-empty">Select a quality and size above</div>
   </div>
 
-  <button class="reset-btn" onclick="reset()">Reset</button>
+  <button class="reset-btn" id="reset-btn">Reset</button>
 
 </div>
 
 <script>
-// ── Data ─────────────────────────────────────────────────────────────────────
-
-// Which sizes are valid for each quality
-const VALID_SIZES = {
+var VALID_SIZES = {
   'Perfect':    ['Unison', '4th', '5th', 'Octave'],
   'Major':      ['2nd', '3rd', '6th', '7th'],
   'Minor':      ['2nd', '3rd', '6th', '7th'],
   'Augmented':  ['Unison', '2nd', '3rd', '4th', '5th', '6th', '7th', 'Octave'],
-  'Diminished': ['Unison', '2nd', '3rd', '4th', '5th', '6th', '7th', 'Octave'],
+  'Diminished': ['Unison', '2nd', '3rd', '4th', '5th', '6th', '7th', 'Octave']
 };
 
-// Rule of 9 pairings: size → inverted size
-const SIZE_INVERSION = {
-  'Unison': 'Octave',
-  '2nd':    '7th',
-  '3rd':    '6th',
-  '4th':    '5th',
-  '5th':    '4th',
-  '6th':    '3rd',
-  '7th':    '2nd',
-  'Octave': 'Unison',
+var SIZE_INVERSION = {
+  'Unison':'Octave', '2nd':'7th', '3rd':'6th', '4th':'5th',
+  '5th':'4th', '6th':'3rd', '7th':'2nd', 'Octave':'Unison'
 };
 
-// Numeric values for the rule of 9 display
-const SIZE_NUM = {
-  'Unison': 1, '2nd': 2, '3rd': 3, '4th': 4,
-  '5th': 5,   '6th': 6, '7th': 7, 'Octave': 8,
+var SIZE_NUM = {
+  'Unison':1, '2nd':2, '3rd':3, '4th':4,
+  '5th':5,   '6th':6, '7th':7, 'Octave':8
 };
 
-// Quality inversion
-const QUALITY_INVERSION = {
-  'Perfect':    'Perfect',
-  'Major':      'Minor',
-  'Minor':      'Major',
-  'Augmented':  'Diminished',
-  'Diminished': 'Augmented',
+var QUALITY_INVERSION = {
+  'Perfect':'Perfect', 'Major':'Minor', 'Minor':'Major',
+  'Augmented':'Diminished', 'Diminished':'Augmented'
 };
 
-// Quality → inverted quality rule description
-const QUALITY_RULE = {
+var QUALITY_RULE = {
   'Perfect':    'Perfect intervals always invert to perfect.',
   'Major':      'Major intervals invert to minor.',
   'Minor':      'Minor intervals invert to major.',
   'Augmented':  'Augmented intervals invert to diminished.',
-  'Diminished': 'Diminished intervals invert to augmented.',
+  'Diminished': 'Diminished intervals invert to augmented.'
 };
 
-// Abbreviations
-const ABBR = {
-  'Perfect': 'P', 'Major': 'M', 'Minor': 'm',
-  'Augmented': 'A', 'Diminished': 'd',
-};
-const SIZE_ABBR = {
-  'Unison': '1', '2nd': '2', '3rd': '3', '4th': '4',
-  '5th': '5', '6th': '6', '7th': '7', 'Octave': '8',
+var ABBR = {
+  'Perfect':'P', 'Major':'M', 'Minor':'m',
+  'Augmented':'A', 'Diminished':'d'
 };
 
-// Which qualities are "perfect group" — affects how we describe the inversion
-const PERFECT_SIZES = ['Unison', '4th', '5th', 'Octave'];
+var SIZE_ABBR = {
+  'Unison':'1', '2nd':'2', '3rd':'3', '4th':'4',
+  '5th':'5',   '6th':'6', '7th':'7', 'Octave':'8'
+};
 
-// ── UI helpers ────────────────────────────────────────────────────────────────
-function update() {
-  const quality = document.getElementById('sel-quality').value;
-  const sizeEl  = document.getElementById('sel-size');
-  const invalid = document.getElementById('invalid-note');
+var qualityEl = document.getElementById('sel-quality');
+var sizeEl    = document.getElementById('sel-size');
+var resetBtn  = document.getElementById('reset-btn');
+var resultCard = document.getElementById('result-card');
 
-  invalid.textContent = '';
+// Track whether we are rebuilding the size dropdown
+var rebuildingSize = false;
+
+qualityEl.addEventListener('change', function() {
+  var quality = qualityEl.value;
 
   if (!quality) {
     sizeEl.disabled = true;
@@ -337,88 +308,92 @@ function update() {
     return;
   }
 
-  // Populate size dropdown
-  const validSizes = VALID_SIZES[quality];
+  // Set flag before rebuilding so the size change event ignores this rebuild
+  rebuildingSize = true;
+
+  var sizes = VALID_SIZES[quality];
+  var html = '<option value="">— select size —</option>';
+  for (var i = 0; i < sizes.length; i++) {
+    html += '<option value="' + sizes[i] + '">' + sizes[i] + '</option>';
+  }
+  sizeEl.innerHTML = html;
   sizeEl.disabled = false;
-  sizeEl.innerHTML = '<option value="">— select size —</option>' +
-    validSizes.map(s => `<option value="${s}">${s}</option>`).join('');
 
-  const size = sizeEl.value;
-  if (!size) { showEmpty(); return; }
+  rebuildingSize = false;
 
-  // Check for edge cases — diminished unison and augmented octave are theoretically
-  // valid but extremely rare; we'll allow them but note it
+  showEmpty();
+});
+
+sizeEl.addEventListener('change', function() {
+  if (rebuildingSize) return;
+  var quality = qualityEl.value;
+  var size    = sizeEl.value;
+  if (!quality || !size) { showEmpty(); return; }
   showResult(quality, size);
-}
+});
+
+resetBtn.addEventListener('click', function() {
+  rebuildingSize = true;
+  qualityEl.value = '';
+  sizeEl.disabled = true;
+  sizeEl.innerHTML = '<option value="">— select quality first —</option>';
+  rebuildingSize = false;
+  showEmpty();
+});
 
 function showEmpty() {
-  const card = document.getElementById('result-card');
-  card.className = 'result-card empty';
-  card.innerHTML = 'Select a quality and size above';
+  resultCard.innerHTML = '<div class="result-empty">Select a quality and size above</div>';
 }
 
 function showResult(quality, size) {
-  const invQuality = QUALITY_INVERSION[quality];
-  const invSize    = SIZE_INVERSION[size];
-  const sizeN      = SIZE_NUM[size];
-  const invSizeN   = SIZE_NUM[invSize];
-  const qualRule   = QUALITY_RULE[quality];
-  const abbr       = ABBR[quality] + SIZE_ABBR[size];
-  const invAbbr    = ABBR[invQuality] + SIZE_ABBR[invSize];
+  var invQuality = QUALITY_INVERSION[quality];
+  var invSize    = SIZE_INVERSION[size];
+  var sizeN      = SIZE_NUM[size];
+  var invSizeN   = SIZE_NUM[invSize];
+  var qualRule   = QUALITY_RULE[quality];
+  var abbr       = ABBR[quality] + SIZE_ABBR[size];
+  var invAbbr    = ABBR[invQuality] + SIZE_ABBR[invSize];
+  var inputName  = quality + ' ' + size;
+  var outputName = invQuality + ' ' + invSize;
 
-  const inputName  = `${quality} ${size}`;
-  const outputName = `${invQuality} ${invSize}`;
-
-  const card = document.getElementById('result-card');
-  card.className = 'result-card';
-  card.innerHTML = `
-    <div class="result-header">
-      <div>
-        <div class="result-header-label">Inverting</div>
-        <div class="result-input-name">${inputName} <span style="font-size:0.85rem;color:#c9a96e;">(${abbr})</span></div>
-      </div>
-    </div>
-    <div class="result-body">
-      <div class="result-row">
-        <div class="result-icon">①</div>
-        <div class="result-content">
-          <div class="result-rule">Rule of 9 — Size</div>
-          <div class="result-value">
-            ${sizeN} + <strong>${invSizeN}</strong> = 9 &nbsp;&rarr;&nbsp;
-            a <em>${size}</em> inverts to a <strong>${invSize}</strong>
-          </div>
-        </div>
-      </div>
-      <div class="result-row">
-        <div class="result-icon">②</div>
-        <div class="result-content">
-          <div class="result-rule">Quality Inversion</div>
-          <div class="result-value">
-            ${qualRule} &nbsp;&rarr;&nbsp;
-            <em>${quality}</em> becomes <strong>${invQuality}</strong>
-          </div>
-        </div>
-      </div>
-      <div class="result-answer">
-        <div>
-          <div class="answer-label">Inverted Interval</div>
-          <div class="answer-name">${outputName} <span class="answer-abbr">${invAbbr}</span></div>
-        </div>
-      </div>
-    </div>
-  `;
+  resultCard.innerHTML =
+    '<div class="result-header">' +
+      '<div class="result-header-label">Inverting</div>' +
+      '<div class="result-input-name">' + inputName +
+        ' <span class="result-input-abbr">(' + abbr + ')</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="result-body">' +
+      '<div class="result-row">' +
+        '<div class="result-icon">\u2460</div>' +
+        '<div class="result-content">' +
+          '<div class="result-rule">Rule of 9 \u2014 Size</div>' +
+          '<div class="result-value">' +
+            sizeN + ' + <strong>' + invSizeN + '</strong> = 9 &nbsp;&rarr;&nbsp; ' +
+            'a <em>' + size + '</em> inverts to a <strong>' + invSize + '</strong>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="result-row">' +
+        '<div class="result-icon">\u2461</div>' +
+        '<div class="result-content">' +
+          '<div class="result-rule">Quality Inversion</div>' +
+          '<div class="result-value">' +
+            qualRule + ' &nbsp;&rarr;&nbsp; ' +
+            '<em>' + quality + '</em> becomes <strong>' + invQuality + '</strong>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="result-answer">' +
+        '<div>' +
+          '<div class="answer-label">Inverted Interval</div>' +
+          '<div class="answer-name">' + outputName +
+            ' <span class="answer-abbr">' + invAbbr + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
 }
-
-function reset() {
-  document.getElementById('sel-quality').value = '';
-  document.getElementById('sel-size').disabled = true;
-  document.getElementById('sel-size').innerHTML = '<option value="">— select quality first —</option>';
-  document.getElementById('invalid-note').textContent = '';
-  showEmpty();
-}
-
-// Init
-showEmpty();
 </script>
 </body>
 </html>
