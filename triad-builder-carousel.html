@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Triad Builder — Worked Examples</title>
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: #f7f4f7;
+    color: #2e2e2e;
+    padding: 0;
+  }
+
+  .widget {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+  }
+
+  .widget-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.6rem;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .widget-subtitle {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .panel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .panel-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #d4c4d4;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel-dot.active { background: #5c4459; }
+
+  .carousel-wrapper {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0d4e0;
+    padding: 24px 20px 20px;
+    min-height: 380px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-label {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+  }
+
+  .panel-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .tag-reference  { background: #f0eaf0; color: #5c4459; }
+  .tag-major      { background: #e8f4e8; color: #3a6e3a; }
+  .tag-minor      { background: #e8eef8; color: #2a4a8a; }
+  .tag-diminished { background: #fde8e8; color: #8a2020; }
+  .tag-augmented  { background: #fff0e0; color: #8a5a00; }
+  .tag-enharmonic { background: #eaf3f7; color: #3a7fa8; }
+
+  .notation-area {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  .notation-area svg { display: block; margin: 0 auto; }
+
+  .steps { margin: 0 0 12px 0; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: #f9f5f9;
+  }
+  .step-num {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #5c4459;
+    min-width: 20px;
+    padding-top: 1px;
+  }
+  .step-text { flex: 1; color: #3d2b3d; }
+  .step-text strong { color: #3d2b3d; }
+  .step-text em { color: #7a5f79; font-style: normal; }
+
+  .step.highlight {
+    background: #f0eaf0;
+    border-left: 3px solid #5c4459;
+  }
+
+  .answer-box {
+    background: #5c4459;
+    color: #f0eaf0;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .answer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c4a8c0;
+  }
+  .answer-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f0eaf0;
+  }
+  .answer-notes {
+    font-size: 0.9rem;
+    color: #c9a96e;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .nav-btn {
+    padding: 8px 22px;
+    border-radius: 6px;
+    border: 2px solid #5c4459;
+    background: transparent;
+    color: #5c4459;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: #5c4459; color: #fff; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:disabled:hover { background: transparent; color: #5c4459; }
+
+  .panel-counter {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <h1 class="widget-title">Triad Builder — Worked Examples</h1>
+  <p class="widget-subtitle">Six examples walking through the major scale method and adjustment rules.<br>
+  The last example shows the enharmonic spelling trick for difficult roots.</p>
+
+  <div class="panel-indicators" id="dots"></div>
+
+  <div class="carousel-wrapper">
+
+    <!-- Panel 0: Reference card -->
+    <div class="panel active" id="panel-0">
+      <div class="panel-label">The Building Rules</div>
+      <div class="panel-tag tag-reference">Reference</div>
+      <p style="font-size: 0.9rem; color: #4a3a4a; line-height: 1.6; margin-bottom: 16px;">Every triad quality is built from a major triad. Start with scale degrees 1, 3, and 5 of the major scale, then make the adjustment below.</p>
+      <div class="steps">
+        <div class="step highlight">
+          <div class="step-num">M</div>
+          <div class="step-text"><strong>Major</strong> &mdash; 1, 3, 5 of the major scale. No adjustment needed.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">m</div>
+          <div class="step-text"><strong>Minor</strong> &mdash; Lower the 3rd by a half step.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">d</div>
+          <div class="step-text"><strong>Diminished</strong> &mdash; Lower both the 3rd and the 5th by a half step.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">A</div>
+          <div class="step-text"><strong>Augmented</strong> &mdash; Raise the 5th by a half step.</div>
+        </div>
+      </div>
+      <div style="background: #f5edd8; border-left: 3px solid #c9a96e; padding: 10px 16px; font-size: 0.85rem; color: #6a4a1a; border-radius: 0 4px 4px 0; margin-top: 14px;">
+        For roots that don't belong to a common major key, use the enharmonic spelling trick shown in the last panel.
+      </div>
+    </div>
+
+    <!-- Panel 1: Eb major -->
+    <div class="panel" id="panel-1">
+      <div class="panel-label">E♭ major triad</div>
+      <div class="panel-tag tag-major">Major</div>
+      <div class="notation-area" id="vex-1"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Start with the E♭ major scale. Scale degrees 1, 3, and 5 are <strong>E♭, G, B♭</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Major triad = 1, 3, 5 of the major scale. <em>No adjustment needed.</em></div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">The triad is complete as spelled. E♭ to G is a major 3rd. G to B♭ is a minor 3rd. E♭ to B♭ is a perfect 5th.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">E♭ Major Triad</div>
+          <div class="answer-name">E♭ &ndash; G &ndash; B♭ <span class="answer-notes"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: A minor -->
+    <div class="panel" id="panel-2">
+      <div class="panel-label">A minor triad</div>
+      <div class="panel-tag tag-minor">Minor</div>
+      <div class="notation-area" id="vex-2"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Start with A major: scale degrees 1, 3, 5 are <strong>A, C♯, E</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Minor = lower the 3rd by a half step. C♯ lowered by a half step becomes <strong>C♮</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">The 5th (E) stays the same. A to C♮ is now a minor 3rd. C♮ to E is a major 3rd. A to E is still a perfect 5th.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">A Minor Triad</div>
+          <div class="answer-name">A &ndash; C &ndash; E <span class="answer-notes"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: B diminished -->
+    <div class="panel" id="panel-3">
+      <div class="panel-label">B diminished triad</div>
+      <div class="panel-tag tag-diminished">Diminished</div>
+      <div class="notation-area" id="vex-3"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Start with B major: scale degrees 1, 3, 5 are <strong>B, D♯, F♯</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Diminished = lower both the 3rd and the 5th by a half step.<br />D♯ &rarr; <strong>D♮</strong> &nbsp;&nbsp;|&nbsp;&nbsp; F♯ &rarr; <strong>F♮</strong></div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">B to D♮ is a minor 3rd. D♮ to F♮ is a minor 3rd. B to F♮ is a diminished 5th — the tritone. Two minor thirds stacked.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">B Diminished Triad</div>
+          <div class="answer-name">B &ndash; D &ndash; F <span class="answer-notes"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: C augmented -->
+    <div class="panel" id="panel-4">
+      <div class="panel-label">C augmented triad</div>
+      <div class="panel-tag tag-augmented">Augmented</div>
+      <div class="notation-area" id="vex-4"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Start with C major: scale degrees 1, 3, 5 are <strong>C, E, G</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Augmented = raise the 5th by a half step. G raised by a half step becomes <strong>G♯</strong>.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">3</div>
+          <div class="step-text">The 3rd (E) stays the same. C to E is a major 3rd. E to G♯ is also a major 3rd. C to G♯ is an augmented 5th. Two major thirds stacked.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">C Augmented Triad</div>
+          <div class="answer-name">C &ndash; E &ndash; G♯ <span class="answer-notes"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 5: D# major — enharmonic trick -->
+    <div class="panel" id="panel-5">
+      <div class="panel-label">D♯ major triad</div>
+      <div class="panel-tag tag-enharmonic">Enharmonic Trick</div>
+      <div class="notation-area" id="vex-5"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">D♯ is not a common major key root. Replace it with its enharmonic equivalent: <strong>D♯ = E♭</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Build E♭ major: scale degrees 1, 3, 5 are <strong>E♭, G, B♭</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Respell every note back to match the sharp spelling, keeping the <em>same letter names</em>:<br />
+          E♭ &rarr; <strong>D♯</strong> &nbsp;&nbsp;|&nbsp;&nbsp; G &rarr; <strong>F𝄪</strong> &nbsp;&nbsp;|&nbsp;&nbsp; B♭ &rarr; <strong>A♯</strong></div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">4</div>
+          <div class="step-text">The third must stay on an F (F𝄪, not G♮) and the fifth must stay on an A (A♯, not B♭). Letter names must be preserved — only the accidentals change.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">D♯ Major Triad</div>
+          <div class="answer-name">D♯ &ndash; F𝄪 &ndash; A♯ <span class="answer-notes"></span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.carousel-wrapper -->
+
+  <div class="carousel-nav">
+    <button class="nav-btn" id="btn-prev" disabled>← Prev</button>
+    <span class="panel-counter" id="panel-counter">1 of 6</span>
+    <button class="nav-btn" id="btn-next">Next →</button>
+  </div>
+
+</div><!-- /.widget -->
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+var currentPanel = 0;
+var TOTAL = 6;
+
+// ─── VexFlow data ─────────────────────────────────────────────────────────────
+// Single chord panels: { notes }
+// Before/after panels: { before: {notes, label}, after: {notes, label} }
+var TRIADS = [
+  null, // panel 0 — reference card
+  { label: 'E♭ major', notes: [{k:'e/4',acc:'b'}, {k:'g/4',acc:''}, {k:'b/4',acc:'b'}] }, // Eb major — single with label
+  {
+    before: { label: 'A major',  notes: [{k:'a/4',acc:''}, {k:'c/5',acc:'#'}, {k:'e/5',acc:''}] },
+    after:  { label: 'A minor',  notes: [{k:'a/4',acc:''}, {k:'c/5',acc:'n'}, {k:'e/5',acc:''}] }
+  },
+  {
+    before: { label: 'B major',      notes: [{k:'b/4',acc:''}, {k:'d/5',acc:'#'}, {k:'f/5',acc:'#'}] },
+    after:  { label: 'B diminished', notes: [{k:'b/4',acc:''}, {k:'d/5',acc:'n'}, {k:'f/5',acc:'n'}] }
+  },
+  {
+    before: { label: 'C major',     notes: [{k:'c/4',acc:''}, {k:'e/4',acc:''}, {k:'g/4',acc:''}] },
+    after:  { label: 'C augmented', notes: [{k:'c/4',acc:''}, {k:'e/4',acc:''}, {k:'g/4',acc:'#'}] }
+  },
+  {
+    before: { label: 'E♭ major', notes: [{k:'e/4',acc:'b'}, {k:'g/4',acc:''}, {k:'b/4',acc:'b'}] },
+    after:  { label: 'D♯ major', notes: [{k:'d/4',acc:'#'}, {k:'f/4',acc:'##'}, {k:'a/4',acc:'#'}] }
+  },
+];
+
+var VF = Vex.Flow;
+
+function makeChord(notes) {
+  var keys = notes.map(function(n) { return n.k; });
+  var chord = new VF.StaveNote({ keys: keys, duration: 'w' });
+  notes.forEach(function(n, i) {
+    if (n.acc !== '') chord.addModifier(new VF.Accidental(n.acc), i);
+  });
+  return chord;
+}
+
+function addLabel(svgEl, text, x, y) {
+  var t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  t.setAttribute('x', x);
+  t.setAttribute('y', y);
+  t.setAttribute('text-anchor', 'middle');
+  t.setAttribute('font-family', 'DM Sans, Segoe UI, sans-serif');
+  t.setAttribute('font-size', '14');
+  t.setAttribute('font-weight', '600');
+  t.setAttribute('fill', '#5c4459');
+  t.textContent = text;
+  svgEl.appendChild(t);
+}
+
+function renderTriad(containerId, data) {
+  var container = document.getElementById(containerId);
+  if (!container || !data) return;
+  container.innerHTML = '';
+
+  var width    = Math.min(container.offsetWidth || 500, 500);
+  var height   = 130;
+  var staveTop = 32;
+
+  var renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+  renderer.resize(width, height);
+  var ctx = renderer.getContext();
+
+  if (data.before && data.after) {
+    var halfW = Math.floor((width - 20) / 2) - 8;
+
+    var stave1 = new VF.Stave(10, staveTop, halfW);
+    stave1.addClef('treble');
+    stave1.setContext(ctx).draw();
+
+    var stave2 = new VF.Stave(halfW + 24, staveTop, halfW);
+    stave2.addClef('treble');
+    stave2.setContext(ctx).draw();
+
+    var svgEl = container.querySelector('svg');
+    addLabel(svgEl, data.before.label, 10 + halfW / 2,       staveTop - 6);
+    addLabel(svgEl, data.after.label,  halfW + 24 + halfW / 2, staveTop - 6);
+
+    var v1 = new VF.Voice({ num_beats: 4, beat_value: 4 });
+    v1.setStrict(false);
+    v1.addTickables([makeChord(data.before.notes)]);
+    new VF.Formatter().joinVoices([v1]).format([v1], halfW - 50);
+    v1.draw(ctx, stave1);
+
+    var v2 = new VF.Voice({ num_beats: 4, beat_value: 4 });
+    v2.setStrict(false);
+    v2.addTickables([makeChord(data.after.notes)]);
+    new VF.Formatter().joinVoices([v2]).format([v2], halfW - 50);
+    v2.draw(ctx, stave2);
+
+  } else {
+    var stave = new VF.Stave(10, staveTop, width - 20);
+    stave.addClef('treble');
+    stave.setContext(ctx).draw();
+
+    if (data.label) {
+      var svgEl = container.querySelector('svg');
+      addLabel(svgEl, data.label, width / 2, staveTop - 6);
+    }
+
+    var voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
+    voice.setStrict(false);
+    voice.addTickables([makeChord(data.notes)]);
+    new VF.Formatter().joinVoices([voice]).format([voice], width - 80);
+    voice.draw(ctx, stave);
+  }
+}
+
+function renderAll() {
+  for (var i = 1; i < TOTAL; i++) {
+    renderTriad('vex-' + i, TRIADS[i]);
+  }
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function updateUI() {
+  document.querySelectorAll('.panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  document.getElementById('panel-' + currentPanel).classList.add('active');
+
+  var dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  for (var i = 0; i < TOTAL; i++) {
+    var d = document.createElement('div');
+    d.className = 'panel-dot' + (i === currentPanel ? ' active' : '');
+    (function(idx) {
+      d.onclick = function() { currentPanel = idx; updateUI(); };
+    })(i);
+    dots.appendChild(d);
+  }
+
+  document.getElementById('panel-counter').textContent =
+    (currentPanel + 1) + ' of ' + TOTAL;
+  document.getElementById('btn-prev').disabled = currentPanel === 0;
+  document.getElementById('btn-next').disabled = currentPanel === TOTAL - 1;
+}
+
+document.getElementById('btn-prev').addEventListener('click', function() {
+  if (currentPanel > 0) { currentPanel--; updateUI(); }
+});
+document.getElementById('btn-next').addEventListener('click', function() {
+  if (currentPanel < TOTAL - 1) { currentPanel++; updateUI(); }
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  renderAll();
+  updateUI();
+});
+</script>
+</body>
+</html>
