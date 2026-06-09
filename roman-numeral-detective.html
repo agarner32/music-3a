@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Roman Numeral Detective</title>
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: #f7f4f7;
+    color: #2e2e2e;
+    padding: 0;
+  }
+
+  .widget {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+  }
+
+  .widget-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.6rem;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .widget-subtitle {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .panel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .panel-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #d4c4d4;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel-dot.active { background: #5c4459; }
+
+  .carousel-wrapper {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0d4e0;
+    padding: 24px 20px 20px;
+    min-height: 420px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-label {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3d2b3d;
+    margin-bottom: 4px;
+  }
+
+  .panel-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .tag-major   { background: #e8f4e8; color: #3a6e3a; }
+  .tag-minor   { background: #e8eef8; color: #2a4a8a; }
+  .tag-accidental { background: #eaf3f7; color: #3a7fa8; }
+
+  .notation-area {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  .notation-area svg { display: block; margin: 0 auto; }
+
+  .steps { margin: 0 0 12px 0; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: #f9f5f9;
+  }
+  .step-num {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #5c4459;
+    min-width: 20px;
+    padding-top: 1px;
+  }
+  .step-text { flex: 1; color: #3d2b3d; line-height: 1.6; }
+  .step-text strong { color: #3d2b3d; }
+  .step-text em { color: #7a5f79; font-style: normal; }
+
+  .step.highlight {
+    background: #f0eaf0;
+    border-left: 3px solid #5c4459;
+  }
+
+  .step.check-yes {
+    background: #e8f4e8;
+    border-left: 3px solid #3a6e3a;
+  }
+  .step.check-no {
+    background: #fdf0f0;
+    border-left: 3px solid #c46e6e;
+  }
+
+  .answer-box {
+    background: #5c4459;
+    color: #f0eaf0;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .answer-left { display: flex; flex-direction: column; gap: 4px; }
+  .answer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c4a8c0;
+  }
+  .answer-rn {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f0eaf0;
+    line-height: 1;
+  }
+  .answer-right {
+    font-size: 0.85rem;
+    color: #c9a96e;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .nav-btn {
+    padding: 8px 22px;
+    border-radius: 6px;
+    border: 2px solid #5c4459;
+    background: transparent;
+    color: #5c4459;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: #5c4459; color: #fff; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:disabled:hover { background: transparent; color: #5c4459; }
+
+  .panel-counter {
+    font-size: 0.85rem;
+    color: #7a5f79;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <h1 class="widget-title">Roman Numeral Detective</h1>
+  <p class="widget-subtitle">Work through four examples step by step &mdash; finding the root, identifying the scale degree, and naming the Roman numeral.</p>
+
+  <div class="panel-indicators" id="dots"></div>
+
+  <div class="carousel-wrapper">
+
+    <!-- Panel 0: Key of A major — G# B E (first inversion) -->
+    <div class="panel active" id="panel-0">
+      <div class="panel-label">Key of A major &mdash; G♯ B E</div>
+      <div class="panel-tag tag-major">Major Key — First Inversion</div>
+      <div class="notation-area" id="vex-0"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">The key signature has 3 sharps (F♯, C♯, G♯) &rarr; <strong>A major</strong>. The chord tones are G♯, B, and E. The bass note is <strong>G♯</strong>. The notes are not in thirds order so this is an inversion &mdash; we need to find the root.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Test the combinations starting from the bottom note G. Remember: accidentals don't affect the letter name.</div>
+        </div>
+        <div class="step check-no">
+          <div class="step-num">✗</div>
+          <div class="step-text"><em>G B D?</em> &mdash; No. Our chord has E, not D.</div>
+        </div>
+        <div class="step check-no">
+          <div class="step-num">✗</div>
+          <div class="step-text"><em>B D F?</em> &mdash; No. Our chord has G and E, not D and F.</div>
+        </div>
+        <div class="step check-yes">
+          <div class="step-num">✓</div>
+          <div class="step-text"><em>E G B?</em> &mdash; Yes. The root is <strong>E</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">E is scale degree <strong>5</strong> in A major &rarr; Roman numeral <strong>V</strong>. V is major. The G♯ confirms the major quality.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">4</div>
+          <div class="step-text">The bass note G♯ is the <strong>3rd</strong> of the E major triad. 3rd in the bass = <strong>first inversion</strong> &rarr; <strong>V⁶</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div class="answer-left">
+          <div class="answer-label">Roman Numeral</div>
+          <div class="answer-rn">V<sup style="font-size:0.9rem;">6</sup></div>
+        </div>
+        <div class="answer-right">Root: E &nbsp;|&nbsp; Quality: Major<br />Position: First inversion (3rd in bass)</div>
+      </div>
+    </div>
+
+    <!-- Panel 1: Key of D major — A D F# (second inversion) -->
+    <div class="panel" id="panel-1">
+      <div class="panel-label">Key of D major &mdash; A D F♯</div>
+      <div class="panel-tag tag-major">Major Key — Second Inversion</div>
+      <div class="notation-area" id="vex-1"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">The key signature has 2 sharps (F♯, C♯) &rarr; <strong>D major</strong>. The chord tones are A, D, F♯. The bass note is <strong>A</strong>. Not in thirds order &mdash; find the root.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Test combinations starting from the bottom note A.</div>
+        </div>
+        <div class="step check-no">
+          <div class="step-num">✗</div>
+          <div class="step-text"><em>A C E?</em> &mdash; No. Our chord has D and F, not C and E.</div>
+        </div>
+        <div class="step check-no">
+          <div class="step-num">✗</div>
+          <div class="step-text"><em>C E G?</em> &mdash; No. Our chord has A, D, and F.</div>
+        </div>
+        <div class="step check-yes">
+          <div class="step-num">✓</div>
+          <div class="step-text"><em>D F A?</em> &mdash; Yes. D is D, F♯ is still an F, A is A. The root is <strong>D</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">D is scale degree <strong>1</strong> in D major &rarr; Roman numeral <strong>I</strong>. I is major. F♯ confirms the major quality.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">4</div>
+          <div class="step-text">The bass note A is the <strong>5th</strong> of the D major triad. 5th in the bass = <strong>second inversion</strong> &rarr; <strong>I⁶/⁴</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div class="answer-left">
+          <div class="answer-label">Roman Numeral</div>
+          <div class="answer-rn">I<sup style="font-size:0.9rem;">6/4</sup></div>
+        </div>
+        <div class="answer-right">Root: D &nbsp;|&nbsp; Quality: Major<br />Position: Second inversion (5th in bass)</div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Key of E minor — F# A C (root position) -->
+    <div class="panel" id="panel-2">
+      <div class="panel-label">Key of E minor &mdash; F♯ A C</div>
+      <div class="panel-tag tag-minor">Minor Key</div>
+      <div class="notation-area" id="vex-2"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">The key signature has 1 sharp (F♯) &rarr; <strong>E minor</strong> (relative of G major). The chord tones are F♯, A, C. The notes are in thirds order &mdash; <strong>root position</strong>. The bottom note F♯ is the root.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Since it's in root position, no cycling needed. Confirm the combination: <em>F A C</em> &mdash; yes. Root is <strong>F♯</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">F♯ is scale degree <strong>2</strong> in E minor &rarr; Roman numeral <strong>ii</strong>. In natural minor, scale degree 2 is diminished.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">4</div>
+          <div class="step-text">F♯&ndash;A is a minor 3rd, A&ndash;C is a minor 3rd, F♯&ndash;C is a diminished 5th. Two minor thirds = <strong>diminished</strong> &rarr; <strong>ii°</strong>. Root position &mdash; no figured bass needed.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div class="answer-left">
+          <div class="answer-label">Roman Numeral</div>
+          <div class="answer-rn">ii°</div>
+        </div>
+        <div class="answer-right">Root: F♯ &nbsp;|&nbsp; Quality: Diminished<br />Position: Root position</div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Key of G minor — A D F# (second inversion, accidental) -->
+    <div class="panel" id="panel-3">
+      <div class="panel-label">Key of G minor &mdash; A D F♯</div>
+      <div class="panel-tag tag-accidental">Minor Key — Accidental</div>
+      <div class="notation-area" id="vex-3"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">The key signature has 2 flats (B♭, E♭) &rarr; B♭ major or G minor. The chord contains <strong>F♯</strong> &mdash; an accidental not found in either key signature.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Accidental clue:</strong> F♯ does not exist in B♭ major. An accidental like this almost always signals a <strong>minor key</strong> &mdash; the raised 7th from harmonic minor. The key is <strong>G minor</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">The chord tones are A, D, F♯. The bass note is <strong>A</strong>. Not in thirds order &mdash; find the root. Test combinations starting from A.</div>
+        </div>
+        <div class="step check-no">
+          <div class="step-num">✗</div>
+          <div class="step-text"><em>A C E?</em> &mdash; No. Our chord has D and F, not C and E.</div>
+        </div>
+        <div class="step check-no">
+          <div class="step-num">✗</div>
+          <div class="step-text"><em>F A C?</em> &mdash; No. Our chord has D, not C.</div>
+        </div>
+        <div class="step check-yes">
+          <div class="step-num">✓</div>
+          <div class="step-text"><em>D F A?</em> &mdash; Yes. D is D, F♯ is still an F, A is A. The root is <strong>D</strong>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">D is scale degree <strong>5</strong> in G minor &rarr; Roman numeral <strong>V</strong>. The F♯ (raised 7th) makes this a major triad &mdash; the standard dominant in minor.</div>
+        </div>
+        <div class="step highlight">
+          <div class="step-num">5</div>
+          <div class="step-text">The bass note A is the <strong>5th</strong> of the D major triad. 5th in the bass = <strong>second inversion</strong> &rarr; <strong>V⁶/⁴</strong>.</div>
+        </div>
+      </div>
+      <div class="answer-box">
+        <div class="answer-left">
+          <div class="answer-label">Roman Numeral</div>
+          <div class="answer-rn">V<sup style="font-size:0.9rem;">6/4</sup></div>
+        </div>
+        <div class="answer-right">Root: D &nbsp;|&nbsp; Quality: Major (harmonic minor)<br />Position: Second inversion (5th in bass)</div>
+      </div>
+    </div>
+
+  </div><!-- /.carousel-wrapper -->
+
+  <div class="carousel-nav">
+    <button class="nav-btn" id="btn-prev" disabled>← Prev</button>
+    <span class="panel-counter" id="panel-counter">1 of 4</span>
+    <button class="nav-btn" id="btn-next">Next →</button>
+  </div>
+
+</div><!-- /.widget -->
+
+<script>
+var currentPanel = 0;
+var TOTAL = 4;
+
+// VexFlow chord data
+// Each chord: array of notes rendered as a harmonic chord
+// Key signature is shown using addKeySignature
+var VF = Vex.Flow;
+
+var CHORDS = [
+  // Panel 0: A major key (3 sharps), chord G# B E — first inversion, G# on bottom
+  { keySig: 'A', notes: [{k:'g/4',acc:'#'}, {k:'b/4',acc:''}, {k:'e/5',acc:''}] },
+  // Panel 1: D major key (2 sharps), chord A D F# — A in bass (second inversion)
+  { keySig: 'D', notes: [{k:'a/3',acc:''}, {k:'d/4',acc:''}, {k:'f/4',acc:'#'}] },
+  // Panel 2: E minor key (1 sharp), chord F# A C — root position
+  { keySig: 'E', notes: [{k:'f/4',acc:'#'}, {k:'a/4',acc:''}, {k:'c/5',acc:''}] },
+  // Panel 3: G minor key (2 flats), chord A D F# — A in bass (second inversion), F# is accidental
+  { keySig: 'Bb', notes: [{k:'a/3',acc:''}, {k:'d/4',acc:''}, {k:'f/4',acc:'#'}] },
+];
+
+function renderChord(containerId, data) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  var width  = Math.min(container.offsetWidth || 500, 500);
+  var height = 125;
+
+  var renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+  renderer.resize(width, height);
+  var ctx = renderer.getContext();
+
+  var stave = new VF.Stave(10, 18, width - 20);
+  stave.addClef('treble');
+  stave.addKeySignature(data.keySig);
+  stave.setContext(ctx).draw();
+
+  var keys  = data.notes.map(function(n) { return n.k; });
+  var chord = new VF.StaveNote({ keys: keys, duration: 'w' });
+
+  data.notes.forEach(function(n, i) {
+    if (n.acc !== '') chord.addModifier(new VF.Accidental(n.acc), i);
+  });
+
+  var voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
+  voice.setStrict(false);
+  voice.addTickables([chord]);
+  new VF.Formatter().joinVoices([voice]).format([voice], width - 100);
+  voice.draw(ctx, stave);
+}
+
+function renderAll() {
+  CHORDS.forEach(function(data, i) {
+    renderChord('vex-' + i, data);
+  });
+}
+
+function updateUI() {
+  document.querySelectorAll('.panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  document.getElementById('panel-' + currentPanel).classList.add('active');
+
+  var dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  for (var i = 0; i < TOTAL; i++) {
+    var d = document.createElement('div');
+    d.className = 'panel-dot' + (i === currentPanel ? ' active' : '');
+    (function(idx) {
+      d.onclick = function() { currentPanel = idx; updateUI(); };
+    })(i);
+    dots.appendChild(d);
+  }
+
+  document.getElementById('panel-counter').textContent =
+    (currentPanel + 1) + ' of ' + TOTAL;
+  document.getElementById('btn-prev').disabled = currentPanel === 0;
+  document.getElementById('btn-next').disabled = currentPanel === TOTAL - 1;
+}
+
+document.getElementById('btn-prev').addEventListener('click', function() {
+  if (currentPanel > 0) { currentPanel--; updateUI(); }
+});
+document.getElementById('btn-next').addEventListener('click', function() {
+  if (currentPanel < TOTAL - 1) { currentPanel++; updateUI(); }
+});
+
+window.addEventListener('load', function() {
+  renderAll();
+  updateUI();
+});
+</script>
+</body>
+</html>
