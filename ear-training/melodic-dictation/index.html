@@ -783,6 +783,7 @@ function renderStaff() {
     stave.addClef(currentMelody.clef);
     if (currentMelody.keySignature !== "C") stave.addKeySignature(currentMelody.keySignature);
     stave.addTimeSignature(currentMelody.timeSignature);
+    stave.setEndBarType(Barline.type.END);
     stave.setContext(context).draw();
     hint.style.display = "block";
     return;
