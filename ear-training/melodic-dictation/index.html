@@ -1086,26 +1086,30 @@ function gradeAnswer() {
     return `<div class="correct-chip">${n.pitch + acc} <span style="opacity:0.7;font-weight:400;">${durLabels[n.dur] || n.dur}</span></div>`;
   }).join("");
 
-  // Track best score
+  // Track best score — only update if this attempt is better
   sessionStarted = true;
   melodyTotals[currentMelodyIndex] = total;
-  const prevBest = bestScores[currentMelodyIndex];
+  const prevBest = bestScores[currentMelodyIndex]; // save BEFORE updating
   if (prevBest === undefined || numCorrect > prevBest) {
     bestScores[currentMelodyIndex] = numCorrect;
   }
+  const currentBest = bestScores[currentMelodyIndex]; // best after update
   updateRunningTotal();
 
-  // Show attempt comparison
+  // Show attempt comparison — always show this attempt AND best score clearly
   const compDiv = document.getElementById("attemptComparison");
-  const best = bestScores[currentMelodyIndex];
   compDiv.style.display = "block";
   document.getElementById("thisAttemptLabel").textContent = `This attempt: ${numCorrect} / ${total}`;
-  if (prevBest !== undefined && prevBest !== numCorrect) {
-    document.getElementById("bestScoreLabel").textContent = numCorrect > prevBest
-      ? `✓ New best! (was ${prevBest} / ${total})`
-      : `Best score: ${prevBest} / ${total}`;
+  if (prevBest === undefined) {
+    // First attempt
+    document.getElementById("bestScoreLabel").textContent = "";
+  } else if (numCorrect > prevBest) {
+    document.getElementById("bestScoreLabel").textContent = `✓ New best! (previous: ${prevBest} / ${total})`;
+  } else if (numCorrect === prevBest) {
+    document.getElementById("bestScoreLabel").textContent = `Best score: ${currentBest} / ${total}`;
   } else {
-    document.getElementById("bestScoreLabel").textContent = prevBest === undefined ? "" : `Best: ${best} / ${total}`;
+    // Worse than best — clearly show the best score
+    document.getElementById("bestScoreLabel").textContent = `★ Best score: ${currentBest} / ${total}`;
   }
 
   // Show next melody button
