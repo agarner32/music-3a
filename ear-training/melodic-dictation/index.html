@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Melodic Dictation</title>
   <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -76,7 +77,7 @@
       font-weight: 600;
       color: var(--plum);
     }
-    .meta-badges { display: flex; gap: 8px; }
+    .meta-badges { display: flex; gap: 8px; flex-wrap: wrap; }
     .badge {
       background: var(--plum);
       color: var(--cream);
@@ -89,15 +90,19 @@
     }
     .badge.gold { background: var(--gold); color: var(--plum-dark); }
 
+    /* Audio section */
     .audio-section {
       background: var(--plum-dark);
       border-radius: 10px;
       padding: 16px 20px;
       margin-bottom: 20px;
+    }
+    .audio-top {
       display: flex;
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
+      margin-bottom: 14px;
     }
     .audio-section .listen-label {
       color: var(--gold-light);
@@ -111,22 +116,83 @@
       background: var(--gold);
       border: none;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       flex-shrink: 0;
       transition: background 0.15s, transform 0.1s;
     }
     .play-btn:hover { background: var(--gold-light); transform: scale(1.05); }
     .play-btn:active { transform: scale(0.97); }
-    .replay-count { color: var(--neutral); font-size: 0.75rem; }
-    .replay-count span { color: var(--gold-light); font-weight: 600; }
+    .play-btn:disabled { background: var(--neutral); cursor: not-allowed; transform: none; opacity: 0.7; }
+    .play-info { flex: 1; }
+    .play-info-text { color: var(--cream); font-size: 0.85rem; font-weight: 500; }
+    .play-status { color: var(--gold-light); font-size: 0.75rem; margin-top: 3px; }
     audio { display: none; }
 
+    /* Cadence status */
+    .cadence-status {
+      color: var(--gold-light);
+      font-size: 0.78rem;
+      font-style: italic;
+      min-height: 1.2em;
+    }
+
+    /* Tempo slider */
+    .tempo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 12px;
+    }
+    .tempo-label {
+      color: var(--gold-light);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .tempo-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.2);
+      outline: none;
+      cursor: pointer;
+    }
+    .tempo-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold);
+      cursor: pointer;
+    }
+    .tempo-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold);
+      cursor: pointer;
+      border: none;
+    }
+    .tempo-value {
+      color: var(--cream);
+      font-size: 0.82rem;
+      font-weight: 600;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* Staff */
     .staff-section {
       background: white;
       border: 2px solid var(--cream-dark);
@@ -145,6 +211,7 @@
       margin-top: 6px;
     }
 
+    /* Palette */
     .palette-section {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -182,8 +249,8 @@
     }
     .pal-btn:hover { border-color: var(--plum-light); background: white; }
     .pal-btn.selected { background: var(--plum); color: var(--cream); border-color: var(--plum); }
-    .pal-btn.duration { font-size: 1.1rem; padding: 5px 10px; }
 
+    /* Controls */
     .controls-row {
       display: flex;
       gap: 10px;
@@ -210,6 +277,7 @@
     .btn-gold:hover { background: var(--gold-light); }
     .btn-gold:disabled { background: var(--neutral); cursor: not-allowed; opacity: 0.6; }
 
+    /* Entry queue */
     .entry-queue {
       background: white;
       border: 2px solid var(--cream-dark);
@@ -246,9 +314,10 @@
       gap: 4px;
     }
     .entry-chip.last { border-color: var(--plum-light); background: white; }
-    .entry-chip .dur-sym { color: var(--plum-light); font-size: 0.95rem; }
+    .entry-chip .dur-sym { color: var(--plum-light); font-size: 0.78rem; }
     .empty-hint { color: var(--neutral); font-size: 0.82rem; font-style: italic; }
 
+    /* Results */
     .results-section {
       display: none;
       background: white;
@@ -326,21 +395,32 @@
     </div>
   </div>
 
+  <!-- Audio section -->
   <div class="audio-section">
-    <div class="listen-label">🔊 Listen</div>
-    <button class="play-btn" id="playBtn" title="Play melody">▶</button>
-    <div>
-      <div style="color:var(--cream); font-size:0.85rem; font-weight:500;">Play the melody as many times as you need.</div>
-      <div class="replay-count">Plays: <span id="playCount">0</span></div>
+    <div class="audio-top">
+      <div class="listen-label">🔊 Listen</div>
+      <button class="play-btn" id="playBtn" title="Play cadence then melody">▶</button>
+      <div class="play-info">
+        <div class="play-info-text">Play the melody as many times as you need.</div>
+        <div class="play-status" id="playStatus">Plays: <span id="playCount">0</span></div>
+      </div>
+    </div>
+    <div class="cadence-status" id="cadenceStatus"></div>
+    <div class="tempo-row">
+      <span class="tempo-label">Tempo</span>
+      <input type="range" class="tempo-slider" id="tempoSlider" min="60" max="100" value="100" step="5" />
+      <span class="tempo-value" id="tempoValue">100%</span>
     </div>
     <audio id="audioPlayer"></audio>
   </div>
 
+  <!-- Staff -->
   <div class="staff-section">
     <div id="staffContainer"></div>
     <div class="staff-hint" id="staffHint">Your notes will appear here as you add them.</div>
   </div>
 
+  <!-- Entry queue -->
   <div class="entry-queue">
     <div class="entry-queue-label">Notes entered</div>
     <div class="entry-chips" id="entryChips">
@@ -348,6 +428,7 @@
     </div>
   </div>
 
+  <!-- Palette -->
   <div class="palette-section">
     <div class="palette-group">
       <div class="palette-group-label">Pitch</div>
@@ -380,6 +461,7 @@
     </div>
   </div>
 
+  <!-- Controls -->
   <div class="controls-row">
     <button class="btn btn-primary" id="addBtn">+ Add Note</button>
     <button class="btn btn-secondary" id="undoBtn">↩ Undo Last</button>
@@ -387,6 +469,7 @@
     <button class="btn btn-gold" id="submitBtn" disabled>Submit Answer</button>
   </div>
 
+  <!-- Results -->
   <div class="results-section" id="resultsSection">
     <div class="results-header">
       <div>
@@ -411,17 +494,17 @@
 
 <script src="melodies.js"></script>
 <script>
-const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Barline } = Vex.Flow;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentMelody = MELODIES[0];
 let enteredNotes = [];
 let playCount = 0;
+let isPlaying = false;
 let selections = { pitch: null, acc: null, dur: null };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const durLabels = { w: "whole", h: "half", q: "quarter", "8": "eighth" };
-const durSymbols = { w: "𝅝", h: "𝅗𝅥", q: "♩", "8": "♪" };
 const accLabels = { "#": "♯", b: "♭", n: "♮" };
 
 function noteLabel(n) {
@@ -445,56 +528,160 @@ function enharmonicMatch(a, b) {
 
 // ── Time signature helpers ────────────────────────────────────────────────────
 function beatsPerMeasure() {
-  const ts = currentMelody.timeSignature || "4/4";
-  return parseInt(ts.split("/")[0]);
+  return parseInt((currentMelody.timeSignature || "4/4").split("/")[0]);
 }
-
 function beatValue() {
-  const ts = currentMelody.timeSignature || "4/4";
-  return parseInt(ts.split("/")[1]);
+  return parseInt((currentMelody.timeSignature || "4/4").split("/")[1]);
 }
-
 function noteDurationBeats(dur) {
-  const beatMap = { w: 4, h: 2, q: 1, "8": 0.5, "16": 0.25 };
-  return beatMap[dur] || 1;
+  return { w:4, h:2, q:1, "8":0.5, "16":0.25 }[dur] || 1;
 }
-
 function splitIntoMeasures(notes) {
   const bpm = beatsPerMeasure();
-  const measures = [];
-  let current = [];
+  const measures = [], current = [];
   let beats = 0;
   for (const n of notes) {
     current.push(n);
     beats += noteDurationBeats(n.dur);
-    if (beats >= bpm) {
-      measures.push(current);
-      current = [];
-      beats = 0;
-    }
+    if (beats >= bpm) { measures.push([...current]); current.length = 0; beats = 0; }
   }
-  if (current.length > 0) measures.push(current);
+  if (current.length > 0) measures.push([...current]);
   return measures;
+}
+
+// ── Cadence generator ─────────────────────────────────────────────────────────
+// Returns array of {notes: ["C4","E4","G4"], duration: 0.6} chord objects
+function buildCadence(keySignature, mode) {
+  // Major scale degrees (semitones from C)
+  const noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const majorScale = [0,2,4,5,7,9,11]; // W W H W W W H
+
+  // Find root semitone
+  const sharpKeys = ["C","G","D","A","E","B","F#","C#"];
+  const flatKeys  = ["C","F","Bb","Eb","Ab","Db","Gb","Cb"];
+  const sharpRoots = [0,7,2,9,4,11,6,1];
+  const flatRoots  = [0,5,10,3,8,1,6,11];
+
+  let rootSemi = 0;
+  const si = sharpKeys.indexOf(keySignature);
+  const fi = flatKeys.indexOf(keySignature);
+  if (si >= 0) rootSemi = sharpRoots[si];
+  else if (fi >= 0) rootSemi = flatRoots[fi];
+
+  // Build scale pitches (octave 4)
+  const scale = majorScale.map(interval => {
+    const semi = (rootSemi + interval) % 12;
+    return noteNames[semi] + "4";
+  });
+
+  // Tonic chord (I or i)
+  const isMinor = mode === "minor";
+  const tonicIntervals = isMinor ? [0, 3, 7] : [0, 4, 7];
+  const tonicChord = tonicIntervals.map(i => {
+    const semi = (rootSemi + i) % 12;
+    return noteNames[semi] + "4";
+  });
+
+  // Dominant chord (V) — always major with raised 7th in minor
+  const domRoot = (rootSemi + 7) % 12;
+  const domChord = [
+    noteNames[domRoot] + "4",
+    noteNames[(domRoot + 4) % 12] + "4",
+    noteNames[(domRoot + 7) % 12] + "4"
+  ];
+
+  return [
+    { notes: domChord,  duration: 0.7 },  // V
+    { notes: tonicChord, duration: 1.0 }  // I or i
+  ];
+}
+
+// ── Tone.js piano synth ───────────────────────────────────────────────────────
+let synth = null;
+function getSynth() {
+  if (!synth) {
+    synth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 1.2 },
+      volume: -6
+    }).toDestination();
+  }
+  return synth;
+}
+
+async function playCadenceThenMelody() {
+  if (isPlaying) return;
+  isPlaying = true;
+  playBtn.disabled = true;
+
+  const mode = currentMelody.mode || "major";
+  const cadence = buildCadence(currentMelody.keySignature, mode);
+  const tempoRate = parseInt(tempoSlider.value) / 100;
+  const s = getSynth();
+
+  setCadenceStatus("Playing cadence...");
+
+  await Tone.start();
+
+  // Play V chord
+  s.triggerAttackRelease(cadence[0].notes, cadence[0].duration / tempoRate);
+  await wait((cadence[0].duration / tempoRate) * 1000 + 100);
+
+  // Play I/i chord
+  s.triggerAttackRelease(cadence[1].notes, cadence[1].duration / tempoRate);
+  await wait((cadence[1].duration / tempoRate) * 1000 + 300);
+
+  // Brief pause then play melody
+  setCadenceStatus("Now listen to the melody...");
+  await wait(400);
+
+  audioEl.playbackRate = tempoRate;
+  audioEl.currentTime = 0;
+  audioEl.play();
+  playCount++;
+  document.getElementById("playCount").textContent = playCount;
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function setCadenceStatus(msg) {
+  document.getElementById("cadenceStatus").textContent = msg;
 }
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 const audioEl = document.getElementById("audioPlayer");
 const playBtn = document.getElementById("playBtn");
-const playCountEl = document.getElementById("playCount");
 
 function loadMelodyAudio() {
   audioEl.src = currentMelody.audio;
   audioEl.load();
 }
 
-playBtn.addEventListener("click", () => {
-  audioEl.currentTime = 0;
-  audioEl.play();
-  playCount++;
-  playCountEl.textContent = playCount;
+playBtn.addEventListener("click", playCadenceThenMelody);
+
+audioEl.addEventListener("ended", () => {
+  playBtn.textContent = "▶";
+  playBtn.disabled = false;
+  isPlaying = false;
+  setCadenceStatus("Press play to listen again.");
 });
-audioEl.addEventListener("ended", () => { playBtn.textContent = "▶"; });
-audioEl.addEventListener("play", () => { playBtn.textContent = "⏹"; });
+audioEl.addEventListener("play", () => {
+  playBtn.textContent = "⏹";
+});
+
+// ── Tempo slider ──────────────────────────────────────────────────────────────
+const tempoSlider = document.getElementById("tempoSlider");
+const tempoValue  = document.getElementById("tempoValue");
+
+tempoSlider.addEventListener("input", () => {
+  tempoValue.textContent = tempoSlider.value + "%";
+  // Update live if audio is playing
+  if (!audioEl.paused) {
+    audioEl.playbackRate = parseInt(tempoSlider.value) / 100;
+  }
+});
 
 // ── Palette selection ─────────────────────────────────────────────────────────
 document.querySelectorAll(".pal-btn").forEach(btn => {
@@ -516,16 +703,15 @@ document.querySelectorAll(".pal-btn").forEach(btn => {
 document.getElementById("addBtn").addEventListener("click", () => {
   if (!selections.pitch || !selections.dur) {
     if (!selections.pitch) flashGroup("pitch");
-    if (!selections.dur) flashGroup("dur");
+    if (!selections.dur)   flashGroup("dur");
     return;
   }
-  const note = {
+  enteredNotes.push({
     pitch: selections.pitch,
     acc: selections.acc || "n",
     dur: selections.dur,
     octave: currentMelody.octaveRange ? currentMelody.octaveRange[0] : 4
-  };
-  enteredNotes.push(note);
+  });
   renderChips();
   renderStaff();
   document.getElementById("submitBtn").disabled = false;
@@ -564,7 +750,7 @@ function renderChips() {
     const isLast = i === enteredNotes.length - 1;
     return `<div class="entry-chip ${isLast ? "last" : ""}">
       <span>${noteLabel(n)}<sub>${n.octave}</sub></span>
-      <span class="dur-sym">${durSymbols[n.dur] || n.dur}</span>
+      <span class="dur-sym">${durLabels[n.dur] || n.dur}</span>
     </div>`;
   }).join("");
 }
@@ -582,9 +768,7 @@ function renderStaff() {
     const context = renderer.getContext();
     const stave = new Stave(10, 10, totalWidth - 20);
     stave.addClef(currentMelody.clef);
-    if (currentMelody.keySignature !== "C" && currentMelody.keySignature !== "Am") {
-      stave.addKeySignature(currentMelody.keySignature);
-    }
+    if (currentMelody.keySignature !== "C") stave.addKeySignature(currentMelody.keySignature);
     stave.addTimeSignature(currentMelody.timeSignature);
     stave.setContext(context).draw();
     hint.style.display = "block";
@@ -607,39 +791,40 @@ function renderStaff() {
   let x = 10;
 
   measures.forEach((mNotes, mi) => {
+    const isLast = mi === numMeasures - 1;
     const mWidth = mi === 0 ? firstMeasureWidth : measureWidth;
     const stave = new Stave(x, 10, mWidth);
+
     if (mi === 0) {
       stave.addClef(currentMelody.clef);
-      if (currentMelody.keySignature !== "C" && currentMelody.keySignature !== "Am") {
-        stave.addKeySignature(currentMelody.keySignature);
-      }
+      if (currentMelody.keySignature !== "C") stave.addKeySignature(currentMelody.keySignature);
       stave.addTimeSignature(currentMelody.timeSignature);
     }
+
+    // Final barline on last measure
+    if (isLast) {
+      stave.setEndBarType(Barline.type.END);
+    }
+
     stave.setContext(context).draw();
 
     try {
       const vfNotes = mNotes.map(n => {
-        const key = noteKey(n);
-        const sn = new StaveNote({ keys: [key], duration: n.dur, clef: currentMelody.clef });
-        if (n.acc && n.acc !== "n") {
-          sn.addModifier(new Accidental(n.acc));
-        }
+        const sn = new StaveNote({ keys: [noteKey(n)], duration: n.dur, clef: currentMelody.clef });
+        if (n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
         return sn;
       });
       const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
       voice.addTickables(vfNotes);
       new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
       voice.draw(context, stave);
-    } catch(e) {
-      // skip silently
-    }
+    } catch(e) { /* skip silently */ }
 
     x += mWidth;
   });
 }
 
-// ── Submit / Grade ────────────────────────────────────────────────────────────
+// ── Grade ─────────────────────────────────────────────────────────────────────
 document.getElementById("submitBtn").addEventListener("click", gradeAnswer);
 
 function gradeAnswer() {
@@ -652,27 +837,19 @@ function gradeAnswer() {
   resultGrid.innerHTML = "";
 
   for (let i = 0; i < Math.max(student.length, correct.length); i++) {
-    const s = student[i];
-    const c = correct[i];
-    let status = "missing";
-    let label = "—";
-    let durName = "";
+    const s = student[i], c = correct[i];
+    let status = "missing", label = "—", durName = "";
 
     if (s && c) {
-      const pitchOk = enharmonicMatch(s, c);
-      const durOk = s.dur === c.dur;
-      const bothOk = pitchOk && durOk;
+      const bothOk = enharmonicMatch(s, c) && s.dur === c.dur;
       if (bothOk) numCorrect++;
       status = bothOk ? "correct" : "incorrect";
       label = noteLabel(s);
       durName = durLabels[s.dur] || s.dur;
-    } else if (s && !c) {
-      status = "incorrect";
-      label = noteLabel(s);
-      durName = durLabels[s.dur] || s.dur;
+    } else if (s) {
+      status = "incorrect"; label = noteLabel(s); durName = durLabels[s.dur] || s.dur;
     } else {
-      label = "—";
-      durName = "missing";
+      label = "—"; durName = "missing";
     }
 
     const chip = document.createElement("div");
@@ -683,21 +860,16 @@ function gradeAnswer() {
 
   document.getElementById("scoreDisplay").textContent = `${numCorrect} / ${total}`;
   const pct = total > 0 ? numCorrect / total : 0;
-  const messages = [
+  document.getElementById("scoreMessage").textContent = [
     [1.0, "Perfect! Every note is correct. 🎉"],
     [0.8, "Nearly there — just a couple of notes to revisit."],
     [0.5, "Good effort — listen again and compare your answer."],
     [0.0, "Keep listening and try again — you'll get it!"]
-  ];
-  document.getElementById("scoreMessage").textContent = messages.find(([t]) => pct >= t)[1];
+  ].find(([t]) => pct >= t)[1];
 
-  // Correct answer row
-  const correctChips = document.getElementById("correctChips");
-  correctChips.innerHTML = correct.map(n => {
+  document.getElementById("correctChips").innerHTML = correct.map(n => {
     const acc = n.acc && n.acc !== "n" ? (accLabels[n.acc] || n.acc) : "";
-    const label = n.pitch + acc;
-    const sym = durSymbols[n.dur] || n.dur;
-    return `<div class="correct-chip">${label} <span style="opacity:0.7;font-weight:400;">${sym}</span></div>`;
+    return `<div class="correct-chip">${n.pitch + acc} <span style="opacity:0.7;font-weight:400;">${durLabels[n.dur] || n.dur}</span></div>`;
   }).join("");
 
   document.getElementById("resultsSection").classList.add("show");
@@ -713,6 +885,7 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   document.getElementById("resultsSection").classList.remove("show");
   selections = { pitch: null, acc: null, dur: null };
   document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
+  setCadenceStatus("");
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
@@ -720,8 +893,9 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
 function init() {
   loadMelodyAudio();
   renderStaff();
+  const mode = currentMelody.mode || "major";
   document.getElementById("clefBadge").textContent = currentMelody.clef.charAt(0).toUpperCase() + currentMelody.clef.slice(1);
-  document.getElementById("keyBadge").textContent = currentMelody.keySignature + " Major";
+  document.getElementById("keyBadge").textContent = currentMelody.keySignature + " " + (mode === "minor" ? "Minor" : "Major");
   document.getElementById("timeBadge").textContent = currentMelody.timeSignature;
   document.getElementById("melodyTitle").textContent = `Week ${currentMelody.week} — Melody ${currentMelody.id.split("-")[1]}`;
 }
