@@ -9,13 +9,13 @@ const MELODIES = [
     audio: "audio/week-01/melody-01.mp3",
     octaveRange: [4, 5],
     notes: [
-      { pitch: "C", octave: 4, duration: "q" },
-      { pitch: "D", octave: 4, duration: "q" },
-      { pitch: "E", octave: 4, duration: "q" },
-      { pitch: "G", octave: 4, duration: "q" },
-      { pitch: "E", octave: 4, duration: "q" },
-      { pitch: "D", octave: 4, duration: "q" },
-      { pitch: "C", octave: 4, duration: "h" }
+      { pitch: "C", octave: 4, dur: "q" },
+      { pitch: "D", octave: 4, dur: "q" },
+      { pitch: "E", octave: 4, dur: "q" },
+      { pitch: "G", octave: 4, dur: "q" },
+      { pitch: "E", octave: 4, dur: "q" },
+      { pitch: "D", octave: 4, dur: "q" },
+      { pitch: "C", octave: 4, dur: "h" }
     ]
   }
 ];
