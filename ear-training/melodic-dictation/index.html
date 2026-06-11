@@ -266,6 +266,8 @@
     }
     .pal-btn:hover { border-color: var(--plum-light); background: white; }
     .pal-btn.selected { background: var(--plum); color: var(--cream); border-color: var(--plum); }
+    .pal-btn.mod-active { background: var(--gold); color: var(--plum-dark); border-color: var(--gold); }
+    .pal-btn.grayed { opacity: 0.35; pointer-events: none; }
 
     /* Controls */
     .controls-row {
@@ -472,11 +474,17 @@
     </div>
     <div class="palette-group">
       <div class="palette-group-label">Duration</div>
-      <div class="palette-buttons">
+      <div class="palette-buttons" style="margin-bottom:8px;">
         <button class="pal-btn" data-group="dur" data-val="w">Whole</button>
         <button class="pal-btn" data-group="dur" data-val="h">Half</button>
         <button class="pal-btn" data-group="dur" data-val="q">Quarter</button>
         <button class="pal-btn" data-group="dur" data-val="8">Eighth</button>
+        <button class="pal-btn" data-group="dur" data-val="16">16th</button>
+      </div>
+      <div style="font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--plum-light); margin-bottom:6px;">Modifiers</div>
+      <div class="palette-buttons">
+        <button class="pal-btn mod-btn" id="dotBtn" data-modifier="dot">&#9679; Dot</button>
+        <button class="pal-btn mod-btn" id="restBtn" data-modifier="rest">&#119070; Rest</button>
       </div>
     </div>
   </div>
@@ -529,20 +537,42 @@ let enteredNotes = [];
 let playCount = 0;
 let isPlaying = false;
 let selections = { pitch: null, acc: null, dur: null };
+let modifiers = { dot: false, rest: false };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const durLabels = { w: "whole", h: "half", q: "quarter", "8": "eighth" };
+const durLabels = { w: "whole", h: "half", q: "quarter", "8": "eighth", "16": "16th",
+  wd: "dotted whole", hd: "dotted half", qd: "dotted quarter", "8d": "dotted eighth", "16d": "dotted 16th",
+  wr: "whole rest", hr: "half rest", qr: "quarter rest", "8r": "eighth rest", "16r": "16th rest"
+};
 const accLabels = { "#": "♯", b: "♭", n: "♮" };
 
 function noteLabel(n) {
+  if (n.rest) return "rest";
   const acc = n.acc && n.acc !== "n" ? accLabels[n.acc] : "";
-  return n.pitch + acc;
+  const dot = n.dot ? "." : "";
+  return n.pitch + acc + dot;
 }
 
 function noteKey(n) {
+  if (n.rest) return "b/4"; // rests use a placeholder key
   const pitch = n.pitch.toLowerCase();
   const acc = (n.acc && n.acc !== "n") ? n.acc : "";
   return pitch + acc + "/" + (n.octave || 4);
+}
+
+function vfDuration(n) {
+  // Build VexFlow duration string e.g. "qd", "8r", "16"
+  let dur = n.dur;
+  if (n.rest) dur += "r";
+  else if (n.dot) dur += "d";
+  return dur;
+}
+
+function noteDisplayLabel(n) {
+  if (n.rest) return (durLabels[n.dur + "r"] || n.dur + " rest");
+  const acc = n.acc && n.acc !== "n" ? accLabels[n.acc] : "";
+  const dot = n.dot ? "." : "";
+  return n.pitch + acc + dot;
 }
 
 function enharmonicMatch(a, b) {
@@ -561,7 +591,21 @@ function beatValue() {
   return parseInt((currentMelody.timeSignature || "4/4").split("/")[1]);
 }
 function noteDurationBeats(dur) {
-  return { w:4, h:2, q:1, "8":0.5, "16":0.25 }[dur] || 1;
+  const base = { w:4, h:2, q:1, "8":0.5, "16":0.25 };
+  // Strip r suffix for rests
+  const clean = dur.replace("r","");
+  // Handle dotted
+  if (clean.endsWith("d")) {
+    const b = base[clean.slice(0,-1)] || 1;
+    return b * 1.5;
+  }
+  return base[clean] || 1;
+}
+
+function noteBeats(n) {
+  let dur = n.dur;
+  if (n.dot) dur += "d";
+  return noteDurationBeats(dur);
 }
 function splitIntoMeasures(notes) {
   const bpm = beatsPerMeasure();
@@ -569,7 +613,7 @@ function splitIntoMeasures(notes) {
   let beats = 0;
   for (const n of notes) {
     current.push(n);
-    beats += noteDurationBeats(n.dur);
+    beats += noteBeats(n);
     if (beats >= bpm) { measures.push([...current]); current.length = 0; beats = 0; }
   }
   if (current.length > 0) measures.push([...current]);
@@ -750,17 +794,49 @@ document.querySelectorAll(".pal-btn").forEach(btn => {
   });
 });
 
+// ── Modifier buttons ─────────────────────────────────────────────────────────
+function updateModifierUI() {
+  const dotBtn = document.getElementById("dotBtn");
+  const restBtn = document.getElementById("restBtn");
+  // Dot button
+  dotBtn.classList.toggle("mod-active", modifiers.dot);
+  // Rest button
+  restBtn.classList.toggle("mod-active", modifiers.rest);
+  // Gray out pitch+acc when rest is active
+  const grayTargets = document.querySelectorAll(".pal-btn[data-group='pitch'], .pal-btn[data-group='acc']");
+  grayTargets.forEach(b => b.classList.toggle("grayed", modifiers.rest));
+  // Gray out dot when rest is active
+  dotBtn.classList.toggle("grayed", modifiers.rest);
+  // If rest toggled on, clear pitch and acc selections
+  if (modifiers.rest) {
+    selections.pitch = null;
+    selections.acc = null;
+    document.querySelectorAll(".pal-btn[data-group='pitch'], .pal-btn[data-group='acc']").forEach(b => b.classList.remove("selected"));
+  }
+}
+
+document.getElementById("dotBtn").addEventListener("click", () => {
+  if (modifiers.rest) return;
+  modifiers.dot = !modifiers.dot;
+  updateModifierUI();
+});
+
+document.getElementById("restBtn").addEventListener("click", () => {
+  modifiers.rest = !modifiers.rest;
+  if (modifiers.rest) modifiers.dot = false;
+  updateModifierUI();
+});
+
 // ── Add note ──────────────────────────────────────────────────────────────────
 document.getElementById("addBtn").addEventListener("click", () => {
-  if (!selections.pitch || !selections.dur) {
-    if (!selections.pitch) flashGroup("pitch");
-    if (!selections.dur)   flashGroup("dur");
-    return;
-  }
+  if (!selections.dur) { flashGroup("dur"); return; }
+  if (!modifiers.rest && !selections.pitch) { flashGroup("pitch"); return; }
   enteredNotes.push({
-    pitch: selections.pitch,
-    acc: selections.acc || "n",
+    pitch: modifiers.rest ? "R" : selections.pitch,
+    acc: modifiers.rest ? "n" : (selections.acc || "n"),
     dur: selections.dur,
+    dot: modifiers.dot,
+    rest: modifiers.rest,
     octave: currentMelody.octaveRange ? currentMelody.octaveRange[0] : 4
   });
   renderChips();
@@ -800,8 +876,8 @@ function renderChips() {
   container.innerHTML = enteredNotes.map((n, i) => {
     const isLast = i === enteredNotes.length - 1;
     return `<div class="entry-chip ${isLast ? "last" : ""}">
-      <span>${noteLabel(n)}<sub>${n.octave}</sub></span>
-      <span class="dur-sym">${durLabels[n.dur] || n.dur}</span>
+      <span>${noteLabel(n)}${n.rest ? "" : "<sub>" + n.octave + "</sub>"}</span>
+      <span class="dur-sym">${durLabels[n.dur + (n.dot?"d":"") + (n.rest?"r":"")] || n.dur}</span>
     </div>`;
   }).join("");
 }
@@ -854,8 +930,8 @@ function renderStaff() {
     }
 
     // Final barline — only when all notes are entered
-    const totalBeatsEntered = enteredNotes.reduce((s, n) => s + noteDurationBeats(n.dur), 0);
-    const totalBeatsCorrect = currentMelody.notes.reduce((s, n) => s + noteDurationBeats(n.dur), 0);
+    const totalBeatsEntered = enteredNotes.reduce((s, n) => s + noteBeats(n), 0);
+    const totalBeatsCorrect = currentMelody.notes.reduce((s, n) => s + noteBeats(n), 0);
     if (isLast && totalBeatsEntered >= totalBeatsCorrect) {
       stave.setEndBarType(Barline.type.END);
     }
@@ -864,8 +940,10 @@ function renderStaff() {
 
     try {
       const vfNotes = mNotes.map(n => {
-        const sn = new StaveNote({ keys: [noteKey(n)], duration: n.dur, clef: currentMelody.clef });
-        if (n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
+        const dur = vfDuration(n);
+        const sn = new StaveNote({ keys: [noteKey(n)], duration: dur, clef: currentMelody.clef });
+        if (!n.rest && n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
+        if (n.dot) sn.addModifier(new Vex.Flow.Dot(), 0);
         return sn;
       });
       const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
@@ -895,13 +973,13 @@ function gradeAnswer() {
     let status = "missing", label = "—", durName = "";
 
     if (s && c) {
-      const bothOk = enharmonicMatch(s, c) && s.dur === c.dur;
+      const bothOk = (s.rest && c.rest ? true : (!s.rest && !c.rest && enharmonicMatch(s, c))) && s.dur === c.dur && (!!s.dot === !!c.dot);
       if (bothOk) numCorrect++;
       status = bothOk ? "correct" : "incorrect";
       label = noteLabel(s);
-      durName = durLabels[s.dur] || s.dur;
+      durName = durLabels[s.dur + (s.dot?"d":"") + (s.rest?"r":"")] || s.dur;
     } else if (s) {
-      status = "incorrect"; label = noteLabel(s); durName = durLabels[s.dur] || s.dur;
+      status = "incorrect"; label = noteLabel(s); durName = durLabels[s.dur + (s.dot?"d":"") + (s.rest?"r":"")] || s.dur;
     } else {
       label = "—"; durName = "missing";
     }
@@ -939,6 +1017,8 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   document.getElementById("resultsSection").classList.remove("show");
   selections = { pitch: null, acc: null, dur: null };
   document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
+  modifiers = { dot: false, rest: false };
+  updateModifierUI();
   setCadenceStatus("");
   document.getElementById("cadenceBtn").disabled = false;
   document.getElementById("revealSection").style.display = "none";
@@ -975,7 +1055,7 @@ function renderRevealStaff() {
   let current = [], beats = 0;
   for (const n of notes) {
     current.push(n);
-    beats += noteDurationBeats(n.dur);
+    beats += noteBeats(n);
     if (beats >= bpm) { measures.push([...current]); current.length = 0; beats = 0; }
   }
   if (current.length > 0) measures.push([...current]);
@@ -1005,9 +1085,10 @@ function renderRevealStaff() {
 
     try {
       const vfNotes = mNotes.map(n => {
-        const key = noteKey(n);
-        const sn = new StaveNote({ keys: [key], duration: n.dur, clef: currentMelody.clef });
-        if (n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
+        const dur = vfDuration(n);
+        const sn = new StaveNote({ keys: [noteKey(n)], duration: dur, clef: currentMelody.clef });
+        if (!n.rest && n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
+        if (n.dot) sn.addModifier(new Vex.Flow.Dot(), 0);
         return sn;
       });
       const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
