@@ -421,8 +421,8 @@
         <button class="cadence-btn" id="cadenceBtn" title="Hear V-I cadence">🎹 Cadence</button>
       </div>
       <div class="play-info">
-        <div class="play-info-text">Play the melody as many times as you need.</div>
-        <div class="play-status">Plays: <span id="playCount">0</span></div>
+        <div class="play-info-text" id="playInfoText">Loading...</div>
+        <div class="play-status">Plays used: <span id="playCount">0</span> / <span id="maxPlays">—</span></div>
         <div class="cadence-status" id="cadenceStatus"></div>
       </div>
     </div>
@@ -653,11 +653,36 @@ async function playCadence() {
   document.getElementById("cadenceBtn").disabled = false;
   document.getElementById("revealSection").style.display = "none";
   document.getElementById("revealBtn").textContent = "👁 Reveal Answer";
+  playCount = 0;
+  playBtn.disabled = false;
+  updatePlayButton();
   cadenceBtn.disabled = false;
+}
+
+function getMaxPlays() {
+  return currentMelody.maxPlays || MAX_PLAYS;
+}
+
+function updatePlayButton() {
+  const max = getMaxPlays();
+  const remaining = max - playCount;
+  document.getElementById("maxPlays").textContent = max;
+  document.getElementById("playCount").textContent = playCount;
+  if (remaining <= 0) {
+    playBtn.disabled = true;
+    playBtn.title = "No plays remaining";
+    document.getElementById("playInfoText").textContent = "No plays remaining.";
+  } else if (remaining === 1) {
+    document.getElementById("playInfoText").textContent = "1 play remaining.";
+  } else {
+    document.getElementById("playInfoText").textContent = `${remaining} plays remaining.`;
+  }
 }
 
 async function playMelody() {
   if (isPlaying) return;
+  const max = getMaxPlays();
+  if (playCount >= max) return;
   isPlaying = true;
   playBtn.disabled = true;
   const tempoRate = parseInt(tempoSlider.value) / 100;
@@ -665,7 +690,7 @@ async function playMelody() {
   audioEl.currentTime = 0;
   audioEl.play();
   playCount++;
-  document.getElementById("playCount").textContent = playCount;
+  updatePlayButton();
 }
 
 function wait(ms) {
@@ -689,8 +714,12 @@ playBtn.addEventListener("click", playMelody);
 document.getElementById("cadenceBtn").addEventListener("click", playCadence);
 
 audioEl.addEventListener("ended", () => {
-  playBtn.disabled = false;
   isPlaying = false;
+  const max = getMaxPlays();
+  if (playCount < max) {
+    playBtn.disabled = false;
+  }
+  updatePlayButton();
 });
 
 // ── Tempo slider ──────────────────────────────────────────────────────────────
@@ -914,6 +943,9 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   document.getElementById("cadenceBtn").disabled = false;
   document.getElementById("revealSection").style.display = "none";
   document.getElementById("revealBtn").textContent = "👁 Reveal Answer";
+  playCount = 0;
+  playBtn.disabled = false;
+  updatePlayButton();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
@@ -997,6 +1029,7 @@ function init() {
   document.getElementById("keyBadge").textContent = currentMelody.keySignature + " " + (mode === "minor" ? "Minor" : "Major");
   document.getElementById("timeBadge").textContent = currentMelody.timeSignature;
   document.getElementById("melodyTitle").textContent = `Week ${currentMelody.week} — Melody ${currentMelody.id.split("-")[1]}`;
+  updatePlayButton();
 }
 
 init();
