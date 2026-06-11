@@ -507,6 +507,13 @@
     </div>
     <div class="try-again-row">
       <button class="btn btn-secondary" id="tryAgainBtn">↩ Try Again</button>
+      <button class="btn btn-secondary" id="revealBtn" style="margin-left:8px;">👁 Reveal Answer</button>
+    </div>
+    <div id="revealSection" style="display:none; margin-top:20px; border-top:1px solid var(--cream-dark); padding-top:16px;">
+      <div style="font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--neutral); margin-bottom:10px;">Correct Notation</div>
+      <div style="background:white; border:2px solid var(--correct); border-radius:10px; padding:16px 12px 8px;">
+        <div id="revealStaffContainer"></div>
+      </div>
     </div>
   </div>
 
@@ -644,6 +651,8 @@ async function playCadence() {
   await wait((cadence[1].duration / tempoRate) * 1000 + 200);
   setCadenceStatus("");
   document.getElementById("cadenceBtn").disabled = false;
+  document.getElementById("revealSection").style.display = "none";
+  document.getElementById("revealBtn").textContent = "👁 Reveal Answer";
   cadenceBtn.disabled = false;
 }
 
@@ -903,8 +912,81 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
   setCadenceStatus("");
   document.getElementById("cadenceBtn").disabled = false;
+  document.getElementById("revealSection").style.display = "none";
+  document.getElementById("revealBtn").textContent = "👁 Reveal Answer";
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
+// ── Reveal Answer ────────────────────────────────────────────────────────────
+document.getElementById("revealBtn").addEventListener("click", () => {
+  const section = document.getElementById("revealSection");
+  const btn = document.getElementById("revealBtn");
+  if (section.style.display === "none") {
+    section.style.display = "block";
+    btn.textContent = "👁 Hide Answer";
+    renderRevealStaff();
+  } else {
+    section.style.display = "none";
+    btn.textContent = "👁 Reveal Answer";
+  }
+});
+
+function renderRevealStaff() {
+  const container = document.getElementById("revealStaffContainer");
+  container.innerHTML = "";
+  const notes = currentMelody.notes;
+  const totalWidth = Math.min(container.parentElement.offsetWidth - 32, 760);
+
+  // Split correct notes into measures
+  const bpm = beatsPerMeasure();
+  const measures = [];
+  let current = [], beats = 0;
+  for (const n of notes) {
+    current.push(n);
+    beats += noteDurationBeats(n.dur);
+    if (beats >= bpm) { measures.push([...current]); current.length = 0; beats = 0; }
+  }
+  if (current.length > 0) measures.push([...current]);
+
+  const numMeasures = measures.length;
+  const firstExtraWidth = 80;
+  const remainingWidth = totalWidth - 20 - firstExtraWidth;
+  const measureWidth = numMeasures > 1 ? remainingWidth / numMeasures : remainingWidth;
+  const firstMeasureWidth = measureWidth + firstExtraWidth;
+
+  const renderer = new Renderer(container, Renderer.Backends.SVG);
+  renderer.resize(totalWidth, 110);
+  const context = renderer.getContext();
+
+  let x = 10;
+  measures.forEach((mNotes, mi) => {
+    const isLast = mi === numMeasures - 1;
+    const mWidth = mi === 0 ? firstMeasureWidth : measureWidth;
+    const stave = new Stave(x, 10, mWidth);
+    if (mi === 0) {
+      stave.addClef(currentMelody.clef);
+      if (currentMelody.keySignature !== "C") stave.addKeySignature(currentMelody.keySignature);
+      stave.addTimeSignature(currentMelody.timeSignature);
+    }
+    if (isLast) stave.setEndBarType(Barline.type.END);
+    stave.setContext(context).draw();
+
+    try {
+      const vfNotes = mNotes.map(n => {
+        const key = noteKey(n);
+        const sn = new StaveNote({ keys: [key], duration: n.dur, clef: currentMelody.clef });
+        if (n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
+        return sn;
+      });
+      const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
+      voice.addTickables(vfNotes);
+      new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
+      voice.draw(context, stave);
+    } catch(e) { /* skip silently */ }
+
+    x += mWidth;
+  });
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 function init() {
