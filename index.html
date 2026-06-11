@@ -1,300 +1,920 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Garner Music Resources</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Melodic Dictation</title>
+  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg:        #f7f5f0;
-      --bg2:       #edeae2;
-      --text:      #1a1a1a;
-      --text2:     #4b4b4b;
-      --text3:     #9a9590;
-      --navy:      #1e3a5f;
-      --navy-lt:   #e8f0f8;
-      --gold:      #7a5c1e;
-      --gold-lt:   #f0ece0;
-      --border:    #ddd9d0;
-      --border2:   #c8c4bb;
-      --green:     #1d9e75;
-      --green-lt:  #e1f5ee;
-      --purple:    #5b52b5;
-      --purple-lt: #eeedfe;
+      --plum: #5c4459;
+      --plum-dark: #3e2d3c;
+      --plum-light: #7a5c78;
+      --cream: #fdfaf7;
+      --cream-dark: #f0ebe3;
+      --gold: #c4a35a;
+      --gold-light: #d4b870;
+      --correct: #3a7d44;
+      --correct-bg: #eaf4ec;
+      --incorrect: #b83232;
+      --incorrect-bg: #faeaea;
+      --neutral: #8a7a88;
+      --text: #2a1f28;
     }
+
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
       color: var(--text);
       min-height: 100vh;
+      padding: 0;
     }
-    header {
-      background: var(--navy);
-      color: white;
-      padding: 2.5rem 2rem 2rem;
-      text-align: center;
+
+    .widget-header {
+      background: var(--plum);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 3px solid var(--gold);
     }
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      font-weight: 600;
+    .widget-header .icon { font-size: 1.6rem; }
+    .widget-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--cream);
       letter-spacing: 0.02em;
-      margin-bottom: 0.4rem;
     }
-    header p {
-      font-size: 0.95rem;
-      opacity: 0.75;
-      letter-spacing: 0.04em;
+    .widget-header .subtitle {
+      font-size: 0.78rem;
+      color: var(--gold-light);
+      font-weight: 500;
+      margin-top: 1px;
     }
-    main {
-      max-width: 860px;
+
+    .widget-body {
+      padding: 24px 28px;
+      max-width: 820px;
       margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
     }
-    .category-heading {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
+
+    .melody-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .melody-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
       font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 0.25rem;
+      color: var(--plum);
     }
-    .category-desc {
-      font-size: 0.82rem;
-      color: var(--text3);
-      margin-bottom: 1.25rem;
-    }
-    .category-block {
-      margin-bottom: 3rem;
-    }
-    .section-label {
-      font-size: 0.7rem;
+    .meta-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      background: var(--plum);
+      color: var(--cream);
+      font-size: 0.72rem;
       font-weight: 600;
-      letter-spacing: 0.12em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: var(--text3);
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
     }
-    .resources-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-    }
-    a.resource-card {
-      text-decoration: none;
-      color: inherit;
-    }
-    .resource-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
+    .badge.gold { background: var(--gold); color: var(--plum-dark); }
+
+    /* Audio section */
+    .audio-section {
+      background: var(--plum-dark);
       border-radius: 10px;
-      padding: 1.5rem;
-      display: block;
-      transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .audio-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .audio-section .listen-label {
+      color: var(--gold-light);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .play-btn {
+      background: var(--gold);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .play-btn:hover { background: var(--gold-light); transform: scale(1.05); }
+    .play-btn:active { transform: scale(0.97); }
+    .play-btn:disabled { background: var(--neutral); cursor: not-allowed; transform: none; opacity: 0.7; }
+    .btn-group { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .cadence-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--gold-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .cadence-btn:hover { background: rgba(196,163,90,0.2); color: var(--gold); }
+    .cadence-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .play-btn { border-radius: 8px; width: auto; height: auto; padding: 8px 16px; font-size: 0.9rem; font-weight: 600; font-family: 'DM Sans', sans-serif; }
+    .play-info { flex: 1; }
+    .play-info-text { color: var(--cream); font-size: 0.85rem; font-weight: 500; }
+    .play-status { color: var(--gold-light); font-size: 0.75rem; margin-top: 3px; }
+    audio { display: none; }
+
+    /* Cadence status */
+    .cadence-status {
+      color: var(--gold-light);
+      font-size: 0.78rem;
+      font-style: italic;
+      min-height: 1.2em;
+    }
+
+    /* Tempo slider */
+    .tempo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 12px;
+    }
+    .tempo-label {
+      color: var(--gold-light);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .tempo-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.2);
+      outline: none;
+      cursor: pointer;
+    }
+    .tempo-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold);
+      cursor: pointer;
+    }
+    .tempo-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold);
+      cursor: pointer;
+      border: none;
+    }
+    .tempo-value {
+      color: var(--cream);
+      font-size: 0.82rem;
+      font-weight: 600;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* Staff */
+    .staff-section {
+      background: white;
+      border: 2px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 16px 12px 8px;
+      margin-bottom: 20px;
+      min-height: 120px;
       position: relative;
       overflow: hidden;
     }
-    .resource-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 4px; height: 100%;
-      background-color: var(--navy);
-      opacity: 0;
-      transition: opacity 0.18s ease;
+    .staff-section svg { display: block; margin: 0 auto; max-width: 100%; }
+    .staff-hint {
+      text-align: center;
+      color: var(--neutral);
+      font-size: 0.8rem;
+      margin-top: 6px;
     }
-    a.resource-card:hover {
-      box-shadow: 0 4px 18px rgba(0,0,0,0.10);
-      transform: translateY(-2px);
-      border-color: var(--border2);
+
+    /* Palette */
+    .palette-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
     }
-    a.resource-card:hover::before { opacity: 1; }
-    .card-tag {
-      display: inline-block;
-      font-size: 0.68rem;
+    @media (max-width: 560px) { .palette-section { grid-template-columns: 1fr; } }
+    .palette-group {
+      background: white;
+      border: 2px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .palette-group-label {
+      font-size: 0.7rem;
       font-weight: 600;
-      letter-spacing: 0.08em;
       text-transform: uppercase;
-      background-color: var(--navy-lt);
-      color: var(--navy);
-      border-radius: 4px;
-      padding: 3px 8px;
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--plum-light);
+      margin-bottom: 10px;
     }
-    .card-tag.tag-reference  { background-color: var(--gold-lt);   color: var(--gold);   }
-    .card-tag.tag-placement  { background-color: var(--green-lt);  color: var(--green);  }
-    .card-tag.tag-tutorial   { background-color: var(--purple-lt); color: var(--purple); }
-    .card-tag.tag-canvas     { background-color: var(--gold-lt);   color: var(--gold);   }
-    .resource-card h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      font-weight: 600;
+    .palette-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pal-btn {
+      background: var(--cream-dark);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
       color: var(--text);
-      margin-bottom: 0.4rem;
-      line-height: 1.3;
+      cursor: pointer;
+      transition: all 0.12s;
+      line-height: 1;
     }
-    .resource-card p {
-      font-size: 0.875rem;
-      color: var(--text2);
-      line-height: 1.55;
+    .pal-btn:hover { border-color: var(--plum-light); background: white; }
+    .pal-btn.selected { background: var(--plum); color: var(--cream); border-color: var(--plum); }
+
+    /* Controls */
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
-    .card-arrow {
-      display: block;
-      margin-top: 1.1rem;
-      font-size: 0.82rem;
+    .btn {
+      font-family: 'DM Sans', sans-serif;
       font-weight: 600;
-      color: var(--navy);
+      font-size: 0.88rem;
+      padding: 10px 20px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
       letter-spacing: 0.02em;
     }
-    .card-arrow.arrow-green  { color: var(--green);  }
-    .card-arrow.arrow-purple { color: var(--purple); }
-    .card-arrow.arrow-gold   { color: var(--gold);   }
-    .coming-soon {
-      opacity: 0.5;
-      cursor: default;
-      pointer-events: none;
+    .btn-primary { background: var(--plum); color: var(--cream); }
+    .btn-primary:hover { background: var(--plum-dark); }
+    .btn-primary:disabled { background: var(--neutral); cursor: not-allowed; opacity: 0.6; }
+    .btn-secondary { background: white; color: var(--plum); border: 2px solid var(--plum); }
+    .btn-secondary:hover { background: var(--cream-dark); }
+    .btn-gold { background: var(--gold); color: var(--plum-dark); }
+    .btn-gold:hover { background: var(--gold-light); }
+    .btn-gold:disabled { background: var(--neutral); cursor: not-allowed; opacity: 0.6; }
+
+    /* Entry queue */
+    .entry-queue {
+      background: white;
+      border: 2px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      min-height: 50px;
     }
-    .coming-soon .card-tag {
-      background-color: var(--bg2);
-      color: var(--text3);
-    }
-    .coming-soon-badge {
-      display: inline-block;
-      font-size: 0.65rem;
+    .entry-queue-label {
+      font-size: 0.7rem;
       font-weight: 600;
-      letter-spacing: 0.06em;
       text-transform: uppercase;
-      background-color: var(--gold-lt);
-      color: var(--gold);
-      border-radius: 4px;
-      padding: 2px 7px;
-      margin-left: 0.4rem;
-      vertical-align: middle;
+      letter-spacing: 0.08em;
+      color: var(--plum-light);
+      margin-bottom: 8px;
     }
-    .category-divider {
-      border: none;
-      border-top: 2px solid var(--border);
-      margin: 0.5rem 0 3rem;
+    .entry-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 32px;
+      align-items: center;
     }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.8rem;
-      color: var(--text3);
-      border-top: 1px solid var(--border);
-      margin-top: 2rem;
+    .entry-chip {
+      background: var(--cream-dark);
+      border: 2px solid var(--cream-dark);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
+    .entry-chip.last { border-color: var(--plum-light); background: white; }
+    .entry-chip .dur-sym { color: var(--plum-light); font-size: 0.78rem; }
+    .empty-hint { color: var(--neutral); font-size: 0.82rem; font-style: italic; }
+
+    /* Results */
+    .results-section {
+      display: none;
+      background: white;
+      border: 2px solid var(--cream-dark);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .results-section.show { display: block; }
+    .results-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .score-display {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--plum);
+    }
+    .score-label { font-size: 0.8rem; color: var(--neutral); }
+    .result-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .result-chip {
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-width: 58px;
+    }
+    .result-chip .note-name { font-size: 1rem; }
+    .result-chip .dur-name { font-size: 0.68rem; font-weight: 400; opacity: 0.8; }
+    .result-chip.correct { background: var(--correct-bg); border: 2px solid var(--correct); color: var(--correct); }
+    .result-chip.incorrect { background: var(--incorrect-bg); border: 2px solid var(--incorrect); color: var(--incorrect); }
+    .result-chip.missing { background: #fff8e8; border: 2px dashed var(--gold); color: var(--gold); }
+    .correct-answer-row { border-top: 1px solid var(--cream-dark); padding-top: 14px; }
+    .correct-answer-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--neutral);
+      margin-bottom: 8px;
+    }
+    .correct-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .correct-chip {
+      background: var(--correct-bg);
+      border: 2px solid var(--correct);
+      color: var(--correct);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .try-again-row { margin-top: 14px; }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Garner Music Resources</h1>
-  <p>Interactive tools, quizzes, and tutorials &mdash; San Joaquin Delta College</p>
-</header>
+<div class="widget-header">
+  <div class="icon">🎵</div>
+  <div>
+    <h1>Melodic Dictation</h1>
+    <div class="subtitle">Listen · Identify · Notate</div>
+  </div>
+</div>
 
-<main>
+<div class="widget-body">
 
-  <!-- MUSIC 3A -->
-  <div class="category-block">
-    <h2 class="category-heading">Music 3A</h2>
-    <p class="category-desc">Ear Training &amp; Music Fundamentals</p>
-
-    <p class="section-label">Quizzes</p>
-    <div class="resources-grid">
-      <a href="https://agarner32.github.io/music-3a/interval-quiz.html" class="resource-card" target="_blank">
-        <span class="card-tag">Quiz</span>
-        <h2>Interval Identification</h2>
-        <p>Practice identifying melodic and harmonic intervals by ear and by sight.</p>
-        <span class="card-arrow">Open &rarr;</span>
-      </a>
-      <a href="https://agarner32.github.io/music-3a/grand-staff-quiz.html" class="resource-card" target="_blank">
-        <span class="card-tag">Quiz</span>
-        <h2>Grand Staff Note ID</h2>
-        <p>Identify notes on the grand staff with octave numbers — treble and bass clef combined.</p>
-        <span class="card-arrow">Open &rarr;</span>
-      </a>
-      <a href="https://agarner32.github.io/music-3a/circle-of-fifths.html" class="resource-card" target="_blank">
-        <span class="card-tag">Quiz</span>
-        <h2>Circle of Fifths</h2>
-        <p>Explore key signatures, relative minors, and primary chords — with a built-in quiz mode.</p>
-        <span class="card-arrow">Open &rarr;</span>
-      </a>
-      <a href="https://agarner32.github.io/music-3a/compound-meter-quiz.html" class="resource-card" target="_blank">
-        <span class="card-tag">Quiz</span>
-        <h2>Meter Identification</h2>
-        <p>Identify time signatures as simple or compound — with full name, beat count, and beat unit.</p>
-        <span class="card-arrow">Open &rarr;</span>
-      </a>
-      <a href="https://agarner32.github.io/music-theory-placement/" class="resource-card" target="_blank">
-        <span class="card-tag tag-placement">Placement</span>
-        <h2>Music Theory Placement Exam</h2>
-        <p>Assess your current music theory knowledge before the course begins.</p>
-        <span class="card-arrow arrow-green">Open &rarr;</span>
-      </a>
+  <div class="melody-meta">
+    <div class="melody-label" id="melodyTitle">Week 1 — Melody 1</div>
+    <div class="meta-badges">
+      <span class="badge" id="clefBadge">Treble</span>
+      <span class="badge gold" id="keyBadge">C Major</span>
+      <span class="badge" id="timeBadge">4/4</span>
     </div>
+  </div>
 
-    <p class="section-label">Tutorials</p>
-    <div class="resources-grid">
-      <a href="https://agarner32.github.io/music-3a/interval-tutorial.html" class="resource-card" target="_blank">
-        <span class="card-tag tag-tutorial">Tutorial</span>
-        <h2>How to Identify Intervals</h2>
-        <p>A step-by-step walkthrough of the procedure for determining interval quality, including tricky cases where the bottom note isn&rsquo;t a major scale root.</p>
-        <span class="card-arrow arrow-purple">Open &rarr;</span>
-      </a>
-    </div>
-
-    <p class="section-label">Listening &amp; Reference</p>
-    <div class="resources-grid">
-      <div class="resource-card coming-soon">
-        <span class="card-tag tag-reference">Listening Guide</span>
-        <h2>Interactive Listening Guide <span class="coming-soon-badge">Coming soon</span></h2>
-        <p>Guided listening examples with annotated musical excerpts.</p>
+  <!-- Audio section -->
+  <div class="audio-section">
+    <div class="audio-top">
+      <div class="listen-label">🔊 Listen</div>
+      <div class="btn-group">
+        <button class="play-btn" id="playBtn" title="Play melody">▶ Melody</button>
+        <button class="cadence-btn" id="cadenceBtn" title="Hear V-I cadence">🎹 Cadence</button>
+      </div>
+      <div class="play-info">
+        <div class="play-info-text">Play the melody as many times as you need.</div>
+        <div class="play-status">Plays: <span id="playCount">0</span></div>
+        <div class="cadence-status" id="cadenceStatus"></div>
       </div>
     </div>
-
-  </div>
-
-  <hr class="category-divider">
-
-  <!-- INSTRUCTOR CANVAS TOOLS -->
-  <div class="category-block">
-    <h2 class="category-heading">Instructor Canvas Tools</h2>
-    <p class="category-desc">Web-based utilities for managing Canvas LMS courses</p>
-
-    <p class="section-label">Tools</p>
-    <div class="resources-grid">
-      <a href="https://agarner32.github.io/canvas-tools/canvas-announcement-generator.html" class="resource-card" target="_blank">
-        <span class="card-tag tag-canvas">Canvas</span>
-        <h2>Announcement Generator</h2>
-        <p>Build and schedule an entire semester of Canvas announcements in one click.</p>
-        <span class="card-arrow arrow-gold">Open &rarr;</span>
-      </a>
-      <a href="https://agarner32.github.io/canvas-tools/canvas-date-adjuster.html" class="resource-card" target="_blank">
-        <span class="card-tag tag-canvas">Canvas</span>
-        <h2>Date Adjuster</h2>
-        <p>Edit all course due dates, available dates, and close dates in one place — with bulk-shift support.</p>
-        <span class="card-arrow arrow-gold">Open &rarr;</span>
-      </a>
-      <a href="https://agarner32.github.io/canvas-tools/canvas-card-generator.html" class="resource-card" target="_blank">
-        <span class="card-tag tag-canvas">Canvas</span>
-        <h2>Week Card Generator</h2>
-        <p>Pull your course schedule from Canvas and generate a self-updating homepage card that shows students what's due each week.</p>
-        <span class="card-arrow arrow-gold">Open &rarr;</span>
-      </a>
+    <div class="tempo-row">
+      <span class="tempo-label">Tempo</span>
+      <input type="range" class="tempo-slider" id="tempoSlider" min="60" max="100" value="100" step="5" />
+      <span class="tempo-value" id="tempoValue">100%</span>
     </div>
-
+    <audio id="audioPlayer"></audio>
   </div>
 
-</main>
+  <!-- Staff -->
+  <div class="staff-section">
+    <div id="staffContainer"></div>
+    <div class="staff-hint" id="staffHint">Your notes will appear here as you add them.</div>
+  </div>
 
-<footer>
-  Garner Music Resources &mdash; San Joaquin Delta College
-</footer>
+  <!-- Entry queue -->
+  <div class="entry-queue">
+    <div class="entry-queue-label">Notes entered</div>
+    <div class="entry-chips" id="entryChips">
+      <span class="empty-hint">No notes yet — select a pitch, accidental (if needed), and duration below, then click Add Note.</span>
+    </div>
+  </div>
 
+  <!-- Palette -->
+  <div class="palette-section">
+    <div class="palette-group">
+      <div class="palette-group-label">Pitch</div>
+      <div class="palette-buttons">
+        <button class="pal-btn" data-group="pitch" data-val="C">C</button>
+        <button class="pal-btn" data-group="pitch" data-val="D">D</button>
+        <button class="pal-btn" data-group="pitch" data-val="E">E</button>
+        <button class="pal-btn" data-group="pitch" data-val="F">F</button>
+        <button class="pal-btn" data-group="pitch" data-val="G">G</button>
+        <button class="pal-btn" data-group="pitch" data-val="A">A</button>
+        <button class="pal-btn" data-group="pitch" data-val="B">B</button>
+      </div>
+    </div>
+    <div class="palette-group">
+      <div class="palette-group-label">Accidental</div>
+      <div class="palette-buttons">
+        <button class="pal-btn" data-group="acc" data-val="n">♮ Natural</button>
+        <button class="pal-btn" data-group="acc" data-val="#">♯ Sharp</button>
+        <button class="pal-btn" data-group="acc" data-val="b">♭ Flat</button>
+      </div>
+    </div>
+    <div class="palette-group">
+      <div class="palette-group-label">Duration</div>
+      <div class="palette-buttons">
+        <button class="pal-btn" data-group="dur" data-val="w">Whole</button>
+        <button class="pal-btn" data-group="dur" data-val="h">Half</button>
+        <button class="pal-btn" data-group="dur" data-val="q">Quarter</button>
+        <button class="pal-btn" data-group="dur" data-val="8">Eighth</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-row">
+    <button class="btn btn-primary" id="addBtn">+ Add Note</button>
+    <button class="btn btn-secondary" id="undoBtn">↩ Undo Last</button>
+    <button class="btn btn-secondary" id="clearBtn">✕ Clear All</button>
+    <button class="btn btn-gold" id="submitBtn" disabled>Submit Answer</button>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="resultsSection">
+    <div class="results-header">
+      <div>
+        <div class="score-display" id="scoreDisplay">—</div>
+        <div class="score-label">notes correct</div>
+      </div>
+      <div style="flex:1; padding-left:16px;">
+        <div id="scoreMessage" style="font-size:0.95rem; color:var(--text);"></div>
+      </div>
+    </div>
+    <div class="result-grid" id="resultGrid"></div>
+    <div class="correct-answer-row">
+      <div class="correct-answer-label">Correct Answer</div>
+      <div class="correct-chips" id="correctChips"></div>
+    </div>
+    <div class="try-again-row">
+      <button class="btn btn-secondary" id="tryAgainBtn">↩ Try Again</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="melodies.js"></script>
+<script>
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentMelody = MELODIES[0];
+let enteredNotes = [];
+let playCount = 0;
+let isPlaying = false;
+let selections = { pitch: null, acc: null, dur: null };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const durLabels = { w: "whole", h: "half", q: "quarter", "8": "eighth" };
+const accLabels = { "#": "♯", b: "♭", n: "♮" };
+
+function noteLabel(n) {
+  const acc = n.acc && n.acc !== "n" ? accLabels[n.acc] : "";
+  return n.pitch + acc;
+}
+
+function noteKey(n) {
+  const pitch = n.pitch.toLowerCase();
+  const acc = (n.acc && n.acc !== "n") ? n.acc : "";
+  return pitch + acc + "/" + (n.octave || 4);
+}
+
+function enharmonicMatch(a, b) {
+  const semitones = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+  const accVal = { "#":1, b:-1, n:0 };
+  const semiA = (semitones[a.pitch] + (accVal[a.acc] || 0) + 12) % 12;
+  const semiB = (semitones[b.pitch] + (accVal[b.acc] || 0) + 12) % 12;
+  return semiA === semiB;
+}
+
+// ── Time signature helpers ────────────────────────────────────────────────────
+function beatsPerMeasure() {
+  return parseInt((currentMelody.timeSignature || "4/4").split("/")[0]);
+}
+function beatValue() {
+  return parseInt((currentMelody.timeSignature || "4/4").split("/")[1]);
+}
+function noteDurationBeats(dur) {
+  return { w:4, h:2, q:1, "8":0.5, "16":0.25 }[dur] || 1;
+}
+function splitIntoMeasures(notes) {
+  const bpm = beatsPerMeasure();
+  const measures = [], current = [];
+  let beats = 0;
+  for (const n of notes) {
+    current.push(n);
+    beats += noteDurationBeats(n.dur);
+    if (beats >= bpm) { measures.push([...current]); current.length = 0; beats = 0; }
+  }
+  if (current.length > 0) measures.push([...current]);
+  return measures;
+}
+
+// ── Cadence generator ─────────────────────────────────────────────────────────
+// Returns array of {notes: ["C4","E4","G4"], duration: 0.6} chord objects
+function buildCadence(keySignature, mode) {
+  // Major scale degrees (semitones from C)
+  const noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const majorScale = [0,2,4,5,7,9,11]; // W W H W W W H
+
+  // Find root semitone
+  const sharpKeys = ["C","G","D","A","E","B","F#","C#"];
+  const flatKeys  = ["C","F","Bb","Eb","Ab","Db","Gb","Cb"];
+  const sharpRoots = [0,7,2,9,4,11,6,1];
+  const flatRoots  = [0,5,10,3,8,1,6,11];
+
+  let rootSemi = 0;
+  const si = sharpKeys.indexOf(keySignature);
+  const fi = flatKeys.indexOf(keySignature);
+  if (si >= 0) rootSemi = sharpRoots[si];
+  else if (fi >= 0) rootSemi = flatRoots[fi];
+
+  // Build scale pitches (octave 4)
+  const scale = majorScale.map(interval => {
+    const semi = (rootSemi + interval) % 12;
+    return noteNames[semi] + "4";
+  });
+
+  // Tonic chord (I or i) — root position, top note = tonic (scale degree 1) in octave 5
+  const isMinor = mode === "minor";
+  const tonicTop = noteNames[rootSemi] + "5";                          // scale deg 1, oct 5
+  const tonicMid = noteNames[(rootSemi + (isMinor ? 3 : 4)) % 12] + "4"; // 3rd
+  const tonicBot = noteNames[rootSemi] + "3";                          // root bass
+  const tonicChord = [tonicBot, tonicMid, tonicTop];
+
+  // Dominant chord (V) — top note = leading tone (scale degree 7) resolving up to tonic
+  const leadingTone = (rootSemi + 11) % 12;  // raised 7th always (harmonic)
+  const domRoot = (rootSemi + 7) % 12;
+  const domTop = noteNames[leadingTone] + "4"; // leading tone, just below tonic top
+  const domMid = noteNames[(domRoot + 4) % 12] + "4"; // 3rd of V
+  const domBot = noteNames[domRoot] + "3";  // dominant bass
+  const domChord = [domBot, domMid, domTop];
+
+  return [
+    { notes: domChord,   duration: 0.7 },  // V  — top = leading tone (7)
+    { notes: tonicChord, duration: 1.0 }   // I/i — top = tonic (1)
+  ];
+}
+
+// ── Tone.js piano synth ───────────────────────────────────────────────────────
+let synth = null;
+function getSynth() {
+  if (!synth) {
+    synth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 1.2 },
+      volume: -6
+    }).toDestination();
+  }
+  return synth;
+}
+
+async function playCadence() {
+  const cadenceBtn = document.getElementById("cadenceBtn");
+  if (cadenceBtn.disabled) return;
+  cadenceBtn.disabled = true;
+  const mode = currentMelody.mode || "major";
+  const cadence = buildCadence(currentMelody.keySignature, mode);
+  const tempoRate = parseInt(tempoSlider.value) / 100;
+  const s = getSynth();
+  setCadenceStatus("Playing cadence...");
+  await Tone.start();
+  s.triggerAttackRelease(cadence[0].notes, cadence[0].duration / tempoRate);
+  await wait((cadence[0].duration / tempoRate) * 1000 + 150);
+  s.triggerAttackRelease(cadence[1].notes, cadence[1].duration / tempoRate);
+  await wait((cadence[1].duration / tempoRate) * 1000 + 200);
+  setCadenceStatus("");
+  document.getElementById("cadenceBtn").disabled = false;
+  cadenceBtn.disabled = false;
+}
+
+async function playMelody() {
+  if (isPlaying) return;
+  isPlaying = true;
+  playBtn.disabled = true;
+  const tempoRate = parseInt(tempoSlider.value) / 100;
+  audioEl.playbackRate = tempoRate;
+  audioEl.currentTime = 0;
+  audioEl.play();
+  playCount++;
+  document.getElementById("playCount").textContent = playCount;
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function setCadenceStatus(msg) {
+  document.getElementById("cadenceStatus").textContent = msg;
+}
+
+// ── Audio ─────────────────────────────────────────────────────────────────────
+const audioEl = document.getElementById("audioPlayer");
+const playBtn = document.getElementById("playBtn");
+
+function loadMelodyAudio() {
+  audioEl.src = currentMelody.audio;
+  audioEl.load();
+}
+
+playBtn.addEventListener("click", playMelody);
+document.getElementById("cadenceBtn").addEventListener("click", playCadence);
+
+audioEl.addEventListener("ended", () => {
+  playBtn.disabled = false;
+  isPlaying = false;
+});
+
+// ── Tempo slider ──────────────────────────────────────────────────────────────
+const tempoSlider = document.getElementById("tempoSlider");
+const tempoValue  = document.getElementById("tempoValue");
+
+tempoSlider.addEventListener("input", () => {
+  tempoValue.textContent = tempoSlider.value + "%";
+  // Update live if audio is playing
+  if (!audioEl.paused) {
+    audioEl.playbackRate = parseInt(tempoSlider.value) / 100;
+  }
+});
+
+// ── Palette selection ─────────────────────────────────────────────────────────
+document.querySelectorAll(".pal-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const group = btn.dataset.group;
+    const val = btn.dataset.val;
+    if (selections[group] === val) {
+      selections[group] = null;
+      btn.classList.remove("selected");
+    } else {
+      document.querySelectorAll(`.pal-btn[data-group="${group}"]`).forEach(b => b.classList.remove("selected"));
+      selections[group] = val;
+      btn.classList.add("selected");
+    }
+  });
+});
+
+// ── Add note ──────────────────────────────────────────────────────────────────
+document.getElementById("addBtn").addEventListener("click", () => {
+  if (!selections.pitch || !selections.dur) {
+    if (!selections.pitch) flashGroup("pitch");
+    if (!selections.dur)   flashGroup("dur");
+    return;
+  }
+  enteredNotes.push({
+    pitch: selections.pitch,
+    acc: selections.acc || "n",
+    dur: selections.dur,
+    octave: currentMelody.octaveRange ? currentMelody.octaveRange[0] : 4
+  });
+  renderChips();
+  renderStaff();
+  document.getElementById("submitBtn").disabled = false;
+});
+
+function flashGroup(group) {
+  const btns = document.querySelectorAll(`.pal-btn[data-group="${group}"]`);
+  btns.forEach(b => { b.style.outline = "2px solid var(--incorrect)"; });
+  setTimeout(() => btns.forEach(b => { b.style.outline = ""; }), 600);
+}
+
+// ── Undo / Clear ──────────────────────────────────────────────────────────────
+document.getElementById("undoBtn").addEventListener("click", () => {
+  enteredNotes.pop();
+  renderChips();
+  renderStaff();
+  if (enteredNotes.length === 0) document.getElementById("submitBtn").disabled = true;
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  enteredNotes = [];
+  renderChips();
+  renderStaff();
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("resultsSection").classList.remove("show");
+});
+
+// ── Render chips ──────────────────────────────────────────────────────────────
+function renderChips() {
+  const container = document.getElementById("entryChips");
+  if (enteredNotes.length === 0) {
+    container.innerHTML = '<span class="empty-hint">No notes yet — select a pitch, accidental (if needed), and duration below, then click Add Note.</span>';
+    return;
+  }
+  container.innerHTML = enteredNotes.map((n, i) => {
+    const isLast = i === enteredNotes.length - 1;
+    return `<div class="entry-chip ${isLast ? "last" : ""}">
+      <span>${noteLabel(n)}<sub>${n.octave}</sub></span>
+      <span class="dur-sym">${durLabels[n.dur] || n.dur}</span>
+    </div>`;
+  }).join("");
+}
+
+// ── Render staff with barlines ────────────────────────────────────────────────
+function renderStaff() {
+  const container = document.getElementById("staffContainer");
+  container.innerHTML = "";
+  const hint = document.getElementById("staffHint");
+  const totalWidth = Math.min(container.parentElement.offsetWidth - 32, 760);
+
+  if (enteredNotes.length === 0) {
+    const renderer = new Renderer(container, Renderer.Backends.SVG);
+    renderer.resize(totalWidth, 110);
+    const context = renderer.getContext();
+    const stave = new Stave(10, 10, totalWidth - 20);
+    stave.addClef(currentMelody.clef);
+    if (currentMelody.keySignature !== "C") stave.addKeySignature(currentMelody.keySignature);
+    stave.addTimeSignature(currentMelody.timeSignature);
+    stave.setContext(context).draw();
+    hint.style.display = "block";
+    return;
+  }
+
+  hint.style.display = "none";
+
+  const measures = splitIntoMeasures(enteredNotes);
+  const numMeasures = measures.length;
+  const firstExtraWidth = 80;
+  const remainingWidth = totalWidth - 20 - firstExtraWidth;
+  const measureWidth = numMeasures > 1 ? remainingWidth / numMeasures : remainingWidth;
+  const firstMeasureWidth = measureWidth + firstExtraWidth;
+
+  const renderer = new Renderer(container, Renderer.Backends.SVG);
+  renderer.resize(totalWidth, 110);
+  const context = renderer.getContext();
+
+  let x = 10;
+
+  measures.forEach((mNotes, mi) => {
+    const isLast = mi === numMeasures - 1;
+    const mWidth = mi === 0 ? firstMeasureWidth : measureWidth;
+    const stave = new Stave(x, 10, mWidth);
+
+    if (mi === 0) {
+      stave.addClef(currentMelody.clef);
+      if (currentMelody.keySignature !== "C") stave.addKeySignature(currentMelody.keySignature);
+      stave.addTimeSignature(currentMelody.timeSignature);
+    }
+
+    // Final barline on last measure (type 6 = END in VexFlow 4)
+    if (isLast) {
+      stave.setEndBarType(6);
+    }
+
+    stave.setContext(context).draw();
+
+    try {
+      const vfNotes = mNotes.map(n => {
+        const sn = new StaveNote({ keys: [noteKey(n)], duration: n.dur, clef: currentMelody.clef });
+        if (n.acc && n.acc !== "n") sn.addModifier(new Accidental(n.acc));
+        return sn;
+      });
+      const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
+      voice.addTickables(vfNotes);
+      new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
+      voice.draw(context, stave);
+    } catch(e) { /* skip silently */ }
+
+    x += mWidth;
+  });
+}
+
+// ── Grade ─────────────────────────────────────────────────────────────────────
+document.getElementById("submitBtn").addEventListener("click", gradeAnswer);
+
+function gradeAnswer() {
+  const correct = currentMelody.notes;
+  const student = enteredNotes;
+  const total = correct.length;
+  let numCorrect = 0;
+
+  const resultGrid = document.getElementById("resultGrid");
+  resultGrid.innerHTML = "";
+
+  for (let i = 0; i < Math.max(student.length, correct.length); i++) {
+    const s = student[i], c = correct[i];
+    let status = "missing", label = "—", durName = "";
+
+    if (s && c) {
+      const bothOk = enharmonicMatch(s, c) && s.dur === c.dur;
+      if (bothOk) numCorrect++;
+      status = bothOk ? "correct" : "incorrect";
+      label = noteLabel(s);
+      durName = durLabels[s.dur] || s.dur;
+    } else if (s) {
+      status = "incorrect"; label = noteLabel(s); durName = durLabels[s.dur] || s.dur;
+    } else {
+      label = "—"; durName = "missing";
+    }
+
+    const chip = document.createElement("div");
+    chip.className = `result-chip ${status}`;
+    chip.innerHTML = `<span class="note-name">${i+1}. ${label}</span><span class="dur-name">${durName}</span>`;
+    resultGrid.appendChild(chip);
+  }
+
+  document.getElementById("scoreDisplay").textContent = `${numCorrect} / ${total}`;
+  const pct = total > 0 ? numCorrect / total : 0;
+  document.getElementById("scoreMessage").textContent = [
+    [1.0, "Perfect! Every note is correct. 🎉"],
+    [0.8, "Nearly there — just a couple of notes to revisit."],
+    [0.5, "Good effort — listen again and compare your answer."],
+    [0.0, "Keep listening and try again — you'll get it!"]
+  ].find(([t]) => pct >= t)[1];
+
+  document.getElementById("correctChips").innerHTML = correct.map(n => {
+    const acc = n.acc && n.acc !== "n" ? (accLabels[n.acc] || n.acc) : "";
+    return `<div class="correct-chip">${n.pitch + acc} <span style="opacity:0.7;font-weight:400;">${durLabels[n.dur] || n.dur}</span></div>`;
+  }).join("");
+
+  document.getElementById("resultsSection").classList.add("show");
+  document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// ── Try Again ─────────────────────────────────────────────────────────────────
+document.getElementById("tryAgainBtn").addEventListener("click", () => {
+  enteredNotes = [];
+  renderChips();
+  renderStaff();
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("resultsSection").classList.remove("show");
+  selections = { pitch: null, acc: null, dur: null };
+  document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
+  setCadenceStatus("");
+  document.getElementById("cadenceBtn").disabled = false;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  loadMelodyAudio();
+  renderStaff();
+  const mode = currentMelody.mode || "major";
+  document.getElementById("clefBadge").textContent = currentMelody.clef.charAt(0).toUpperCase() + currentMelody.clef.slice(1);
+  document.getElementById("keyBadge").textContent = currentMelody.keySignature + " " + (mode === "minor" ? "Minor" : "Major");
+  document.getElementById("timeBadge").textContent = currentMelody.timeSignature;
+  document.getElementById("melodyTitle").textContent = `Week ${currentMelody.week} — Melody ${currentMelody.id.split("-")[1]}`;
+}
+
+init();
+</script>
 </body>
 </html>
