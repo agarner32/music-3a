@@ -1140,9 +1140,7 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   document.getElementById("resultsSection").classList.remove("show");
   document.getElementById("attemptComparison").style.display = "none";
   document.getElementById("nextMelodyBtn").style.display = "none";
-  // Reset this melody's best score so Try Again starts fresh
-  bestScores[currentMelodyIndex] = undefined;
-  melodyTotals[currentMelodyIndex] = undefined;
+  // Keep best scores intact on Try Again
   updateRunningTotal();
   selections = { pitch: null, acc: null, dur: null };
   document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
