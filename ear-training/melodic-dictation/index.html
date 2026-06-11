@@ -391,6 +391,55 @@
       font-weight: 600;
     }
     .try-again-row { margin-top: 14px; }
+    .running-total-bar {
+      background: var(--plum-dark);
+      border-radius: 10px;
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .running-total-bar.show { display: block; }
+    .running-total-inner { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .rt-label { color: var(--gold-light); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .rt-score { font-family: "Cormorant Garamond", serif; font-size: 1.6rem; font-weight: 700; color: var(--cream); }
+    .rt-pct { color: var(--gold-light); font-size: 0.9rem; font-weight: 600; }
+    .rt-melody-dots { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+    .rt-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.2);
+      color: var(--cream);
+      background: rgba(255,255,255,0.08);
+    }
+    .rt-dot.done-perfect { background: var(--correct); border-color: var(--correct); }
+    .rt-dot.done-good { background: var(--gold); border-color: var(--gold); color: var(--plum-dark); }
+    .rt-dot.done-poor { background: var(--incorrect); border-color: var(--incorrect); }
+    .rt-dot.current { border-color: var(--gold); }
+    /* Final summary */
+    .final-summary {
+      display: none;
+      background: var(--plum-dark);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .final-summary.show { display: block; }
+    .final-summary h2 { font-family: "Cormorant Garamond", serif; font-size: 1.8rem; color: var(--cream); margin-bottom: 6px; }
+    .final-summary .final-pct { font-size: 2.5rem; font-weight: 700; color: var(--gold); font-family: "Cormorant Garamond", serif; }
+    .final-summary .final-sub { color: var(--gold-light); font-size: 0.85rem; margin-bottom: 16px; }
+    .final-melody-grid { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+    .final-melody-chip {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--cream);
+      font-size: 0.82rem;
+    }
+    .final-melody-chip .fmc-label { color: var(--gold-light); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .final-melody-chip .fmc-score { font-size: 1.1rem; font-weight: 700; font-family: "Cormorant Garamond", serif; }
   </style>
 </head>
 <body>
@@ -497,6 +546,16 @@
     <button class="btn btn-gold" id="submitBtn" disabled>Submit Answer</button>
   </div>
 
+  <!-- Running total bar -->
+  <div class="running-total-bar" id="runningTotalBar">
+    <div class="running-total-inner">
+      <div class="rt-label">Session Score</div>
+      <div class="rt-score" id="rtScore">0 / 0</div>
+      <div class="rt-pct" id="rtPct">—</div>
+      <div class="rt-melody-dots" id="rtMelodyDots"></div>
+    </div>
+  </div>
+
   <!-- Results -->
   <div class="results-section" id="resultsSection">
     <div class="results-header">
@@ -516,12 +575,29 @@
     <div class="try-again-row">
       <button class="btn btn-secondary" id="tryAgainBtn">↩ Try Again</button>
       <button class="btn btn-secondary" id="revealBtn" style="margin-left:8px;">👁 Reveal Answer</button>
+      <button class="btn btn-gold" id="nextMelodyBtn" style="margin-left:8px; display:none;">Next Melody →</button>
+    </div>
+    <!-- This attempt vs best score -->
+    <div id="attemptComparison" style="display:none; margin-top:12px; padding:10px 14px; background:var(--cream-dark); border-radius:8px; font-size:0.85rem;">
+      <span id="thisAttemptLabel"></span>
+      <span id="bestScoreLabel" style="margin-left:16px; color:var(--correct); font-weight:600;"></span>
     </div>
     <div id="revealSection" style="display:none; margin-top:20px; border-top:1px solid var(--cream-dark); padding-top:16px;">
       <div style="font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--neutral); margin-bottom:10px;">Correct Notation</div>
       <div style="background:white; border:2px solid var(--correct); border-radius:10px; padding:16px 12px 8px;">
         <div id="revealStaffContainer"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Final summary -->
+  <div class="final-summary" id="finalSummary">
+    <h2>Session Complete! 🎉</h2>
+    <div class="final-pct" id="finalPct">—</div>
+    <div class="final-sub" id="finalSub">— notes correct</div>
+    <div class="final-melody-grid" id="finalMelodyGrid"></div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-gold" id="restartBtn">↩ Start Over</button>
     </div>
   </div>
 
@@ -532,12 +608,17 @@
 const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Barline } = Vex.Flow;
 
 // ── State ─────────────────────────────────────────────────────────────────────
+let currentMelodyIndex = 0;
 let currentMelody = MELODIES[0];
 let enteredNotes = [];
 let playCount = 0;
 let isPlaying = false;
 let selections = { pitch: null, acc: null, dur: null };
 let modifiers = { dot: false, rest: false };
+// Session scoring
+let bestScores = [];  // best numCorrect per melody index
+let melodyTotals = []; // total notes per melody index
+let sessionStarted = false;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const durLabels = { w: "whole", h: "half", q: "quarter", "8": "eighth", "16": "16th",
@@ -1004,9 +1085,50 @@ function gradeAnswer() {
     return `<div class="correct-chip">${n.pitch + acc} <span style="opacity:0.7;font-weight:400;">${durLabels[n.dur] || n.dur}</span></div>`;
   }).join("");
 
+  // Track best score
+  sessionStarted = true;
+  melodyTotals[currentMelodyIndex] = total;
+  const prevBest = bestScores[currentMelodyIndex];
+  if (prevBest === undefined || numCorrect > prevBest) {
+    bestScores[currentMelodyIndex] = numCorrect;
+  }
+  updateRunningTotal();
+
+  // Show attempt comparison
+  const compDiv = document.getElementById("attemptComparison");
+  const best = bestScores[currentMelodyIndex];
+  compDiv.style.display = "block";
+  document.getElementById("thisAttemptLabel").textContent = `This attempt: ${numCorrect} / ${total}`;
+  if (prevBest !== undefined && prevBest !== numCorrect) {
+    document.getElementById("bestScoreLabel").textContent = numCorrect > prevBest
+      ? `✓ New best! (was ${prevBest} / ${total})`
+      : `Best score: ${prevBest} / ${total}`;
+  } else {
+    document.getElementById("bestScoreLabel").textContent = prevBest === undefined ? "" : `Best: ${best} / ${total}`;
+  }
+
+  // Show next melody button
+  const nextBtn = document.getElementById("nextMelodyBtn");
+  if (currentMelodyIndex < MELODIES.length - 1) {
+    nextBtn.style.display = "inline-block";
+    nextBtn.textContent = `Next Melody →`;
+  } else {
+    nextBtn.style.display = "inline-block";
+    nextBtn.textContent = "See Final Score 🎉";
+  }
+
   document.getElementById("resultsSection").classList.add("show");
   document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+
+// ── Next Melody ───────────────────────────────────────────────────────────────
+document.getElementById("nextMelodyBtn").addEventListener("click", () => {
+  if (currentMelodyIndex < MELODIES.length - 1) {
+    loadMelody(currentMelodyIndex + 1);
+  } else {
+    showFinalSummary();
+  }
+});
 
 // ── Try Again ─────────────────────────────────────────────────────────────────
 document.getElementById("tryAgainBtn").addEventListener("click", () => {
@@ -1015,6 +1137,12 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   renderStaff();
   document.getElementById("submitBtn").disabled = true;
   document.getElementById("resultsSection").classList.remove("show");
+  document.getElementById("attemptComparison").style.display = "none";
+  document.getElementById("nextMelodyBtn").style.display = "none";
+  // Reset this melody's best score so Try Again starts fresh
+  bestScores[currentMelodyIndex] = undefined;
+  melodyTotals[currentMelodyIndex] = undefined;
+  updateRunningTotal();
   selections = { pitch: null, acc: null, dur: null };
   document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
   modifiers = { dot: false, rest: false };
@@ -1101,16 +1229,102 @@ function renderRevealStaff() {
   });
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-function init() {
+// ── Running total ────────────────────────────────────────────────────────────
+function updateRunningTotal() {
+  const bar = document.getElementById("runningTotalBar");
+  bar.classList.add("show");
+
+  const totalCorrect = bestScores.reduce((s, v) => s + (v || 0), 0);
+  const totalNotes = melodyTotals.reduce((s, v) => s + (v || 0), 0);
+  const pct = totalNotes > 0 ? Math.round(totalCorrect / totalNotes * 100) : 0;
+
+  document.getElementById("rtScore").textContent = `${totalCorrect} / ${totalNotes}`;
+  document.getElementById("rtPct").textContent = totalNotes > 0 ? `${pct}%` : "—";
+
+  // Melody dots
+  const dotsContainer = document.getElementById("rtMelodyDots");
+  dotsContainer.innerHTML = MELODIES.map((m, i) => {
+    const best = bestScores[i];
+    const total = melodyTotals[i] || currentMelody.notes.length;
+    let cls = "rt-dot";
+    let label = i + 1;
+    if (i === currentMelodyIndex) cls += " current";
+    if (best !== undefined) {
+      const p = best / total;
+      if (p === 1) cls += " done-perfect";
+      else if (p >= 0.7) cls += " done-good";
+      else cls += " done-poor";
+    }
+    return `<div class="${cls}" title="Melody ${i+1}">${label}</div>`;
+  }).join("");
+}
+
+function showFinalSummary() {
+  const totalCorrect = bestScores.reduce((s, v) => s + (v || 0), 0);
+  const totalNotes = melodyTotals.reduce((s, v) => s + (v || 0), 0);
+  const pct = totalNotes > 0 ? Math.round(totalCorrect / totalNotes * 100) : 0;
+
+  document.getElementById("finalPct").textContent = pct + "%";
+  document.getElementById("finalSub").textContent = `${totalCorrect} / ${totalNotes} notes correct`;
+
+  const grid = document.getElementById("finalMelodyGrid");
+  grid.innerHTML = MELODIES.map((m, i) => {
+    const best = bestScores[i] || 0;
+    const total = melodyTotals[i] || 0;
+    return `<div class="final-melody-chip">
+      <div class="fmc-label">Melody ${i+1}</div>
+      <div class="fmc-score">${best} / ${total}</div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("finalSummary").classList.add("show");
+  document.getElementById("finalSummary").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// ── Melody navigation ─────────────────────────────────────────────────────────
+function loadMelody(index) {
+  currentMelodyIndex = index;
+  currentMelody = MELODIES[index];
+  enteredNotes = [];
+  playCount = 0;
+  playBtn.disabled = false;
+  selections = { pitch: null, acc: null, dur: null };
+  modifiers = { dot: false, rest: false };
+  document.querySelectorAll(".pal-btn:not(.mod-btn)").forEach(b => b.classList.remove("selected"));
+  updateModifierUI();
+  setCadenceStatus("");
+  document.getElementById("cadenceBtn").disabled = false;
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("resultsSection").classList.remove("show");
+  document.getElementById("revealSection").style.display = "none";
+  document.getElementById("revealBtn").textContent = "👁 Reveal Answer";
+  document.getElementById("nextMelodyBtn").style.display = "none";
   loadMelodyAudio();
+  renderChips();
   renderStaff();
+  updatePlayButton();
+  updateRunningTotal();
+
   const mode = currentMelody.mode || "major";
   document.getElementById("clefBadge").textContent = currentMelody.clef.charAt(0).toUpperCase() + currentMelody.clef.slice(1);
   document.getElementById("keyBadge").textContent = currentMelody.keySignature + " " + (mode === "minor" ? "Minor" : "Major");
   document.getElementById("timeBadge").textContent = currentMelody.timeSignature;
-  document.getElementById("melodyTitle").textContent = `Week ${currentMelody.week} — Melody ${currentMelody.id.split("-")[1]}`;
-  updatePlayButton();
+  document.getElementById("melodyTitle").textContent = `Melody ${index + 1} of ${MELODIES.length}`;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.getElementById("restartBtn").addEventListener("click", () => {
+  bestScores = [];
+  melodyTotals = [];
+  sessionStarted = false;
+  document.getElementById("finalSummary").classList.remove("show");
+  document.getElementById("runningTotalBar").classList.remove("show");
+  loadMelody(0);
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  loadMelody(0);
 }
 
 init();
