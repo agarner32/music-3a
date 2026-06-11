@@ -514,7 +514,7 @@
 
 <script src="melodies.js"></script>
 <script>
-const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Barline } = Vex.Flow;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentMelody = MELODIES[0];
@@ -814,9 +814,9 @@ function renderStaff() {
       stave.addTimeSignature(currentMelody.timeSignature);
     }
 
-    // Final barline on last measure (type 3 = END in VexFlow 4)
+    // Final barline — must be set before draw()
     if (isLast) {
-      stave.setEndBarType(3);
+      stave.setEndBarType(Barline.type.END);
     }
 
     stave.setContext(context).draw();
