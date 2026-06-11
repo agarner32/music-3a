@@ -779,7 +779,7 @@ tempoSlider.addEventListener("input", () => {
 });
 
 // ── Palette selection ─────────────────────────────────────────────────────────
-document.querySelectorAll(".pal-btn").forEach(btn => {
+document.querySelectorAll(".pal-btn:not(.mod-btn)").forEach(btn => {
   btn.addEventListener("click", () => {
     const group = btn.dataset.group;
     const val = btn.dataset.val;
