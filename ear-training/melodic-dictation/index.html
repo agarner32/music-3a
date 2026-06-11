@@ -596,8 +596,9 @@
     <div class="final-pct" id="finalPct">—</div>
     <div class="final-sub" id="finalSub">— notes correct</div>
     <div class="final-melody-grid" id="finalMelodyGrid"></div>
-    <div style="margin-top:20px;">
-      <button class="btn btn-gold" id="restartBtn">↩ Start Over</button>
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="improveBtn" style="color:var(--cream); border-color:var(--cream);">↩ Improve My Score</button>
+      <button class="btn btn-secondary" id="resetBtn" style="color:rgba(255,255,255,0.5); border-color:rgba(255,255,255,0.2); font-size:0.8rem;">🗑 Reset Session</button>
     </div>
   </div>
 
@@ -1114,7 +1115,7 @@ function gradeAnswer() {
     nextBtn.textContent = `Next Melody →`;
   } else {
     nextBtn.style.display = "inline-block";
-    nextBtn.textContent = "See Final Score 🎉";
+    nextBtn.textContent = "Finish & See Score 🎉";
   }
 
   document.getElementById("resultsSection").classList.add("show");
@@ -1313,13 +1314,22 @@ function loadMelody(index) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-document.getElementById("restartBtn").addEventListener("click", () => {
-  bestScores = [];
-  melodyTotals = [];
-  sessionStarted = false;
+// Improve — go back to melody 1, keep scores intact
+document.getElementById("improveBtn").addEventListener("click", () => {
   document.getElementById("finalSummary").classList.remove("show");
-  document.getElementById("runningTotalBar").classList.remove("show");
   loadMelody(0);
+});
+
+// Reset — wipe everything with confirmation
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("Reset the session? This will clear all your scores and start over.")) {
+    bestScores = [];
+    melodyTotals = [];
+    sessionStarted = false;
+    document.getElementById("finalSummary").classList.remove("show");
+    document.getElementById("runningTotalBar").classList.remove("show");
+    loadMelody(0);
+  }
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
