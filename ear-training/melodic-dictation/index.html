@@ -514,7 +514,7 @@
 
 <script src="melodies.js"></script>
 <script>
-const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Barline } = Vex.Flow;
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentMelody = MELODIES[0];
@@ -683,9 +683,6 @@ audioEl.addEventListener("ended", () => {
   playBtn.disabled = false;
   isPlaying = false;
 });
-audioEl.addEventListener("play", () => {
-  // playing
-});
 
 // ── Tempo slider ──────────────────────────────────────────────────────────────
 const tempoSlider = document.getElementById("tempoSlider");
@@ -817,9 +814,9 @@ function renderStaff() {
       stave.addTimeSignature(currentMelody.timeSignature);
     }
 
-    // Final barline on last measure
+    // Final barline on last measure (type 6 = END in VexFlow 4)
     if (isLast) {
-      stave.setEndBarType(Barline.type.END);
+      stave.setEndBarType(6);
     }
 
     stave.setContext(context).draw();
