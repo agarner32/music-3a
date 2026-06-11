@@ -129,6 +129,23 @@
     .play-btn:hover { background: var(--gold-light); transform: scale(1.05); }
     .play-btn:active { transform: scale(0.97); }
     .play-btn:disabled { background: var(--neutral); cursor: not-allowed; transform: none; opacity: 0.7; }
+    .btn-group { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .cadence-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--gold-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .cadence-btn:hover { background: rgba(196,163,90,0.2); color: var(--gold); }
+    .cadence-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .play-btn { border-radius: 8px; width: auto; height: auto; padding: 8px 16px; font-size: 0.9rem; font-weight: 600; font-family: 'DM Sans', sans-serif; }
     .play-info { flex: 1; }
     .play-info-text { color: var(--cream); font-size: 0.85rem; font-weight: 500; }
     .play-status { color: var(--gold-light); font-size: 0.75rem; margin-top: 3px; }
@@ -399,13 +416,16 @@
   <div class="audio-section">
     <div class="audio-top">
       <div class="listen-label">🔊 Listen</div>
-      <button class="play-btn" id="playBtn" title="Play cadence then melody">▶</button>
+      <div class="btn-group">
+        <button class="play-btn" id="playBtn" title="Play melody">▶ Melody</button>
+        <button class="cadence-btn" id="cadenceBtn" title="Hear V-I cadence">🎹 Cadence</button>
+      </div>
       <div class="play-info">
         <div class="play-info-text">Play the melody as many times as you need.</div>
-        <div class="play-status" id="playStatus">Plays: <span id="playCount">0</span></div>
+        <div class="play-status">Plays: <span id="playCount">0</span></div>
+        <div class="cadence-status" id="cadenceStatus"></div>
       </div>
     </div>
-    <div class="cadence-status" id="cadenceStatus"></div>
     <div class="tempo-row">
       <span class="tempo-label">Tempo</span>
       <input type="range" class="tempo-slider" id="tempoSlider" min="60" max="100" value="100" step="5" />
@@ -574,25 +594,24 @@ function buildCadence(keySignature, mode) {
     return noteNames[semi] + "4";
   });
 
-  // Tonic chord (I or i)
+  // Tonic chord (I or i) — root position, top note = tonic (scale degree 1) in octave 5
   const isMinor = mode === "minor";
-  const tonicIntervals = isMinor ? [0, 3, 7] : [0, 4, 7];
-  const tonicChord = tonicIntervals.map(i => {
-    const semi = (rootSemi + i) % 12;
-    return noteNames[semi] + "4";
-  });
+  const tonicTop = noteNames[rootSemi] + "5";                          // scale deg 1, oct 5
+  const tonicMid = noteNames[(rootSemi + (isMinor ? 3 : 4)) % 12] + "4"; // 3rd
+  const tonicBot = noteNames[rootSemi] + "3";                          // root bass
+  const tonicChord = [tonicBot, tonicMid, tonicTop];
 
-  // Dominant chord (V) — always major with raised 7th in minor
+  // Dominant chord (V) — top note = leading tone (scale degree 7) resolving up to tonic
+  const leadingTone = (rootSemi + 11) % 12;  // raised 7th always (harmonic)
   const domRoot = (rootSemi + 7) % 12;
-  const domChord = [
-    noteNames[domRoot] + "4",
-    noteNames[(domRoot + 4) % 12] + "4",
-    noteNames[(domRoot + 7) % 12] + "4"
-  ];
+  const domTop = noteNames[leadingTone] + "4"; // leading tone, just below tonic top
+  const domMid = noteNames[(domRoot + 4) % 12] + "4"; // 3rd of V
+  const domBot = noteNames[domRoot] + "3";  // dominant bass
+  const domChord = [domBot, domMid, domTop];
 
   return [
-    { notes: domChord,  duration: 0.7 },  // V
-    { notes: tonicChord, duration: 1.0 }  // I or i
+    { notes: domChord,   duration: 0.7 },  // V  — top = leading tone (7)
+    { notes: tonicChord, duration: 1.0 }   // I/i — top = tonic (1)
   ];
 }
 
@@ -609,32 +628,30 @@ function getSynth() {
   return synth;
 }
 
-async function playCadenceThenMelody() {
-  if (isPlaying) return;
-  isPlaying = true;
-  playBtn.disabled = true;
-
+async function playCadence() {
+  const cadenceBtn = document.getElementById("cadenceBtn");
+  if (cadenceBtn.disabled) return;
+  cadenceBtn.disabled = true;
   const mode = currentMelody.mode || "major";
   const cadence = buildCadence(currentMelody.keySignature, mode);
   const tempoRate = parseInt(tempoSlider.value) / 100;
   const s = getSynth();
-
   setCadenceStatus("Playing cadence...");
-
   await Tone.start();
-
-  // Play V chord
   s.triggerAttackRelease(cadence[0].notes, cadence[0].duration / tempoRate);
-  await wait((cadence[0].duration / tempoRate) * 1000 + 100);
-
-  // Play I/i chord
+  await wait((cadence[0].duration / tempoRate) * 1000 + 150);
   s.triggerAttackRelease(cadence[1].notes, cadence[1].duration / tempoRate);
-  await wait((cadence[1].duration / tempoRate) * 1000 + 300);
+  await wait((cadence[1].duration / tempoRate) * 1000 + 200);
+  setCadenceStatus("");
+  document.getElementById("cadenceBtn").disabled = false;
+  cadenceBtn.disabled = false;
+}
 
-  // Brief pause then play melody
-  setCadenceStatus("Now listen to the melody...");
-  await wait(400);
-
+async function playMelody() {
+  if (isPlaying) return;
+  isPlaying = true;
+  playBtn.disabled = true;
+  const tempoRate = parseInt(tempoSlider.value) / 100;
   audioEl.playbackRate = tempoRate;
   audioEl.currentTime = 0;
   audioEl.play();
@@ -659,16 +676,15 @@ function loadMelodyAudio() {
   audioEl.load();
 }
 
-playBtn.addEventListener("click", playCadenceThenMelody);
+playBtn.addEventListener("click", playMelody);
+document.getElementById("cadenceBtn").addEventListener("click", playCadence);
 
 audioEl.addEventListener("ended", () => {
-  playBtn.textContent = "▶";
   playBtn.disabled = false;
   isPlaying = false;
-  setCadenceStatus("Press play to listen again.");
 });
 audioEl.addEventListener("play", () => {
-  playBtn.textContent = "⏹";
+  // playing
 });
 
 // ── Tempo slider ──────────────────────────────────────────────────────────────
@@ -886,6 +902,7 @@ document.getElementById("tryAgainBtn").addEventListener("click", () => {
   selections = { pitch: null, acc: null, dur: null };
   document.querySelectorAll(".pal-btn").forEach(b => b.classList.remove("selected"));
   setCadenceStatus("");
+  document.getElementById("cadenceBtn").disabled = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
