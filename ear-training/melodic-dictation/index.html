@@ -815,8 +815,10 @@ function renderStaff() {
       stave.addTimeSignature(currentMelody.timeSignature);
     }
 
-    // Final barline — must be set before draw()
-    if (isLast) {
+    // Final barline — only when all notes are entered
+    const totalBeatsEntered = enteredNotes.reduce((s, n) => s + noteDurationBeats(n.dur), 0);
+    const totalBeatsCorrect = currentMelody.notes.reduce((s, n) => s + noteDurationBeats(n.dur), 0);
+    if (isLast && totalBeatsEntered >= totalBeatsCorrect) {
       stave.setEndBarType(Barline.type.END);
     }
 
