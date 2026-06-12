@@ -690,37 +690,24 @@ function noteBeats(n) {
   return noteDurationBeats(dur);
 }
 function splitIntoMeasures(notes) {
-  // Assign student notes to measures using the same *note count* per measure
-  // as the correct melody. This means barlines never jump around based on
-  // what rhythms the student entered — measure 1 always has the same number
-  // of note slots as the correct answer's measure 1, etc.
-  const correctNotes = currentMelody ? currentMelody.notes : [];
+  // Fill each measure by beat count (resetting after each cut), so notes never
+  // jump between measures when new notes are added. A measure closes as soon as
+  // its running beat total reaches or exceeds beatsPerMeasure().
   const bpm = beatsPerMeasure();
+  const measures = [];
+  let current = [];
+  let beats = 0;
 
-  // Build note-count per measure for the correct melody.
-  const notesPerMeasure = [];
-  let beats = 0, count = 0;
-  for (const n of correctNotes) {
-    count++;
+  for (const n of notes) {
+    current.push(n);
     beats += noteBeats(n);
-    if (Math.round(beats * 100) % Math.round(bpm * 100) === 0) {
-      notesPerMeasure.push(count);
-      count = 0;
+    if (beats >= bpm - 0.001) {
+      measures.push([...current]);
+      current = [];
       beats = 0;
     }
   }
-  if (count > 0) notesPerMeasure.push(count); // incomplete last measure
-
-  // Slice student notes into groups of those sizes.
-  const measures = [];
-  let offset = 0;
-  for (const size of notesPerMeasure) {
-    if (offset >= notes.length) break;
-    measures.push(notes.slice(offset, offset + size));
-    offset += size;
-  }
-  // Any overflow notes (student entered more than correct total) go in a final group.
-  if (offset < notes.length) measures.push(notes.slice(offset));
+  if (current.length > 0) measures.push([...current]);
   return measures;
 }
 
