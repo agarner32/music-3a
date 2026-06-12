@@ -606,7 +606,7 @@
 
 <script src="melodies.js"></script>
 <script>
-const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Barline } = Vex.Flow;
+const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Barline, Beam } = Vex.Flow;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentMelodyIndex = 0;
@@ -690,19 +690,79 @@ function noteBeats(n) {
   return noteDurationBeats(dur);
 }
 function splitIntoMeasures(notes) {
+  // Split student notes at the same cumulative-beat boundaries as the correct melody.
+  // This keeps barlines aligned with the correct answer even if the student entered
+  // wrong durations that would produce different beat totals.
   const bpm = beatsPerMeasure();
+  const correctNotes = currentMelody ? currentMelody.notes : [];
+
+  // Build the beat positions where each correct-melody barline falls.
+  const barBoundaries = []; // cumulative beat values at which a new measure starts
+  let cumBeats = 0;
+  for (const n of correctNotes) {
+    cumBeats += noteBeats(n);
+    if (Math.round(cumBeats * 100) % Math.round(bpm * 100) === 0) {
+      barBoundaries.push(cumBeats);
+    }
+  }
+
+  // Walk the student notes and cut at those same cumulative-beat boundaries.
   const measures = [], current = [];
-  let beats = 0;
+  let studentBeats = 0;
+  let boundaryIdx = 0;
+
   for (const n of notes) {
     current.push(n);
-    beats += noteBeats(n);
-    if (beats >= bpm) { measures.push([...current]); current.length = 0; beats = 0; }
+    studentBeats += noteBeats(n);
+    // Cut when we've reached or passed the next boundary
+    if (boundaryIdx < barBoundaries.length &&
+        studentBeats >= barBoundaries[boundaryIdx] - 0.001) {
+      measures.push([...current]);
+      current.length = 0;
+      boundaryIdx++;
+    }
   }
   if (current.length > 0) measures.push([...current]);
   return measures;
 }
 
-// ── Cadence generator ─────────────────────────────────────────────────────────
+// ── Beaming helper ────────────────────────────────────────────────────────────
+// Groups consecutive eighth (and 16th) notes that fall within the same beat
+// into VexFlow Beam objects. Returns an array of Beam instances.
+function buildBeams(vfNotes, mNotes, context) {
+  const bpb = beatValue(); // beat note value (e.g. 4 for quarter-beat)
+  const beatDur = 4 / bpb; // duration in beats of one beat unit
+
+  const beams = [];
+  let group = [];
+  let beatPos = 0; // beats elapsed within this measure
+  let beatBoundary = beatDur; // next beat boundary
+
+  for (let i = 0; i < mNotes.length; i++) {
+    const n = mNotes[i];
+    const dur = n.dur;
+    const beats = noteBeats(n);
+    const isBeamable = (dur === "8" || dur === "16") && !n.rest;
+
+    if (isBeamable) {
+      group.push(vfNotes[i]);
+    } else {
+      if (group.length >= 2) beams.push(new Beam(group));
+      group = [];
+    }
+
+    beatPos += beats;
+    // If we've hit or passed a beat boundary, close any open group
+    if (beatPos >= beatBoundary - 0.001) {
+      if (group.length >= 2) beams.push(new Beam(group));
+      group = [];
+      // Advance to next boundary
+      while (beatBoundary <= beatPos + 0.001) beatBoundary += beatDur;
+    }
+  }
+  if (group.length >= 2) beams.push(new Beam(group));
+  return beams;
+}
 // Returns array of {notes: ["C4","E4","G4"], duration: 0.6} chord objects
 function buildCadence(keySignature, mode) {
   // Major scale degrees (semitones from C)
@@ -727,11 +787,11 @@ function buildCadence(keySignature, mode) {
     return noteNames[semi] + "4";
   });
 
-  // Tonic chord (I or i) — root position, top note = tonic (scale degree 1) in octave 5
+  // Tonic chord (I or i) — root position, top note = tonic (scale degree 1) in octave 4
   const isMinor = mode === "minor";
-  const tonicTop = noteNames[rootSemi] + "5";                          // scale deg 1, oct 5
+  const tonicTop = noteNames[rootSemi] + "4";                             // scale deg 1, oct 4
   const tonicMid = noteNames[(rootSemi + (isMinor ? 3 : 4)) % 12] + "4"; // 3rd
-  const tonicBot = noteNames[rootSemi] + "3";                          // root bass
+  const tonicBot = noteNames[rootSemi] + "3";                             // root bass
   const tonicChord = [tonicBot, tonicMid, tonicTop];
 
   // Dominant chord (V) — top note = leading tone (scale degree 7) resolving up to tonic
@@ -1032,6 +1092,8 @@ function renderStaff() {
       voice.addTickables(vfNotes);
       new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
       voice.draw(context, stave);
+      const beams = buildBeams(vfNotes, mNotes, context);
+      beams.forEach(b => b.setContext(context).draw());
     } catch(e) { /* skip silently */ }
 
     x += mWidth;
@@ -1226,6 +1288,8 @@ function renderRevealStaff() {
       voice.addTickables(vfNotes);
       new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
       voice.draw(context, stave);
+      const beams = buildBeams(vfNotes, mNotes, context);
+      beams.forEach(b => b.setContext(context).draw());
     } catch(e) { /* skip silently */ }
 
     x += mWidth;
