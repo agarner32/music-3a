@@ -690,18 +690,32 @@ function noteBeats(n) {
   return noteDurationBeats(dur);
 }
 function splitIntoMeasures(notes) {
-  // Fill each measure by beat count (resetting after each cut), so notes never
-  // jump between measures when new notes are added. A measure closes as soon as
-  // its running beat total reaches or exceeds beatsPerMeasure().
+  // Fill each measure by beat count, resetting after each cut.
+  // Extra rule: never cut in the middle of a consecutive run of beamable notes
+  // (eighths/16ths) — always finish the run before closing the measure.
+  // This prevents beam groups from being split across a barline.
   const bpm = beatsPerMeasure();
   const measures = [];
   let current = [];
   let beats = 0;
 
-  for (const n of notes) {
+  for (let i = 0; i < notes.length; i++) {
+    const n = notes[i];
     current.push(n);
     beats += noteBeats(n);
+
     if (beats >= bpm - 0.001) {
+      // Check whether the next note is also beamable and the current note is too —
+      // if so, keep going to avoid splitting the beam group across a barline.
+      const nextN = notes[i + 1];
+      const currentIsBeamable = (n.dur === "8" || n.dur === "16") && !n.rest;
+      const nextIsBeamable = nextN && (nextN.dur === "8" || nextN.dur === "16") && !nextN.rest;
+
+      if (currentIsBeamable && nextIsBeamable) {
+        // Don't cut yet — let the beam group finish.
+        continue;
+      }
+
       measures.push([...current]);
       current = [];
       beats = 0;
@@ -712,37 +726,22 @@ function splitIntoMeasures(notes) {
 }
 
 // ── Beaming helper ────────────────────────────────────────────────────────────
-// Groups consecutive eighth (and 16th) notes that fall within the same beat
-// into VexFlow Beam objects. Returns an array of Beam instances.
+// Beams consecutive runs of eighth/16th notes within a measure.
+// No beat-boundary splitting — any unbroken run of 2+ beamable notes gets a beam,
+// so wrong rhythms display cleanly regardless of what the student entered.
 function buildBeams(vfNotes, mNotes, context) {
-  const bpb = beatValue(); // beat note value (e.g. 4 for quarter-beat)
-  const beatDur = 4 / bpb; // duration in beats of one beat unit
-
   const beams = [];
   let group = [];
-  let beatPos = 0; // beats elapsed within this measure
-  let beatBoundary = beatDur; // next beat boundary
 
   for (let i = 0; i < mNotes.length; i++) {
     const n = mNotes[i];
-    const dur = n.dur;
-    const beats = noteBeats(n);
-    const isBeamable = (dur === "8" || dur === "16") && !n.rest;
+    const isBeamable = (n.dur === "8" || n.dur === "16") && !n.rest;
 
     if (isBeamable) {
       group.push(vfNotes[i]);
     } else {
       if (group.length >= 2) beams.push(new Beam(group));
       group = [];
-    }
-
-    beatPos += beats;
-    // If we've hit or passed a beat boundary, close any open group
-    if (beatPos >= beatBoundary - 0.001) {
-      if (group.length >= 2) beams.push(new Beam(group));
-      group = [];
-      // Advance to next boundary
-      while (beatBoundary <= beatPos + 0.001) beatBoundary += beatDur;
     }
   }
   if (group.length >= 2) beams.push(new Beam(group));
