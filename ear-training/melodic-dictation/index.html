@@ -787,19 +787,19 @@ function buildCadence(keySignature, mode) {
     return noteNames[semi] + "4";
   });
 
-  // Tonic chord (I or i) — root position, top note = tonic (scale degree 1) in octave 4
+  // Tonic chord (I or i) — root position, top = tonic oct 4, mid = 3rd oct 3, bass oct 2
   const isMinor = mode === "minor";
   const tonicTop = noteNames[rootSemi] + "4";                             // scale deg 1, oct 4
-  const tonicMid = noteNames[(rootSemi + (isMinor ? 3 : 4)) % 12] + "4"; // 3rd
-  const tonicBot = noteNames[rootSemi] + "3";                             // root bass
+  const tonicMid = noteNames[(rootSemi + (isMinor ? 3 : 4)) % 12] + "3"; // 3rd, oct 3
+  const tonicBot = noteNames[rootSemi] + "2";                             // root bass, oct 2
   const tonicChord = [tonicBot, tonicMid, tonicTop];
 
-  // Dominant chord (V) — top note = leading tone (scale degree 7) resolving up to tonic
+  // Dominant chord (V) — leading tone in oct 3, resolves UP a half step to tonic in oct 4
   const leadingTone = (rootSemi + 11) % 12;  // raised 7th always (harmonic)
   const domRoot = (rootSemi + 7) % 12;
-  const domTop = noteNames[leadingTone] + "4"; // leading tone, just below tonic top
-  const domMid = noteNames[(domRoot + 4) % 12] + "4"; // 3rd of V
-  const domBot = noteNames[domRoot] + "3";  // dominant bass
+  const domTop = noteNames[leadingTone] + "3"; // leading tone oct 3 → resolves up to tonic oct 4
+  const domMid = noteNames[(domRoot + 4) % 12] + "3"; // 3rd of V, oct 3
+  const domBot = noteNames[domRoot] + "2";  // dominant bass, oct 2
   const domChord = [domBot, domMid, domTop];
 
   return [
