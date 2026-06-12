@@ -690,39 +690,37 @@ function noteBeats(n) {
   return noteDurationBeats(dur);
 }
 function splitIntoMeasures(notes) {
-  // Split student notes at the same cumulative-beat boundaries as the correct melody.
-  // This keeps barlines aligned with the correct answer even if the student entered
-  // wrong durations that would produce different beat totals.
-  const bpm = beatsPerMeasure();
+  // Assign student notes to measures using the same *note count* per measure
+  // as the correct melody. This means barlines never jump around based on
+  // what rhythms the student entered — measure 1 always has the same number
+  // of note slots as the correct answer's measure 1, etc.
   const correctNotes = currentMelody ? currentMelody.notes : [];
+  const bpm = beatsPerMeasure();
 
-  // Build the beat positions where each correct-melody barline falls.
-  const barBoundaries = []; // cumulative beat values at which a new measure starts
-  let cumBeats = 0;
+  // Build note-count per measure for the correct melody.
+  const notesPerMeasure = [];
+  let beats = 0, count = 0;
   for (const n of correctNotes) {
-    cumBeats += noteBeats(n);
-    if (Math.round(cumBeats * 100) % Math.round(bpm * 100) === 0) {
-      barBoundaries.push(cumBeats);
+    count++;
+    beats += noteBeats(n);
+    if (Math.round(beats * 100) % Math.round(bpm * 100) === 0) {
+      notesPerMeasure.push(count);
+      count = 0;
+      beats = 0;
     }
   }
+  if (count > 0) notesPerMeasure.push(count); // incomplete last measure
 
-  // Walk the student notes and cut at those same cumulative-beat boundaries.
-  const measures = [], current = [];
-  let studentBeats = 0;
-  let boundaryIdx = 0;
-
-  for (const n of notes) {
-    current.push(n);
-    studentBeats += noteBeats(n);
-    // Cut when we've reached or passed the next boundary
-    if (boundaryIdx < barBoundaries.length &&
-        studentBeats >= barBoundaries[boundaryIdx] - 0.001) {
-      measures.push([...current]);
-      current.length = 0;
-      boundaryIdx++;
-    }
+  // Slice student notes into groups of those sizes.
+  const measures = [];
+  let offset = 0;
+  for (const size of notesPerMeasure) {
+    if (offset >= notes.length) break;
+    measures.push(notes.slice(offset, offset + size));
+    offset += size;
   }
-  if (current.length > 0) measures.push([...current]);
+  // Any overflow notes (student entered more than correct total) go in a final group.
+  if (offset < notes.length) measures.push(notes.slice(offset));
   return measures;
 }
 
@@ -1088,11 +1086,12 @@ function renderStaff() {
         if (n.dot) sn.addModifier(new Vex.Flow.Dot(), 0);
         return sn;
       });
+      // Construct beams BEFORE voice.draw() to suppress individual flags on beamed notes.
+      const beams = buildBeams(vfNotes, mNotes, context);
       const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
       voice.addTickables(vfNotes);
       new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
       voice.draw(context, stave);
-      const beams = buildBeams(vfNotes, mNotes, context);
       beams.forEach(b => b.setContext(context).draw());
     } catch(e) { /* skip silently */ }
 
@@ -1284,11 +1283,12 @@ function renderRevealStaff() {
         if (n.dot) sn.addModifier(new Vex.Flow.Dot(), 0);
         return sn;
       });
+      // Construct beams BEFORE voice.draw() to suppress individual flags on beamed notes.
+      const beams = buildBeams(vfNotes, mNotes, context);
       const voice = new Voice({ num_beats: beatsPerMeasure(), beat_value: beatValue() }).setStrict(false);
       voice.addTickables(vfNotes);
       new Formatter().joinVoices([voice]).format([voice], mWidth - 20);
       voice.draw(context, stave);
-      const beams = buildBeams(vfNotes, mNotes, context);
       beams.forEach(b => b.setContext(context).draw());
     } catch(e) { /* skip silently */ }
 
