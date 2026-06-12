@@ -54,12 +54,10 @@ const MELODIES = [
     octaveRange: [4, 5],
     notes: [
       { pitch: "F", octave: 4, dur: "q" },
+      { pitch: "G", octave: 4, dur: "q" },
+      { pitch: "F", octave: 4, dur: "q" },
       { pitch: "E", octave: 4, dur: "q" },
-      { pitch: "D", octave: 4, dur: "q" },
-      { pitch: "C", octave: 4, dur: "q" },
-      { pitch: "D", octave: 4, dur: "q" },
-      { pitch: "E", octave: 4, dur: "q" },
-      { pitch: "F", octave: 4, dur: "h" }
+      { pitch: "F", octave: 4, dur: "w" }
     ]
   },
   {
@@ -95,8 +93,7 @@ const MELODIES = [
     notes: [
       { pitch: "C", octave: 4, dur: "q" },
       { pitch: "D", octave: 4, dur: "q" },
-      { pitch: "E", octave: 4, dur: "8" },
-      { pitch: "E", octave: 4, dur: "8" },
+      { pitch: "E", octave: 4, dur: "q" },
       { pitch: "F", octave: 4, dur: "q" },
       { pitch: "G", octave: 4, dur: "8" },
       { pitch: "F", octave: 4, dur: "8" },
