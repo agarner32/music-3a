@@ -85,6 +85,7 @@
     background: #0d2b20;
   }
   .sound-toggle:hover { background: #333; }
+  .sound-toggle.on:hover { background: #0d2b20; }
 
   /* ── Keyboard ── */
   .keyboard-outer {
@@ -181,6 +182,8 @@
 <div class="btn-row">
   <button class="connect-btn" id="connect-btn" onclick="connectMidi()">Connect MIDI Device</button>
   <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()">Sound: Off</button>
+  <button class="sound-toggle" id="accidental-toggle" onclick="toggleAccidentals()">Flats/Sharps: &#9839;</button>
+  <button class="sound-toggle on" id="notes-toggle" onclick="toggleNotes()">Notes: On</button>
 </div>
 
 <div class="keyboard-outer">
@@ -193,7 +196,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script>
-const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+let useFlats = false;
+let showNotes = true;
 
 const START_MIDI = 36; // C2
 const END_MIDI   = 84; // C6
@@ -223,7 +229,8 @@ let samplerReady = false;
 let soundOn = false;
 
 function midiToName(midi) {
-  return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
+  const names = useFlats ? NOTE_NAMES_FLAT : NOTE_NAMES_SHARP;
+  return names[midi % 12] + (Math.floor(midi / 12) - 1);
 }
 
 // ── Sampler ──────────────────────────────────────────────
@@ -269,7 +276,23 @@ function toggleSound() {
   toggle.classList.toggle('on', soundOn);
 }
 
-// ── Keyboard ──────────────────────────────────────────────
+function toggleAccidentals() {
+  useFlats = !useFlats;
+  const btn = document.getElementById('accidental-toggle');
+  btn.innerHTML = useFlats
+    ? 'Flats/Sharps: &#9837;'
+    : 'Flats/Sharps: &#9839;';
+  btn.classList.toggle('on', useFlats);
+  renderNotes();
+}
+
+function toggleNotes() {
+  showNotes = !showNotes;
+  const btn = document.getElementById('notes-toggle');
+  btn.textContent = showNotes ? 'Notes: On' : 'Notes: Off';
+  btn.classList.toggle('on', showNotes);
+  document.getElementById('note-display').style.visibility = showNotes ? '' : 'hidden';
+}
 function buildKeyboard() {
   const kb = document.getElementById('keyboard');
   kb.innerHTML = '';
