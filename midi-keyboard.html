@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIDI Keyboard Display</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #aaa;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    color: #888;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .dot.connected { background: #1D9E75; }
+  .dot.error     { background: #E24B4A; }
+
+  .connect-btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #ccc;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 2rem;
+  }
+  .connect-btn:hover { background: #333; border-color: #666; }
+  .connect-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ── Keyboard ── */
+  .keyboard-outer {
+    overflow-x: auto;
+    padding-bottom: 12px;
+    max-width: 100%;
+  }
+
+  .keyboard {
+    position: relative;
+    height: 200px;
+    /* width set by JS */
+  }
+
+  .white-key {
+    position: absolute;
+    width: 36px;
+    height: 200px;
+    background: #f5f5f0;
+    border: 1px solid #bbb;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    cursor: pointer;
+    transition: background 0.05s;
+    user-select: none;
+  }
+  .white-key:hover  { background: #e8e8e0; }
+  .white-key.active { background: #7ab8f5; border-color: #3a8ee6; }
+
+  .white-key .label {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .white-key.active .label { color: #1a5fa8; }
+
+  .black-key {
+    position: absolute;
+    width: 24px;
+    height: 120px;
+    background: #222;
+    border: 1px solid #000;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 2;
+    cursor: pointer;
+    transition: background 0.05s;
+    user-select: none;
+  }
+  .black-key:hover  { background: #333; }
+  .black-key.active { background: #378ADD; }
+
+  /* ── Note display ── */
+  .note-display {
+    margin-top: 2rem;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .note-pill {
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: #1a3a5c;
+    border: 1px solid #378ADD;
+    color: #7ab8f5;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    transition: opacity 0.3s;
+  }
+
+  .note-placeholder {
+    font-size: 0.875rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<h1>MIDI Keyboard Display</h1>
+
+<div class="status-bar">
+  <div class="dot" id="dot"></div>
+  <span id="status-text">No MIDI device connected</span>
+</div>
+
+<button class="connect-btn" id="connect-btn" onclick="connectMidi()">Connect MIDI Device</button>
+
+<div class="keyboard-outer">
+  <div class="keyboard" id="keyboard"></div>
+</div>
+
+<div class="note-display" id="note-display">
+  <span class="note-placeholder" id="placeholder">Play a note…</span>
+</div>
+
+<script>
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+// C2 = MIDI 36, C6 = MIDI 84
+const START_MIDI = 36;
+const END_MIDI   = 84;
+
+const WHITE_W = 36;
+const BLACK_W = 24;
+
+// For each semitone: is it black, and which white-key slot within the octave does it follow?
+// "whitesBefore" = number of white keys in this octave before this key
+const SEMITONE_MAP = [
+  { black: false, whitesBefore: 0 }, // C
+  { black: true,  whitesBefore: 0 }, // C#
+  { black: false, whitesBefore: 1 }, // D
+  { black: true,  whitesBefore: 1 }, // D#
+  { black: false, whitesBefore: 2 }, // E
+  { black: false, whitesBefore: 3 }, // F
+  { black: true,  whitesBefore: 3 }, // F#
+  { black: false, whitesBefore: 4 }, // G
+  { black: true,  whitesBefore: 4 }, // G#
+  { black: false, whitesBefore: 5 }, // A
+  { black: true,  whitesBefore: 5 }, // A#
+  { black: false, whitesBefore: 6 }, // B
+];
+
+const activeNotes = new Set();
+let midiAccess = null;
+
+function midiToName(midi) {
+  const octave = Math.floor(midi / 12) - 1;
+  return NOTE_NAMES[midi % 12] + octave;
+}
+
+function buildKeyboard() {
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML = '';
+
+  // First pass: calculate x positions
+  let whiteIndex = 0;
+  const positions = {};
+
+  for (let midi = START_MIDI; midi <= END_MIDI; midi++) {
+    const s = midi % 12;
+    const info = SEMITONE_MAP[s];
+    if (!info.black) {
+      positions[midi] = { black: false, x: whiteIndex * WHITE_W };
+      whiteIndex++;
+    } else {
+      // Center the black key between the two surrounding white keys
+      positions[midi] = { black: true, x: whiteIndex * WHITE_W - BLACK_W / 2 - 1 };
+    }
+  }
+
+  kb.style.width = (whiteIndex * WHITE_W) + 'px';
+
+  // Render white first, then black on top
+  for (const pass of ['white', 'black']) {
+    for (let midi = START_MIDI; midi <= END_MIDI; midi++) {
+      const pos = positions[midi];
+      if (pos.black !== (pass === 'black')) continue;
+
+      const div = document.createElement('div');
+      div.className = pos.black ? 'black-key' : 'white-key';
+      div.dataset.midi = midi;
+      div.style.left = pos.x + 'px';
+
+      // Label every C
+      if (!pos.black && midi % 12 === 0) {
+        const lbl = document.createElement('span');
+        lbl.className = 'label';
+        lbl.textContent = midiToName(midi);
+        div.appendChild(lbl);
+      }
+
+      div.addEventListener('mousedown',  (e) => { e.preventDefault(); pressNote(midi); });
+      div.addEventListener('mouseup',    ()  => releaseNote(midi));
+      div.addEventListener('mouseleave', ()  => { if (!midiAccess) releaseNote(midi); });
+      div.addEventListener('touchstart', (e) => { e.preventDefault(); pressNote(midi); }, { passive: false });
+      div.addEventListener('touchend',   (e) => { e.preventDefault(); releaseNote(midi); }, { passive: false });
+
+      kb.appendChild(div);
+    }
+  }
+}
+
+function pressNote(midi) {
+  if (midi < START_MIDI || midi > END_MIDI) return;
+  activeNotes.add(midi);
+  const el = document.querySelector(`[data-midi="${midi}"]`);
+  if (el) el.classList.add('active');
+  renderNotes();
+}
+
+function releaseNote(midi) {
+  activeNotes.delete(midi);
+  const el = document.querySelector(`[data-midi="${midi}"]`);
+  if (el) el.classList.remove('active');
+  renderNotes();
+}
+
+function renderNotes() {
+  const display = document.getElementById('note-display');
+  const placeholder = document.getElementById('placeholder');
+
+  // Remove existing pills
+  display.querySelectorAll('.note-pill').forEach(p => p.remove());
+
+  if (activeNotes.size === 0) {
+    placeholder.style.display = '';
+    return;
+  }
+
+  placeholder.style.display = 'none';
+  const sorted = [...activeNotes].sort((a, b) => a - b);
+  for (const midi of sorted) {
+    const pill = document.createElement('span');
+    pill.className = 'note-pill';
+    pill.id = 'pill-' + midi;
+    pill.textContent = midiToName(midi);
+    display.appendChild(pill);
+  }
+}
+
+function connectMidi() {
+  if (!navigator.requestMIDIAccess) {
+    setStatus('error', 'Web MIDI API not supported — use Chrome or Edge');
+    return;
+  }
+
+  setStatus('connecting', 'Requesting MIDI access…');
+
+  navigator.requestMIDIAccess({ sysex: false }).then(access => {
+    midiAccess = access;
+
+    if (access.inputs.size === 0) {
+      setStatus('error', 'No MIDI devices found — plug in your keyboard and try again');
+      return;
+    }
+
+    setStatus('connected', `Connected — ${access.inputs.size} MIDI input(s) detected`);
+    document.getElementById('connect-btn').disabled = true;
+    document.getElementById('connect-btn').textContent = 'Connected';
+
+    function attachInput(input) {
+      input.onmidimessage = handleMidi;
+    }
+
+    access.inputs.forEach(attachInput);
+    access.onstatechange = (e) => {
+      if (e.port.type === 'input') {
+        if (e.port.state === 'connected') {
+          attachInput(e.port);
+          setStatus('connected', `Connected — ${access.inputs.size} MIDI input(s)`);
+        } else {
+          setStatus('error', 'MIDI device disconnected');
+        }
+      }
+    };
+
+  }).catch(err => {
+    setStatus('error', 'MIDI access denied — check browser permissions');
+    console.error('MIDI error:', err);
+  });
+}
+
+function handleMidi(e) {
+  const [status, note, velocity] = e.data;
+  const cmd = status & 0xf0;
+  if (cmd === 0x90 && velocity > 0) pressNote(note);
+  else if (cmd === 0x80 || (cmd === 0x90 && velocity === 0)) releaseNote(note);
+}
+
+function setStatus(state, text) {
+  const dot = document.getElementById('dot');
+  dot.className = 'dot';
+  if (state === 'connected')   dot.classList.add('connected');
+  if (state === 'error')       dot.classList.add('error');
+  document.getElementById('status-text').textContent = text;
+}
+
+buildKeyboard();
+</script>
+</body>
+</html>
