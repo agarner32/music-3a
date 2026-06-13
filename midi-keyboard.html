@@ -20,7 +20,6 @@
   }
 
   h1 {
-    font-size: 1.2rem;
     font-weight: 500;
     letter-spacing: 0.05em;
     color: #aaa;
@@ -33,7 +32,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     font-size: 0.875rem;
     color: #888;
   }
@@ -48,6 +47,14 @@
   }
   .dot.connected { background: #1D9E75; }
   .dot.error     { background: #E24B4A; }
+  .dot.loading   { background: #EF9F27; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 2rem;
+    align-items: center;
+  }
 
   .connect-btn {
     padding: 8px 20px;
@@ -58,10 +65,26 @@
     font-size: 0.875rem;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
-    margin-bottom: 2rem;
   }
   .connect-btn:hover { background: #333; border-color: #666; }
   .connect-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .sound-toggle {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #888;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .sound-toggle.on {
+    border-color: #1D9E75;
+    color: #1D9E75;
+    background: #0d2b20;
+  }
+  .sound-toggle:hover { background: #333; }
 
   /* ── Keyboard ── */
   .keyboard-outer {
@@ -73,7 +96,6 @@
   .keyboard {
     position: relative;
     height: 200px;
-    /* width set by JS */
   }
 
   .white-key {
@@ -139,7 +161,6 @@
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.03em;
-    transition: opacity 0.3s;
   }
 
   .note-placeholder {
@@ -157,7 +178,10 @@
   <span id="status-text">No MIDI device connected</span>
 </div>
 
-<button class="connect-btn" id="connect-btn" onclick="connectMidi()">Connect MIDI Device</button>
+<div class="btn-row">
+  <button class="connect-btn" id="connect-btn" onclick="connectMidi()">Connect MIDI Device</button>
+  <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()">Sound: Off</button>
+</div>
 
 <div class="keyboard-outer">
   <div class="keyboard" id="keyboard"></div>
@@ -167,64 +191,104 @@
   <span class="note-placeholder" id="placeholder">Play a note…</span>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script>
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
-// C2 = MIDI 36, C6 = MIDI 84
-const START_MIDI = 36;
-const END_MIDI   = 84;
+const START_MIDI = 36; // C2
+const END_MIDI   = 84; // C6
 
 const WHITE_W = 36;
 const BLACK_W = 24;
 
-// For each semitone: is it black, and which white-key slot within the octave does it follow?
-// "whitesBefore" = number of white keys in this octave before this key
 const SEMITONE_MAP = [
-  { black: false, whitesBefore: 0 }, // C
-  { black: true,  whitesBefore: 0 }, // C#
-  { black: false, whitesBefore: 1 }, // D
-  { black: true,  whitesBefore: 1 }, // D#
-  { black: false, whitesBefore: 2 }, // E
-  { black: false, whitesBefore: 3 }, // F
-  { black: true,  whitesBefore: 3 }, // F#
-  { black: false, whitesBefore: 4 }, // G
-  { black: true,  whitesBefore: 4 }, // G#
-  { black: false, whitesBefore: 5 }, // A
-  { black: true,  whitesBefore: 5 }, // A#
-  { black: false, whitesBefore: 6 }, // B
+  { black: false }, // C
+  { black: true  }, // C#
+  { black: false }, // D
+  { black: true  }, // D#
+  { black: false }, // E
+  { black: false }, // F
+  { black: true  }, // F#
+  { black: false }, // G
+  { black: true  }, // G#
+  { black: false }, // A
+  { black: true  }, // A#
+  { black: false }, // B
 ];
 
 const activeNotes = new Set();
 let midiAccess = null;
+let sampler = null;
+let samplerReady = false;
+let soundOn = false;
 
 function midiToName(midi) {
-  const octave = Math.floor(midi / 12) - 1;
-  return NOTE_NAMES[midi % 12] + octave;
+  return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
 }
 
+// ── Sampler ──────────────────────────────────────────────
+function loadSampler() {
+  const toggle = document.getElementById('sound-toggle');
+  toggle.textContent = 'Sound: Loading…';
+  toggle.disabled = true;
+
+  sampler = new Tone.Sampler({
+    urls: {
+      C2: 'C2.mp3', 'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3', A2: 'A2.mp3',
+      C3: 'C3.mp3', 'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3', A3: 'A3.mp3',
+      C4: 'C4.mp3', 'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3', A4: 'A4.mp3',
+      C5: 'C5.mp3', 'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3', A5: 'A5.mp3',
+      C6: 'C6.mp3',
+    },
+    release: 1.5,
+    baseUrl: 'https://tonejs.github.io/audio/salamander/',
+    onload: () => {
+      samplerReady = true;
+      soundOn = true;
+      toggle.textContent = 'Sound: On';
+      toggle.classList.add('on');
+      toggle.disabled = false;
+    },
+    onerror: (err) => {
+      console.error('Sampler load error:', err);
+      toggle.textContent = 'Sound: Error';
+      toggle.disabled = false;
+    }
+  }).toDestination();
+}
+
+function toggleSound() {
+  if (!sampler) {
+    // First time — need to resume AudioContext (browser policy) then load
+    Tone.start().then(() => loadSampler());
+    return;
+  }
+  soundOn = !soundOn;
+  const toggle = document.getElementById('sound-toggle');
+  toggle.textContent = soundOn ? 'Sound: On' : 'Sound: Off';
+  toggle.classList.toggle('on', soundOn);
+}
+
+// ── Keyboard ──────────────────────────────────────────────
 function buildKeyboard() {
   const kb = document.getElementById('keyboard');
   kb.innerHTML = '';
 
-  // First pass: calculate x positions
   let whiteIndex = 0;
   const positions = {};
 
   for (let midi = START_MIDI; midi <= END_MIDI; midi++) {
-    const s = midi % 12;
-    const info = SEMITONE_MAP[s];
-    if (!info.black) {
+    const isBlack = SEMITONE_MAP[midi % 12].black;
+    if (!isBlack) {
       positions[midi] = { black: false, x: whiteIndex * WHITE_W };
       whiteIndex++;
     } else {
-      // Center the black key between the two surrounding white keys
       positions[midi] = { black: true, x: whiteIndex * WHITE_W - BLACK_W / 2 - 1 };
     }
   }
 
   kb.style.width = (whiteIndex * WHITE_W) + 'px';
 
-  // Render white first, then black on top
   for (const pass of ['white', 'black']) {
     for (let midi = START_MIDI; midi <= END_MIDI; midi++) {
       const pos = positions[midi];
@@ -235,7 +299,6 @@ function buildKeyboard() {
       div.dataset.midi = midi;
       div.style.left = pos.x + 'px';
 
-      // Label every C
       if (!pos.black && midi % 12 === 0) {
         const lbl = document.createElement('span');
         lbl.className = 'label';
@@ -243,79 +306,80 @@ function buildKeyboard() {
         div.appendChild(lbl);
       }
 
-      div.addEventListener('mousedown',  (e) => { e.preventDefault(); pressNote(midi); });
+      div.addEventListener('mousedown',  (e) => { e.preventDefault(); pressNote(midi, 80); });
       div.addEventListener('mouseup',    ()  => releaseNote(midi));
       div.addEventListener('mouseleave', ()  => { if (!midiAccess) releaseNote(midi); });
-      div.addEventListener('touchstart', (e) => { e.preventDefault(); pressNote(midi); }, { passive: false });
-      div.addEventListener('touchend',   (e) => { e.preventDefault(); releaseNote(midi); }, { passive: false });
+      div.addEventListener('touchstart', (e) => { e.preventDefault(); pressNote(midi, 80); }, { passive: false });
+      div.addEventListener('touchend',   (e) => { e.preventDefault(); releaseNote(midi); },   { passive: false });
 
       kb.appendChild(div);
     }
   }
 }
 
-function pressNote(midi) {
+// ── Note on/off ───────────────────────────────────────────
+function pressNote(midi, velocity = 80) {
   if (midi < START_MIDI || midi > END_MIDI) return;
   activeNotes.add(midi);
   const el = document.querySelector(`[data-midi="${midi}"]`);
   if (el) el.classList.add('active');
   renderNotes();
+
+  if (soundOn && samplerReady) {
+    const name = midiToName(midi);
+    try { sampler.triggerAttack(name, Tone.now()); } catch(e) {}
+  }
 }
 
 function releaseNote(midi) {
+  if (!activeNotes.has(midi)) return;
   activeNotes.delete(midi);
   const el = document.querySelector(`[data-midi="${midi}"]`);
   if (el) el.classList.remove('active');
   renderNotes();
+
+  if (soundOn && samplerReady) {
+    const name = midiToName(midi);
+    try { sampler.triggerRelease(name, Tone.now()); } catch(e) {}
+  }
 }
 
 function renderNotes() {
   const display = document.getElementById('note-display');
   const placeholder = document.getElementById('placeholder');
-
-  // Remove existing pills
   display.querySelectorAll('.note-pill').forEach(p => p.remove());
 
   if (activeNotes.size === 0) {
     placeholder.style.display = '';
     return;
   }
-
   placeholder.style.display = 'none';
-  const sorted = [...activeNotes].sort((a, b) => a - b);
-  for (const midi of sorted) {
+  [...activeNotes].sort((a, b) => a - b).forEach(midi => {
     const pill = document.createElement('span');
     pill.className = 'note-pill';
-    pill.id = 'pill-' + midi;
     pill.textContent = midiToName(midi);
     display.appendChild(pill);
-  }
+  });
 }
 
+// ── MIDI ──────────────────────────────────────────────────
 function connectMidi() {
   if (!navigator.requestMIDIAccess) {
     setStatus('error', 'Web MIDI API not supported — use Chrome or Edge');
     return;
   }
-
-  setStatus('connecting', 'Requesting MIDI access…');
-
+  setStatus('loading', 'Requesting MIDI access…');
   navigator.requestMIDIAccess({ sysex: false }).then(access => {
     midiAccess = access;
-
     if (access.inputs.size === 0) {
       setStatus('error', 'No MIDI devices found — plug in your keyboard and try again');
       return;
     }
-
     setStatus('connected', `Connected — ${access.inputs.size} MIDI input(s) detected`);
     document.getElementById('connect-btn').disabled = true;
     document.getElementById('connect-btn').textContent = 'Connected';
 
-    function attachInput(input) {
-      input.onmidimessage = handleMidi;
-    }
-
+    function attachInput(input) { input.onmidimessage = handleMidi; }
     access.inputs.forEach(attachInput);
     access.onstatechange = (e) => {
       if (e.port.type === 'input') {
@@ -327,25 +391,21 @@ function connectMidi() {
         }
       }
     };
-
-  }).catch(err => {
+  }).catch(() => {
     setStatus('error', 'MIDI access denied — check browser permissions');
-    console.error('MIDI error:', err);
   });
 }
 
 function handleMidi(e) {
   const [status, note, velocity] = e.data;
   const cmd = status & 0xf0;
-  if (cmd === 0x90 && velocity > 0) pressNote(note);
+  if (cmd === 0x90 && velocity > 0) pressNote(note, velocity);
   else if (cmd === 0x80 || (cmd === 0x90 && velocity === 0)) releaseNote(note);
 }
 
 function setStatus(state, text) {
   const dot = document.getElementById('dot');
-  dot.className = 'dot';
-  if (state === 'connected')   dot.classList.add('connected');
-  if (state === 'error')       dot.classList.add('error');
+  dot.className = 'dot' + (state ? ' ' + state : '');
   document.getElementById('status-text').textContent = text;
 }
 
