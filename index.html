@@ -24,170 +24,37 @@
       --purple:    #5b52b5;
       --purple-lt: #eeedfe;
     }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    header {
-      background: var(--navy);
-      color: white;
-      padding: 2.5rem 2rem 2rem;
-      text-align: center;
-    }
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      margin-bottom: 0.4rem;
-    }
-    header p {
-      font-size: 0.95rem;
-      opacity: 0.75;
-      letter-spacing: 0.04em;
-    }
-    main {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-    }
-    .category-heading {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 0.25rem;
-    }
-    .category-desc {
-      font-size: 0.82rem;
-      color: var(--text3);
-      margin-bottom: 1.25rem;
-    }
-    .category-block {
-      margin-bottom: 3rem;
-    }
-    .section-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text3);
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .resources-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-    }
-    a.resource-card {
-      text-decoration: none;
-      color: inherit;
-    }
-    .resource-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.5rem;
-      display: block;
-      transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .resource-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 4px; height: 100%;
-      background-color: var(--navy);
-      opacity: 0;
-      transition: opacity 0.18s ease;
-    }
-    a.resource-card:hover {
-      box-shadow: 0 4px 18px rgba(0,0,0,0.10);
-      transform: translateY(-2px);
-      border-color: var(--border2);
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { background: var(--navy); color: white; padding: 2.5rem 2rem 2rem; text-align: center; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; letter-spacing: 0.02em; margin-bottom: 0.4rem; }
+    header p { font-size: 0.95rem; opacity: 0.75; letter-spacing: 0.04em; }
+    main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    .category-heading { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; color: var(--navy); margin-bottom: 0.25rem; }
+    .category-desc { font-size: 0.82rem; color: var(--text3); margin-bottom: 1.25rem; }
+    .category-block { margin-bottom: 3rem; }
+    .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+    a.resource-card { text-decoration: none; color: inherit; }
+    .resource-card { background: #ffffff; border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; display: block; transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease; position: relative; overflow: hidden; }
+    .resource-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background-color: var(--navy); opacity: 0; transition: opacity 0.18s ease; }
+    a.resource-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.10); transform: translateY(-2px); border-color: var(--border2); }
     a.resource-card:hover::before { opacity: 1; }
-    .card-tag {
-      display: inline-block;
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background-color: var(--navy-lt);
-      color: var(--navy);
-      border-radius: 4px;
-      padding: 3px 8px;
-      margin-bottom: 0.75rem;
-    }
+    .card-tag { display: inline-block; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; background-color: var(--navy-lt); color: var(--navy); border-radius: 4px; padding: 3px 8px; margin-bottom: 0.75rem; }
     .card-tag.tag-reference  { background-color: var(--gold-lt);   color: var(--gold);   }
     .card-tag.tag-placement  { background-color: var(--green-lt);  color: var(--green);  }
     .card-tag.tag-tutorial   { background-color: var(--purple-lt); color: var(--purple); }
     .card-tag.tag-canvas     { background-color: var(--gold-lt);   color: var(--gold);   }
-    .resource-card h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.4rem;
-      line-height: 1.3;
-    }
-    .resource-card p {
-      font-size: 0.875rem;
-      color: var(--text2);
-      line-height: 1.55;
-    }
-    .card-arrow {
-      display: block;
-      margin-top: 1.1rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--navy);
-      letter-spacing: 0.02em;
-    }
+    .resource-card h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; line-height: 1.3; }
+    .resource-card p { font-size: 0.875rem; color: var(--text2); line-height: 1.55; }
+    .card-arrow { display: block; margin-top: 1.1rem; font-size: 0.82rem; font-weight: 600; color: var(--navy); letter-spacing: 0.02em; }
     .card-arrow.arrow-green  { color: var(--green);  }
     .card-arrow.arrow-purple { color: var(--purple); }
     .card-arrow.arrow-gold   { color: var(--gold);   }
-    .coming-soon {
-      opacity: 0.5;
-      cursor: default;
-      pointer-events: none;
-    }
-    .coming-soon .card-tag {
-      background-color: var(--bg2);
-      color: var(--text3);
-    }
-    .coming-soon-badge {
-      display: inline-block;
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      background-color: var(--gold-lt);
-      color: var(--gold);
-      border-radius: 4px;
-      padding: 2px 7px;
-      margin-left: 0.4rem;
-      vertical-align: middle;
-    }
-    .category-divider {
-      border: none;
-      border-top: 2px solid var(--border);
-      margin: 0.5rem 0 3rem;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.8rem;
-      color: var(--text3);
-      border-top: 1px solid var(--border);
-      margin-top: 2rem;
-    }
+    .coming-soon { opacity: 0.5; cursor: default; pointer-events: none; }
+    .coming-soon .card-tag { background-color: var(--bg2); color: var(--text3); }
+    .coming-soon-badge { display: inline-block; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background-color: var(--gold-lt); color: var(--gold); border-radius: 4px; padding: 2px 7px; margin-left: 0.4rem; vertical-align: middle; }
+    .category-divider { border: none; border-top: 2px solid var(--border); margin: 0.5rem 0 3rem; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: var(--text3); border-top: 1px solid var(--border); margin-top: 2rem; }
   </style>
 </head>
 <body>
@@ -284,6 +151,12 @@
         <span class="card-tag tag-canvas">Canvas</span>
         <h2>Week Card Generator</h2>
         <p>Pull your course schedule from Canvas and generate a self-updating homepage card that shows students what's due each week.</p>
+        <span class="card-arrow arrow-gold">Open &rarr;</span>
+      </a>
+      <a href="https://agarner32.github.io/canvas-tools/canvas-static-card-builder.html" class="resource-card" target="_blank">
+        <span class="card-tag tag-canvas">Canvas</span>
+        <h2>Static Week Card Builder</h2>
+        <p>Manually build a homepage week card by entering module names and a due date — no Canvas API needed.</p>
         <span class="card-arrow arrow-gold">Open &rarr;</span>
       </a>
     </div>
